@@ -24,8 +24,13 @@ export function HeaderSimple() {
       <header className={classes.header}>
         <Container size="xl" className={classes.inner}>
           <Link to="/" className={classes.logo}>
-            <Text className={classes.kicker}>{siteConfig.denomination}</Text>
-            <Text className={classes.wordmark}>{siteConfig.shortName}</Text>
+            <span className={classes.logoMark}>
+              <img src={siteConfig.logoSrc} alt="" />
+            </span>
+            <span className={classes.logoText}>
+              <Text className={classes.kicker}>{siteConfig.denomination}</Text>
+              <Text className={classes.wordmark}>{siteConfig.shortName}</Text>
+            </span>
           </Link>
 
           <Group gap={5} visibleFrom="xs">
@@ -50,7 +55,14 @@ export function HeaderSimple() {
       <Drawer
         opened={opened}
         onClose={toggle}
-        title={siteConfig.shortName}
+        title={
+          <Group gap="sm" wrap="nowrap">
+            <span className={`${classes.logoMark} ${classes.drawerLogoMark}`}>
+              <img src={siteConfig.logoSrc} alt="" />
+            </span>
+            <Text fw={700}>{siteConfig.shortName}</Text>
+          </Group>
+        }
         padding="lg"
         hiddenFrom="xs"
       >

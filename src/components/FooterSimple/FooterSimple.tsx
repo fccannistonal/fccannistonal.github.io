@@ -36,8 +36,15 @@ export function FooterSimple() {
       <Container size="xl" className={classes.inner}>
         <SimpleGrid cols={{ base: 1, md: 3 }} spacing="xl">
           <Stack gap="xs">
-            <Text className={classes.kicker}>{siteConfig.denomination}</Text>
-            <Text className={classes.wordmark}>{siteConfig.name}</Text>
+            <Link to="/" className={classes.brand}>
+              <span className={classes.logoMark}>
+                <img src={siteConfig.logoSrc} alt="" />
+              </span>
+              <span>
+                <Text className={classes.kicker}>{siteConfig.denomination}</Text>
+                <Text className={classes.wordmark}>{siteConfig.name}</Text>
+              </span>
+            </Link>
             <Text c="dimmed" size="sm" maw={320}>
               {siteConfig.contactSummary}
             </Text>

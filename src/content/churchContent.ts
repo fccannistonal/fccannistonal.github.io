@@ -28,6 +28,7 @@ export type SiteConfig = {
   shortName: string;
   denomination: string;
   tagline: string;
+  logoSrc: string;
   heroBackgroundSrc?: string;
   heroPrimaryAction: ActionLink;
   heroSecondaryAction: ActionLink;
@@ -89,6 +90,7 @@ export const siteConfig: SiteConfig = {
   denomination: 'Disciples of Christ',
   tagline:
     'Hi there! Welcome to First Christian Church, Anniston. Come as you are—we can’t wait to meet you!',
+  logoSrc: '/images/brand/fcc-logo.png',
   heroBackgroundSrc: '/images/home/sanctuary-hero.jpg',
   heroPrimaryAction: {
     id: 'plan-visit',

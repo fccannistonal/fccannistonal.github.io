@@ -11,10 +11,12 @@ describe('FooterSimple', () => {
   ]);
 
   it('renders correctly', () => {
-    render(
+    const { container } = render(
       <MemoryRouter>
         <FooterSimple {...(attributes as any)} />
       </MemoryRouter>
     );
+
+    expect(container.querySelector('img[src="/images/brand/fcc-logo.png"]')).toBeInTheDocument();
   });
 });

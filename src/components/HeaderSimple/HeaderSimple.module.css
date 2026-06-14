@@ -20,10 +20,34 @@
 
 .logo {
   display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #2a1e15;
+}
+
+.logoMark {
+  width: 44px;
+  height: 56px;
+  flex: 0 0 auto;
+  overflow: hidden;
+  padding: 2px;
+  border: 1px solid rgb(83 59 39 / 10%);
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 8px 20px rgb(69 48 33 / 10%);
+}
+
+.logoMark img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.logoText {
+  display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 2px;
-  color: #2a1e15;
 }
 
 .kicker {
@@ -73,4 +97,31 @@
   color: #2a1e15;
   font-weight: 600;
   text-decoration: none;
+}
+
+.drawerLogoMark {
+  width: 36px;
+  height: 46px;
+  border-radius: 11px;
+}
+
+@media (max-width: 48em) {
+  .logo {
+    gap: 8px;
+  }
+
+  .logoMark {
+    width: 36px;
+    height: 46px;
+    border-radius: 11px;
+  }
+
+  .kicker {
+    font-size: 0.58rem;
+    letter-spacing: 0.13em;
+  }
+
+  .wordmark {
+    font-size: 1.15rem;
+  }
 }
