@@ -9,10 +9,19 @@ type Props = {
   label: string;
   description?: string;
   ratio?: number;
+  objectPosition?: string;
   className?: string;
 };
 
-export function ContentImage({ src, alt, label, description, ratio = 4 / 3, className }: Props) {
+export function ContentImage({
+  src,
+  alt,
+  label,
+  description,
+  ratio = 4 / 3,
+  objectPosition,
+  className,
+}: Props) {
   const [hasError, setHasError] = useState(false);
   const showImage = Boolean(src) && !hasError;
 
@@ -25,6 +34,7 @@ export function ContentImage({ src, alt, label, description, ratio = 4 / 3, clas
             src={src}
             alt={alt}
             className={classes.image}
+            style={{ objectPosition }}
             onError={() => setHasError(true)}
           />
         ) : (

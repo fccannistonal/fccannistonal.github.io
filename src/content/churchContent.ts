@@ -124,6 +124,7 @@ export const siteConfig: SiteConfig = {
   givingFormId: 'c23cd1bd-eeab-4311-a159-15b079e46baf',
   givingCopy:
     'Your generous support helps us live out our love, service, and inclusion mission. By partnering with us financially, you become an essential part of our work—hosting community events like the Makers Market, supporting local outreach programs, or keeping our doors open to all who seek a spiritual home. No matter the size, every gift makes a difference and helps us continue sharing God’s love with our neighbors.',
+  exteriorImageSrc: '/images/home/fcc-exterior-sunset.jpg',
   addressLines: ['Full street address coming soon', 'Anniston, Alabama'],
   serviceNotes: [
     'Sunday School begins at 10:30 AM.',

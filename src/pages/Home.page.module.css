@@ -1,0 +1,27 @@
+.exteriorCard {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 85% 0%, rgb(244 125 68 / 16%), transparent 34%),
+    linear-gradient(180deg, rgb(255 251 246 / 98%), rgb(249 239 229 / 96%));
+  box-shadow: 0 24px 55px rgb(61 44 30 / 10%);
+}
+
+.exteriorImage {
+  border-color: rgb(83 59 39 / 14%);
+  box-shadow: 0 20px 38px rgb(50 28 18 / 18%);
+}
+
+.exteriorCaption {
+  padding: var(--mantine-spacing-md) var(--mantine-spacing-xs) var(--mantine-spacing-xs);
+}
+
+@media (max-width: 48em) {
+  .exteriorImage {
+    max-height: 34rem;
+  }
+
+  .exteriorCaption {
+    padding-inline: 0;
+  }
+}

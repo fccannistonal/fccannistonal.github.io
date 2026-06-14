@@ -15,6 +15,11 @@ describe('HomePage', () => {
     expect(screen.getByText('10:30 AM')).toBeInTheDocument();
     expect(screen.getByText('11:30 AM')).toBeInTheDocument();
     expect(
+      screen.getByRole('img', {
+        name: /stone exterior of first christian church anniston framed by a large tree at sunset/i,
+      })
+    ).toBeInTheDocument();
+    expect(
       screen.getByTitle(/uplifting sermons by pastor laura hutchinson on spotify/i)
     ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /^give$/i })).toHaveAttribute(

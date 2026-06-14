@@ -25,6 +25,7 @@ import {
 import { ContentImage } from '../components/church/ContentImage';
 import { HomeHero } from '../components/church/HomeHero';
 import { photoSlides, siteConfig } from '../content/churchContent';
+import classes from './Home.page.module.css';
 
 function TithelyGiveButton() {
   useEffect(() => {
@@ -100,18 +101,33 @@ export function HomePage() {
               </Grid.Col>
 
               <Grid.Col span={{ base: 12, md: 5 }}>
-                <Paper withBorder p="md" h="100%">
+                <Paper
+                  component="figure"
+                  withBorder
+                  p="md"
+                  m={0}
+                  h="100%"
+                  className={classes.exteriorCard}
+                >
                   <ContentImage
                     src={siteConfig.exteriorImageSrc}
-                    alt="Exterior of First Christian Church Anniston"
+                    alt="Stone exterior of First Christian Church Anniston framed by a large tree at sunset"
                     label="First Christian Church Anniston"
-                    description="Church exterior photo placeholder"
-                    ratio={1}
+                    ratio={4 / 5}
+                    objectPosition="62% 52%"
+                    className={classes.exteriorImage}
                   />
-                  <Text fw={700} size="lg" mt="md">
-                    First Christian Church Anniston
-                  </Text>
-                  <Text c="dimmed">A welcoming spiritual home in Anniston, Alabama.</Text>
+                  <figcaption className={classes.exteriorCaption}>
+                    <Badge variant="light" color="brand">
+                      Our church
+                    </Badge>
+                    <Title order={3} mt="sm">
+                      First Christian Church Anniston
+                    </Title>
+                    <Text c="dimmed" mt={4}>
+                      A welcoming spiritual home in Anniston, Alabama.
+                    </Text>
+                  </figcaption>
                 </Paper>
               </Grid.Col>
             </Grid>
