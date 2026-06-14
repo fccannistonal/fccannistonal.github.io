@@ -1,9 +1,17 @@
-import { act } from '@testing-library/react';
-import { render, screen } from '@/test-utils';
-import { heroMessages } from '../../content/churchContent';
+import { act, fireEvent } from '@testing-library/react';
+import { axe, render, screen } from '@/test-utils';
+import { heroSentences } from '../../content/churchContent';
 import { HERO_ROTATION_INTERVAL_MS, HomeHero } from './HomeHero';
 
+function getSentenceText(index: number) {
+  const sentence = heroSentences[index];
+
+  return `${sentence.lead}${sentence.emphasis}${sentence.ending}`;
+}
+
 describe('HomeHero', () => {
+  axe([<HomeHero key="home-hero" />]);
+
   afterEach(() => {
     vi.useRealTimers();
   });
@@ -13,17 +21,48 @@ describe('HomeHero', () => {
 
     render(<HomeHero />);
 
-    expect(
-      screen.getByRole('heading', { name: new RegExp(`We are ${heroMessages[0].text}`, 'i') })
-    ).toBeInTheDocument();
+    expect(screen.getByTestId('hero-current-sentence')).toHaveTextContent(getSentenceText(0));
 
     act(() => {
       vi.advanceTimersByTime(HERO_ROTATION_INTERVAL_MS + 100);
     });
 
-    expect(
-      screen.getByRole('heading', { name: new RegExp(`We are ${heroMessages[1].text}`, 'i') })
-    ).toBeInTheDocument();
+    expect(screen.getByTestId('hero-current-sentence')).toHaveTextContent(getSentenceText(1));
+  });
+
+  it('keeps a stable semantic heading while the decorative text rotates', () => {
+    vi.useFakeTimers();
+
+    render(<HomeHero />);
+
+    act(() => {
+      vi.advanceTimersByTime(HERO_ROTATION_INTERVAL_MS + 100);
+    });
+
+    expect(screen.getByRole('heading', { name: getSentenceText(0) })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: getSentenceText(1) })).not.toBeInTheDocument();
+  });
+
+  it('can pause and resume automatic rotation', () => {
+    vi.useFakeTimers();
+
+    render(<HomeHero />);
+
+    fireEvent.click(screen.getByRole('button', { name: /pause text animation/i }));
+
+    act(() => {
+      vi.advanceTimersByTime(HERO_ROTATION_INTERVAL_MS * 2);
+    });
+
+    expect(screen.getByTestId('hero-current-sentence')).toHaveTextContent(getSentenceText(0));
+
+    fireEvent.click(screen.getByRole('button', { name: /resume text animation/i }));
+
+    act(() => {
+      vi.advanceTimersByTime(HERO_ROTATION_INTERVAL_MS + 100);
+    });
+
+    expect(screen.getByTestId('hero-current-sentence')).toHaveTextContent(getSentenceText(1));
   });
 
   it('keeps the first message visible when reduced motion is requested', () => {
@@ -48,12 +87,8 @@ describe('HomeHero', () => {
       vi.advanceTimersByTime(HERO_ROTATION_INTERVAL_MS * 2);
     });
 
-    expect(
-      screen.getByRole('heading', { name: new RegExp(`We are ${heroMessages[0].text}`, 'i') })
-    ).toBeInTheDocument();
-    expect(
-      screen.queryByRole('heading', { name: new RegExp(`We are ${heroMessages[1].text}`, 'i') })
-    ).not.toBeInTheDocument();
+    expect(screen.getByTestId('hero-current-sentence')).toHaveTextContent(getSentenceText(0));
+    expect(screen.queryByRole('button', { name: /text animation/i })).not.toBeInTheDocument();
 
     window.matchMedia = originalMatchMedia;
   });

@@ -1,28 +1,66 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { IconPlayerPause, IconPlayerPlay } from '@tabler/icons-react';
 import { Button, Container, Group, Text } from '@mantine/core';
 import { useReducedMotion } from '@mantine/hooks';
-import { heroMessages, siteConfig } from '../../content/churchContent';
+import { heroSentences, siteConfig, type HeroSentence } from '../../content/churchContent';
 import classes from './HomeHero.module.css';
 
 export const HERO_ROTATION_INTERVAL_MS = 3200;
+export const HERO_ROLL_DURATION_MS = 650;
+
+function getSentenceText(sentence: HeroSentence) {
+  return `${sentence.lead}${sentence.emphasis}${sentence.ending}`;
+}
+
+function SentenceText({ sentence }: { sentence: HeroSentence }) {
+  return (
+    <span className={classes.sentenceContent}>
+      {sentence.lead}
+      <span style={{ color: sentence.color }}>{sentence.emphasis}</span>
+      {sentence.ending}
+    </span>
+  );
+}
 
 export function HomeHero() {
   const prefersReducedMotion = useReducedMotion();
-  const [messageIndex, setMessageIndex] = useState(0);
+  const [sentenceIndex, setSentenceIndex] = useState(0);
+  const [previousSentenceIndex, setPreviousSentenceIndex] = useState(0);
+  const [isRolling, setIsRolling] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+
+  const finishRoll = useCallback(() => {
+    setIsRolling(false);
+  }, []);
 
   useEffect(() => {
-    if (prefersReducedMotion) {
+    if (prefersReducedMotion || isPaused || isRolling || heroSentences.length < 2) {
       return undefined;
     }
 
-    const intervalId = window.setInterval(() => {
-      setMessageIndex((currentIndex) => (currentIndex + 1) % heroMessages.length);
+    const timeoutId = window.setTimeout(() => {
+      setPreviousSentenceIndex(sentenceIndex);
+      setSentenceIndex((sentenceIndex + 1) % heroSentences.length);
+      setIsRolling(true);
     }, HERO_ROTATION_INTERVAL_MS);
 
-    return () => window.clearInterval(intervalId);
-  }, [prefersReducedMotion]);
+    return () => window.clearTimeout(timeoutId);
+  }, [isPaused, isRolling, prefersReducedMotion, sentenceIndex]);
 
-  const currentMessage = heroMessages[prefersReducedMotion ? 0 : messageIndex];
+  useEffect(() => {
+    if (!isRolling) {
+      return undefined;
+    }
+
+    const timeoutId = window.setTimeout(finishRoll, HERO_ROLL_DURATION_MS + 100);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [finishRoll, isRolling]);
+
+  const visibleSentenceIndex = prefersReducedMotion ? 0 : sentenceIndex;
+  const visibleSentence = heroSentences[visibleSentenceIndex];
+  const previousSentence = heroSentences[previousSentenceIndex];
+  const showRollingTrack = isRolling && !prefersReducedMotion;
   const backgroundImage = siteConfig.heroBackgroundSrc
     ? `linear-gradient(180deg, rgba(25, 18, 12, 0.35), rgba(25, 18, 12, 0.55)), url(${siteConfig.heroBackgroundSrc})`
     : undefined;
@@ -32,16 +70,62 @@ export function HomeHero() {
       <Container size="lg" className={classes.inner}>
         <Text className={classes.eyebrow}>{siteConfig.denomination}</Text>
 
-        <h1 className={classes.title}>
-          <span className={classes.staticText}>We are</span>{' '}
-          <span
-            key={currentMessage.id}
-            className={classes.message}
-            style={{ color: currentMessage.color }}
-          >
-            {currentMessage.text}
-          </span>
-        </h1>
+        <div className={classes.headline}>
+          <h1 className={classes.title}>
+            <span className={classes.visuallyHidden}>{getSentenceText(heroSentences[0])}</span>
+
+            <span className={classes.sentenceRoller} aria-hidden="true">
+              <span className={classes.sentenceSizer}>
+                {heroSentences.map((sentence) => (
+                  <span key={sentence.id} className={classes.sentenceSizerItem}>
+                    <SentenceText sentence={sentence} />
+                  </span>
+                ))}
+              </span>
+
+              <span className={classes.sentenceStage}>
+                {showRollingTrack ? (
+                  <span
+                    key={`${previousSentence.id}-${visibleSentence.id}`}
+                    className={classes.sentenceTrack}
+                    onAnimationEnd={finishRoll}
+                  >
+                    <span className={classes.sentencePanel}>
+                      <SentenceText sentence={previousSentence} />
+                    </span>
+                    <span className={classes.sentencePanel} data-testid="hero-current-sentence">
+                      <SentenceText sentence={visibleSentence} />
+                    </span>
+                  </span>
+                ) : (
+                  <span className={classes.settledSentence} data-testid="hero-current-sentence">
+                    <SentenceText sentence={visibleSentence} />
+                  </span>
+                )}
+              </span>
+            </span>
+          </h1>
+
+          {!prefersReducedMotion && heroSentences.length > 1 && (
+            <Button
+              type="button"
+              variant="subtle"
+              size="compact-sm"
+              className={classes.animationControl}
+              leftSection={
+                isPaused ? (
+                  <IconPlayerPlay size={16} aria-hidden="true" />
+                ) : (
+                  <IconPlayerPause size={16} aria-hidden="true" />
+                )
+              }
+              aria-pressed={isPaused}
+              onClick={() => setIsPaused((currentValue) => !currentValue)}
+            >
+              {isPaused ? 'Resume text animation' : 'Pause text animation'}
+            </Button>
+          )}
+        </div>
 
         <Text className={classes.description}>{siteConfig.tagline}</Text>
 

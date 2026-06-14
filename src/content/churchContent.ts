@@ -38,9 +38,11 @@ export type SiteConfig = {
   homeActions: ActionLink[];
 };
 
-export type HeroMessage = {
+export type HeroSentence = {
   id: string;
-  text: string;
+  lead: string;
+  emphasis: string;
+  ending: string;
   color: string;
 };
 
@@ -164,11 +166,35 @@ export const siteConfig: SiteConfig = {
   ],
 };
 
-export const heroMessages: HeroMessage[] = [
-  { id: 'disciples', text: 'Disciples of Christ', color: '#f6d293' },
-  { id: 'affirming', text: 'open and affirming', color: '#d7efcb' },
-  { id: 'welcoming', text: 'excited to meet you', color: '#f3b878' },
-  { id: 'community', text: 'rooted in community', color: '#d5e1ff' },
+export const heroSentences: HeroSentence[] = [
+  {
+    id: 'disciples',
+    lead: 'We are ',
+    emphasis: 'Disciples of Christ',
+    ending: '.',
+    color: '#f6d293',
+  },
+  {
+    id: 'affirming',
+    lead: 'We are ',
+    emphasis: 'open and affirming',
+    ending: '.',
+    color: '#d7efcb',
+  },
+  {
+    id: 'welcoming',
+    lead: 'We are ',
+    emphasis: 'excited to meet you',
+    ending: '.',
+    color: '#f3b878',
+  },
+  {
+    id: 'community',
+    lead: 'We are ',
+    emphasis: 'rooted in community',
+    ending: '.',
+    color: '#d5e1ff',
+  },
 ];
 
 export const photoSlides: PhotoSlide[] = [
