@@ -63,7 +63,7 @@ export function HomeHero() {
   const previousSentence = heroSentences[previousSentenceIndex];
   const showRollingTrack = isRolling && !prefersReducedMotion;
   const backgroundImage = siteConfig.heroBackgroundSrc
-    ? `linear-gradient(180deg, rgba(25, 18, 12, 0.35), rgba(25, 18, 12, 0.55)), url(${siteConfig.heroBackgroundSrc})`
+    ? `url(${siteConfig.heroBackgroundSrc})`
     : undefined;
 
   return (

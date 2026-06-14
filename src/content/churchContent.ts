@@ -89,6 +89,7 @@ export const siteConfig: SiteConfig = {
   denomination: 'Disciples of Christ',
   tagline:
     'Hi there! Welcome to First Christian Church, Anniston. Come as you are—we can’t wait to meet you!',
+  heroBackgroundSrc: '/images/home/sanctuary-hero.jpg',
   heroPrimaryAction: {
     id: 'plan-visit',
     title: 'Plan a Visit',
