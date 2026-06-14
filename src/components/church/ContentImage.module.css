@@ -1,0 +1,23 @@
+.frame {
+  overflow: hidden;
+  border-radius: calc(var(--mantine-radius-xl) + 4px);
+  border: 1px solid rgb(83 59 39 / 10%);
+  background: rgb(255 250 244 / 92%);
+  box-shadow: 0 20px 40px rgb(61 44 30 / 8%);
+}
+
+.image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.placeholder {
+  width: 100%;
+  height: 100%;
+  padding: var(--mantine-spacing-lg);
+  background:
+    radial-gradient(circle at top left, rgb(222 129 54 / 18%), transparent 32%),
+    radial-gradient(circle at bottom right, rgb(99 139 73 / 18%), transparent 36%),
+    linear-gradient(135deg, #fff9f1 0%, #f4eadc 100%);
+}

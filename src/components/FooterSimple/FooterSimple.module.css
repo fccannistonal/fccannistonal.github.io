@@ -1,27 +1,47 @@
 .footer {
-  margin-top: 120px;
-  border-top: 1px solid light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-5));
+  margin-top: 96px;
+  border-top: 1px solid rgb(83 59 39 / 10%);
+  background: rgb(255 250 243 / 88%);
 }
 
 .inner {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   padding-top: var(--mantine-spacing-xl);
-  padding-bottom: var(--mantine-spacing-xl);
-
-  @media (max-width: $mantine-breakpoint-xs) {
-    flex-direction: column;
-  }
+  padding-bottom: calc(var(--mantine-spacing-xl) * 1.5);
 }
 
-.logo {
-  display: flex;
-  align-items: center;
+.kicker {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #8c633d;
+}
+
+.wordmark {
+  font-family: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+  font-size: 1.55rem;
+  font-weight: 700;
+  color: #2a1e15;
+}
+
+.sectionTitle {
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #684931;
 }
 
 .links {
-  @media (max-width: $mantine-breakpoint-xs) {
-    margin-top: var(--mantine-spacing-md);
-  }
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.link {
+  color: #4c3829;
+  transition: color 160ms ease;
+}
+
+.link:hover {
+  color: #a85d21;
 }

@@ -1,25 +1,22 @@
-import { AppShell, Container, Group, Anchor, Title, Button } from "@mantine/core";
-import { Link } from "react-router-dom";
-import { HeaderSimple } from "../components/HeaderSimple/HeaderSimple";
-import { FooterSimple } from "../components/FooterSimple/FooterSimple";
+import type { ReactNode } from 'react';
+import { FooterSimple } from '../components/FooterSimple/FooterSimple';
+import { HeaderSimple } from '../components/HeaderSimple/HeaderSimple';
+import classes from './SiteLayout.module.css';
 
-type Props = { children: React.ReactNode };
+type Props = {
+  children: ReactNode;
+};
 
 export function SiteLayout({ children }: Props) {
   return (
-    <AppShell
-
-    >
-      <AppShell.Header>
-        <HeaderSimple />
-      </AppShell.Header>
-
-      <AppShell.Main>
-        {children}
-        <footer>
-          <FooterSimple />
-        </footer>
-      </AppShell.Main>
-    </AppShell>
+    <div className={classes.shell}>
+      <HeaderSimple />
+      <main className={classes.main}>
+        <div className={classes.content}>{children}</div>
+      </main>
+      <footer>
+        <FooterSimple />
+      </footer>
+    </div>
   );
 }

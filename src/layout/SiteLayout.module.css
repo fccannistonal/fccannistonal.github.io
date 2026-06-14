@@ -1,0 +1,14 @@
+.shell {
+  min-height: 100vh;
+  color: #241a12;
+}
+
+.main {
+  padding-top: var(--site-header-height);
+  position: relative;
+}
+
+.content {
+  position: relative;
+  z-index: 1;
+}

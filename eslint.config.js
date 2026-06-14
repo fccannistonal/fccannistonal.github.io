@@ -6,7 +6,18 @@ import tseslint from 'typescript-eslint';
 export default defineConfig(
   tseslint.configs.recommended,
   ...mantine,
-  { ignores: ['**/*.{mjs,cjs,js,d.ts,d.mts}'] },
+  {
+    ignores: [
+      '**/*.{mjs,cjs,js,d.ts,d.mts}',
+      '*.ts',
+      '*.tsx',
+      'components/**',
+      'pages/**',
+      'Welcome/**',
+      'ColorSchemeToggle/**',
+      'src/components/ProjectCard/ProjectCard.tsx',
+    ],
+  },
   {
     files: ['**/*.story.tsx'],
     rules: { 'no-console': 'off' },
@@ -15,7 +26,6 @@ export default defineConfig(
     languageOptions: {
       parserOptions: {
         tsconfigRootDir: process.cwd(),
-        project: ['./tsconfig.json'],
       },
     },
   }

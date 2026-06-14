@@ -1,3 +1,4 @@
+import '@mantine/carousel/styles.css';
 import '@mantine/core/styles.css';
 
 import { MantineProvider } from '@mantine/core';
@@ -6,7 +7,7 @@ import { theme } from './theme';
 
 export default function App() {
   return (
-    <MantineProvider theme={theme} defaultColorScheme="auto">
+    <MantineProvider theme={theme} defaultColorScheme="light">
       <Router />
     </MantineProvider>
   );

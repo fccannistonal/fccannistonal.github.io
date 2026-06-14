@@ -1,127 +1,254 @@
 import {
-  AspectRatio,
+  IconArrowRight,
+  IconHeartHandshake,
+  IconMapPin,
+  IconMicrophone2,
+  IconSparkles,
+  IconVideo,
+} from '@tabler/icons-react';
+import { Carousel } from '@mantine/carousel';
+import {
   Badge,
   Button,
   Container,
-  Divider,
   Grid,
   Group,
-  Image,
+  List,
   Paper,
   SimpleGrid,
   Stack,
   Text,
+  ThemeIcon,
   Title,
-} from "@mantine/core";
-import { SiteLayout } from "../layout/SiteLayout";
-import { GetInTouch } from "../components/GetInTouch/GetInTouch";
-import { HeroTitle } from "../components/HeroTitle/HeroTitle";
-import { projects } from "../data/projects";
-import { ProjectCard } from "../components/ProjectCard/ProjectCard";
+} from '@mantine/core';
+import { ContentImage } from '../components/church/ContentImage';
+import { HomeHero } from '../components/church/HomeHero';
+import { photoSlides, siteConfig } from '../content/churchContent';
+
+const actionIcons = {
+  podcast: IconMicrophone2,
+  zoom: IconVideo,
+  give: IconHeartHandshake,
+} as const;
 
 export function HomePage() {
   return (
-    <SiteLayout>
-      {/* HERO */}
-      <section id="top">
-        <HeroTitle />
-      </section>
+    <>
+      <HomeHero />
 
-      <Divider my="xl" />
+      <Container size="xl" py={{ base: 'xl', md: '4rem' }}>
+        <Stack gap="3rem">
+          <section id="welcome">
+            <SimpleGrid cols={{ base: 1, md: 2 }} spacing="xl">
+              <Paper withBorder p={{ base: 'lg', md: 'xl' }}>
+                <Badge variant="light" color="brand">
+                  Welcome
+                </Badge>
+                <Title order={2} mt="md">
+                  {siteConfig.welcomeTitle}
+                </Title>
+                <Stack gap="md" mt="md">
+                  {siteConfig.welcomeParagraphs.map((paragraph) => (
+                    <Text key={paragraph} c="dimmed" size="lg">
+                      {paragraph}
+                    </Text>
+                  ))}
+                </Stack>
+              </Paper>
 
-      {/* ABOUT */}
-      <section id="about">
-        <Container py="xl">
-          <Paper withBorder radius="lg" p={{ base: "lg", md: "xl" }}>
-            <Grid gutter={{ base: "lg", md: "xl" }} align="center">
-              <Grid.Col span={{ base: 12, md: 5 }}>
-                <Paper radius="lg" p={6} withBorder>
-                  <AspectRatio ratio={4 / 5}>
-                    <Image
-                      src="/headshot.png"
-                      alt="Zoe Rackley headshot"
-                      radius="md"
-                      fit="cover"
+              <Paper
+                withBorder
+                p={{ base: 'lg', md: 'xl' }}
+                style={{
+                  background:
+                    'linear-gradient(180deg, rgba(255, 249, 241, 0.98), rgba(244, 234, 220, 0.9))',
+                }}
+              >
+                <Badge variant="light" color="moss">
+                  First visit
+                </Badge>
+                <Title order={3} mt="md">
+                  A quick sense of what this site can hold
+                </Title>
+                <List
+                  mt="lg"
+                  spacing="md"
+                  icon={
+                    <ThemeIcon color="brand" variant="light" radius="xl" size={28}>
+                      <IconSparkles size={16} stroke={1.7} />
+                    </ThemeIcon>
+                  }
+                >
+                  {siteConfig.visitHighlights.map((highlight) => (
+                    <List.Item key={highlight}>
+                      <Text c="dimmed">{highlight}</Text>
+                    </List.Item>
+                  ))}
+                </List>
+              </Paper>
+            </SimpleGrid>
+          </section>
+
+          <section aria-labelledby="online-links-title">
+            <Group justify="space-between" align="end" mb="lg">
+              <div>
+                <Text
+                  fw={700}
+                  tt="uppercase"
+                  c="#8c633d"
+                  size="sm"
+                  style={{ letterSpacing: '0.18em' }}
+                >
+                  Connect online
+                </Text>
+                <Title id="online-links-title" order={2} mt="xs">
+                  Listen, worship, and give online
+                </Title>
+              </div>
+            </Group>
+
+            <SimpleGrid cols={{ base: 1, md: 3 }} spacing="lg">
+              {siteConfig.homeActions.map((action) => {
+                const Icon = actionIcons[action.id as keyof typeof actionIcons];
+
+                return (
+                  <Paper key={action.id} withBorder p="xl">
+                    <ThemeIcon size={50} radius="xl" variant="light" color="brand">
+                      <Icon size={26} stroke={1.7} />
+                    </ThemeIcon>
+                    <Title order={3} mt="md">
+                      {action.title}
+                    </Title>
+                    <Text c="dimmed" mt="sm">
+                      {action.description}
+                    </Text>
+                    <Button
+                      component="a"
+                      href={action.href}
+                      target={action.external ? '_blank' : undefined}
+                      rel={action.external ? 'noreferrer' : undefined}
+                      variant="light"
+                      mt="lg"
+                      rightSection={<IconArrowRight size={18} />}
+                    >
+                      {action.cta}
+                    </Button>
+                  </Paper>
+                );
+              })}
+            </SimpleGrid>
+          </section>
+
+          <section aria-labelledby="gallery-title">
+            <Group justify="space-between" align="end" mb="lg">
+              <div>
+                <Text
+                  fw={700}
+                  tt="uppercase"
+                  c="#8c633d"
+                  size="sm"
+                  style={{ letterSpacing: '0.18em' }}
+                >
+                  Photo carousel
+                </Text>
+                <Title id="gallery-title" order={2} mt="xs">
+                  Life together at a glance
+                </Title>
+              </div>
+            </Group>
+
+            <Carousel
+              slideSize={{ base: '100%', md: '50%' }}
+              slideGap="lg"
+              withIndicators
+              emblaOptions={{ align: 'start' }}
+              nextControlProps={{ 'aria-label': 'Next slide' }}
+              previousControlProps={{ 'aria-label': 'Previous slide' }}
+            >
+              {photoSlides.map((slide) => (
+                <Carousel.Slide key={slide.id}>
+                  <Paper withBorder p="md">
+                    <ContentImage
+                      src={slide.imageSrc}
+                      alt={slide.imageAlt}
+                      label={slide.title}
+                      description="Add a church photo here when your image library is ready."
                     />
-                  </AspectRatio>
+                    <Title order={3} mt="md">
+                      {slide.title}
+                    </Title>
+                    <Text c="dimmed" mt="xs">
+                      {slide.caption}
+                    </Text>
+                  </Paper>
+                </Carousel.Slide>
+              ))}
+            </Carousel>
+          </section>
+
+          <section aria-labelledby="map-title">
+            <Grid gutter="xl" align="stretch">
+              <Grid.Col span={{ base: 12, md: 5 }}>
+                <Paper withBorder p={{ base: 'lg', md: 'xl' }} h="100%">
+                  <Badge variant="light" color="moss">
+                    Find us
+                  </Badge>
+                  <Title id="map-title" order={2} mt="md">
+                    End the landing page with the church location
+                  </Title>
+                  <Text c="dimmed" mt="md">
+                    The map is ready for the church’s final address while the text block gives
+                    visitors a quick path to contact details and visit planning.
+                  </Text>
+
+                  <Stack gap="sm" mt="xl">
+                    {siteConfig.addressLines.map((line) => (
+                      <Group key={line} gap="sm" align="flex-start" wrap="nowrap">
+                        <ThemeIcon size={34} radius="xl" variant="light" color="brand">
+                          <IconMapPin size={18} stroke={1.7} />
+                        </ThemeIcon>
+                        <Text>{line}</Text>
+                      </Group>
+                    ))}
+                  </Stack>
+
+                  <List
+                    mt="xl"
+                    spacing="sm"
+                    icon={
+                      <ThemeIcon color="moss" variant="light" radius="xl" size={28}>
+                        <IconSparkles size={16} stroke={1.7} />
+                      </ThemeIcon>
+                    }
+                  >
+                    {siteConfig.serviceNotes.map((note) => (
+                      <List.Item key={note}>
+                        <Text c="dimmed">{note}</Text>
+                      </List.Item>
+                    ))}
+                  </List>
+
+                  <Button component="a" href="/contact" mt="xl">
+                    Contact the church
+                  </Button>
                 </Paper>
               </Grid.Col>
 
               <Grid.Col span={{ base: 12, md: 7 }}>
-                <Stack gap="md">
-                  <div>
-                    <Title order={1}>Zoe Rackley</Title>
-                    <Text size="lg" fw={500} mt={4}>
-                      I design and build systems that make complex products feel obvious.
-                    </Text>
-                  </div>
-
-                  <Stack gap="sm">
-                    <Text c="dimmed">
-                      I’m a product-focused designer and developer with a bias toward clarity,
-                      durability, and real-world constraints. I specialize in untangling complexity
-                      and turning it into interfaces people can actually use.
-                    </Text>
-
-                    <Text c="dimmed">
-                      My work sits at the intersection of design systems, UX strategy, and
-                      implementation. I’m most effective when working end-to-end: from shaping the
-                      problem through shipping something that lasts.
-                    </Text>
-                  </Stack>
-
-                  <Group gap={8} mt={4}>
-                    <Badge variant="light">Product design</Badge>
-                    <Badge variant="light">Design systems</Badge>
-                    <Badge variant="light">React</Badge>
-                    <Badge variant="light">UX strategy</Badge>
-                  </Group>
-
-                  <Group mt="md">
-                    <Button component="a" href="#contact">
-                      Work with me
-                    </Button>
-                    <Button variant="outline" component="a" href="/resume.pdf">
-                      View résumé
-                    </Button>
-                  </Group>
-                </Stack>
+                <Paper withBorder p={0} radius="xl" style={{ overflow: 'hidden', minHeight: 420 }}>
+                  <iframe
+                    src={siteConfig.mapEmbedUrl}
+                    title="Map showing the church's Anniston location"
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    style={{ width: '100%', minHeight: 420 }}
+                  />
+                </Paper>
               </Grid.Col>
             </Grid>
-          </Paper>
-        </Container>
-      </section>
-
-      <Divider my="xl" />
-
-      {/* PROJECTS */}
-      <section id="projects">
-        <Container py="xl">
-          <Group justify="space-between" align="flex-end">
-            <div>
-              <Title order={2}>Projects</Title>
-              <Text c="dimmed" mt={4}>
-                Selected work. Short descriptions now; link out to case studies later.
-              </Text>
-            </div>
-          </Group>
-
-          <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} mt="lg" spacing="lg">
-            {projects.map((project) => (
-              <ProjectCard key={project.slug} project={project} />
-            ))}
-          </SimpleGrid>
-        </Container>
-      </section>
-
-      <Divider my="xl" />
-
-      {/* CONTACT */}
-      <section id="contact">
-        <Container py="xl">
-          <GetInTouch />
-        </Container>
-      </section>
-    </SiteLayout>
+          </section>
+        </Stack>
+      </Container>
+    </>
   );
 }
