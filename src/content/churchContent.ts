@@ -106,7 +106,7 @@ export const siteConfig: SiteConfig = {
   },
   welcomeTitle: 'All Are Welcome',
   welcomeParagraphs: [
-    "At First Anniston Church, we believe that everyone deserves a place to belong, a space to grow, and a community to support them. Whether you're exploring your faith or have been on this journey for years, we welcome you with open arms.",
+    "At First Christian Church of Anniston, we believe that everyone deserves a place to belong, a space to grow, and a community to support them. Whether you're exploring your faith or have been on this journey for years, we welcome you with open arms.",
     'Our Worship Service is the heart of our Sunday gatherings, where we come together to celebrate, reflect, and connect with God and each other. Families are especially welcome! During the Worship Service, children can participate in Wonder and Worship, a program designed to engage their imaginations and nurture their spiritual growth in fun and meaningful ways.',
     'Come as you are—we can’t wait to meet you!',
   ],
