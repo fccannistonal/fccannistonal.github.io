@@ -11,6 +11,21 @@
   </head>
   <body>
     <div id="root"></div>
+    <!-- BRANCH_PAGES_FALLBACK_START -->
+    <script>
+      (function () {
+        var hostname = window.location.hostname;
+        var isLocalHost =
+          hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '[::1]';
+
+        if (isLocalHost || window.location.pathname.indexOf('/docs/') === 0) {
+          return;
+        }
+
+        window.location.replace('/docs/' + window.location.search + window.location.hash);
+      })();
+    </script>
+    <!-- BRANCH_PAGES_FALLBACK_END -->
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
