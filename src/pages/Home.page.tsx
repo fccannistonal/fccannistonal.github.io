@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import {
   IconClock,
   IconHeartHandshake,
@@ -26,36 +25,6 @@ import { ContentImage } from '../components/church/ContentImage';
 import { HomeHero } from '../components/church/HomeHero';
 import { photoSlides, siteConfig } from '../content/churchContent';
 import classes from './Home.page.module.css';
-
-function TithelyGiveButton() {
-  useEffect(() => {
-    if (
-      document.querySelector<HTMLScriptElement>(
-        'script[src="https://static.tithely.com/give/give.js"]'
-      )
-    ) {
-      return;
-    }
-
-    const script = document.createElement('script');
-    script.src = 'https://static.tithely.com/give/give.js';
-    script.defer = true;
-    document.body.appendChild(script);
-  }, []);
-
-  return (
-    <Button
-      type="button"
-      size="lg"
-      color="green"
-      className="tithely-give-button"
-      data-form={siteConfig.givingFormId}
-      leftSection={<IconHeartHandshake size={20} />}
-    >
-      Give
-    </Button>
-  );
-}
 
 export function HomePage() {
   return (
@@ -189,16 +158,16 @@ export function HomePage() {
                     {siteConfig.givingCopy}
                   </Text>
                   <Group mt="xl">
-                    <TithelyGiveButton />
                     <Button
                       component="a"
                       href={siteConfig.givingFormUrl}
                       target="_blank"
                       rel="noreferrer"
-                      variant="subtle"
+                      size="lg"
                       color="green"
+                      leftSection={<IconHeartHandshake size={20} />}
                     >
-                      Open secure giving form
+                      Give
                     </Button>
                   </Group>
                 </Paper>
