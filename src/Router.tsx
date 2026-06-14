@@ -1,10 +1,16 @@
 import { useState } from 'react';
-import { createBrowserRouter, Outlet, RouterProvider, type RouteObject } from 'react-router-dom';
+import {
+  createBrowserRouter,
+  Navigate,
+  Outlet,
+  RouterProvider,
+  type RouteObject,
+} from 'react-router-dom';
 import { SiteLayout } from './layout/SiteLayout';
+import { CommunityPage } from './pages/Community.page';
 import { ContactPage } from './pages/Contact.page';
 import { HomePage } from './pages/Home.page';
 import { NotFoundPage } from './pages/NotFound.page';
-import { OutreachPage } from './pages/Outreach.page';
 import { StaffPage } from './pages/Staff.page';
 
 export const routes: RouteObject[] = [
@@ -18,7 +24,8 @@ export const routes: RouteObject[] = [
     children: [
       { index: true, element: <HomePage /> },
       { path: 'staff', element: <StaffPage /> },
-      { path: 'outreach', element: <OutreachPage /> },
+      { path: 'community', element: <CommunityPage /> },
+      { path: 'outreach', element: <Navigate to="/community" replace /> },
       { path: 'contact', element: <ContactPage /> },
       { path: '*', element: <NotFoundPage /> },
     ],

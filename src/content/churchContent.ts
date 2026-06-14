@@ -76,13 +76,30 @@ export type StaffMember = {
   imageAlt: string;
 };
 
-export type OutreachItem = {
+export type TheaterImage = {
   id: string;
-  title: string;
-  summary: string;
-  highlights: string[];
-  imageSrc?: string;
-  imageAlt: string;
+  src: string;
+  alt: string;
+  width: number;
+  height: number;
+  objectPosition?: string;
+};
+
+export type DiversityTheaterContent = {
+  name: string;
+  eyebrow: string;
+  introduction: string[];
+  missionStatement: string;
+  founderName: string;
+  founderRole: string;
+  founderBio: string[];
+  facebookUrl: string;
+  heroImage: TheaterImage & {
+    srcSet: string;
+  };
+  galleryImages: TheaterImage[];
+  founderPortrait: TheaterImage;
+  founderActionImage: TheaterImage;
 };
 
 export const siteConfig: SiteConfig = {
@@ -156,7 +173,7 @@ export const siteConfig: SiteConfig = {
   navigation: [
     { label: 'Home', href: '/' },
     { label: 'Staff', href: '/staff' },
-    { label: 'Outreach', href: '/outreach' },
+    { label: 'Community', href: '/community' },
     { label: 'Contact', href: '/contact' },
   ],
   homeActions: [
@@ -344,41 +361,81 @@ export const staffMembers: StaffMember[] = [
   },
 ];
 
-export const outreachItems: OutreachItem[] = [
-  {
-    id: 'food',
-    title: 'Meals, pantry support, and practical care',
-    summary:
-      'This section is ready for the kinds of ministries that meet immediate needs through meals, pantry partnerships, and everyday acts of care.',
-    highlights: ['Food drives', 'Meal support', 'Partnerships with local organizations'],
-    imageSrc: 'https://picsum.photos/seed/fccanniston-food/1200/900',
-    imageAlt: 'Placeholder photo for meal and pantry outreach',
+export const diversityTheater: DiversityTheaterContent = {
+  name: 'Diversity Theater Company',
+  eyebrow: 'First Christian Church presents',
+  introduction: [
+    'At First Christian Church, we proudly sponsor and host performances by the Diversity Theater Company, offering a unique space for storytelling that reflects the lived experiences of LGBTQ individuals.',
+    'Our plays and musicals navigate the realities of life within the LGBTQ community, highlighting the prejudice and misunderstandings often encountered in the broader Christian context. These productions are poignant, funny, charming, and deeply rooted in Christian values, shining a light on Christ-like love in action.',
+    'Through the arts, we extend a warm welcome to individuals who may not have felt fully embraced in other church settings. Each performance is an opportunity to show hospitality, live out God’s message of endless love, and strengthen our connections within the wider community.',
+  ],
+  missionStatement:
+    'Theater brings people together. Through shared stories, we foster unity, compassion, and understanding.',
+  founderName: 'Maury Evans',
+  founderRole: 'Founder & Director',
+  founderBio: [
+    'Maury Evans, the visionary behind Diversity Theater Company, brings a wealth of experience and passion to his work. Having worked professionally in dinner theaters and toured with The Missoula Children’s Theatre, Maury has established multiple successful theater companies across the U.S., including Ravenwind Players and Jubilation Theatre Company in Portland, Oregon, and Celebration Theatre Company in Albuquerque, New Mexico.',
+    'Before joining the First Christian Church family in Anniston, Maury was a member of the Metropolitan Community Church in Albuquerque, where he directed and produced numerous productions. We are honored to have Maury as part of our congregation and blessed to witness the impact of his artistry on our community.',
+  ],
+  facebookUrl: 'https://www.facebook.com/profile.php?id=61555989325768',
+  heroImage: {
+    id: 'full-cast',
+    src: '/images/community/diversity-theater/cast-1600.jpg',
+    srcSet:
+      '/images/community/diversity-theater/cast-960.jpg 960w, /images/community/diversity-theater/cast-1600.jpg 1600w',
+    alt: 'The cast of a Diversity Theater Company western production posing together on stage',
+    width: 1600,
+    height: 1017,
+    objectPosition: '50% 44%',
   },
-  {
-    id: 'neighbors',
-    title: 'Neighbor-centered service projects',
-    summary:
-      'Use these cards to show how the congregation serves schools, shelters, neighborhood initiatives, and other community efforts across Anniston.',
-    highlights: ['Volunteer days', 'School support', 'Seasonal community projects'],
-    imageSrc: 'https://picsum.photos/seed/fccanniston-neighbors/1200/900',
-    imageAlt: 'Placeholder photo for neighborhood service',
+  galleryImages: [
+    {
+      id: 'ensemble-scene',
+      src: '/images/community/diversity-theater/ensemble-scene.jpg',
+      alt: 'Three actors in period costumes performing together on the Diversity Theater stage',
+      width: 750,
+      height: 500,
+      objectPosition: '50% 42%',
+    },
+    {
+      id: 'saloon-scene',
+      src: '/images/community/diversity-theater/saloon-scene.jpg',
+      alt: 'Actors performing a black-and-white saloon scene in a western stage production',
+      width: 750,
+      height: 500,
+      objectPosition: '46% 50%',
+    },
+    {
+      id: 'table-scene',
+      src: '/images/community/diversity-theater/table-scene.jpg',
+      alt: 'Two actors seated at a saloon table while another performer stands behind them',
+      width: 750,
+      height: 500,
+      objectPosition: '50% 44%',
+    },
+    {
+      id: 'dramatic-scene',
+      src: '/images/community/diversity-theater/dramatic-scene.jpg',
+      alt: 'Two actors sharing a serious moment at a table during a stage performance',
+      width: 750,
+      height: 500,
+      objectPosition: '50% 46%',
+    },
+  ],
+  founderPortrait: {
+    id: 'maury-portrait',
+    src: '/images/community/diversity-theater/maury-evans-portrait.jpg',
+    alt: 'Maury Evans seated inside First Christian Church',
+    width: 750,
+    height: 500,
+    objectPosition: '50% 42%',
   },
-  {
-    id: 'fellowship',
-    title: 'Shared tables and hospitality',
-    summary:
-      'Not every outreach moment needs to be formal. Highlight gatherings, hospitality events, and open-door community meals that help people belong.',
-    highlights: ['Community meals', 'Conversation spaces', 'Hospitality events'],
-    imageSrc: 'https://picsum.photos/seed/fccanniston-fellowship/1200/900',
-    imageAlt: 'Placeholder photo for fellowship and hospitality',
+  founderActionImage: {
+    id: 'maury-directing',
+    src: '/images/community/diversity-theater/maury-evans-directing.jpg',
+    alt: 'Maury Evans speaking on the Diversity Theater stage while holding a script',
+    width: 750,
+    height: 500,
+    objectPosition: '50% 38%',
   },
-  {
-    id: 'seasonal',
-    title: 'Seasonal drives and special events',
-    summary:
-      'Reserve space for back-to-school support, holiday giving, fundraisers, and other annual moments that matter to the congregation and its neighbors.',
-    highlights: ['Holiday drives', 'Back-to-school support', 'Community celebrations'],
-    imageSrc: 'https://picsum.photos/seed/fccanniston-seasonal/1200/900',
-    imageAlt: 'Placeholder photo for seasonal outreach',
-  },
-];
+};

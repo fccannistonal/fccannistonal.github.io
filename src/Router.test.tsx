@@ -7,7 +7,7 @@ describe('Router', () => {
   it.each([
     ['/', /all are welcome/i],
     ['/staff', /meet the staff/i],
-    ['/outreach', /community outreach/i],
+    ['/community', /diversity theater company/i],
     ['/contact', /contact us/i],
     ['/missing', /page not found/i],
   ])('renders %s', (pathname, heading) => {
@@ -16,6 +16,17 @@ describe('Router', () => {
     render(<RouterProvider router={router} />);
 
     expect(screen.getByRole('heading', { name: heading })).toBeInTheDocument();
+  });
+
+  it('redirects the former outreach path to the Community page', async () => {
+    const router = createMemoryRouter(routes, { initialEntries: ['/outreach'] });
+
+    render(<RouterProvider router={router} />);
+
+    expect(
+      await screen.findByRole('heading', { name: /diversity theater company/i })
+    ).toBeInTheDocument();
+    expect(router.state.location.pathname).toBe('/community');
   });
 
   it('renders a path restored by the GitHub Pages fallback on first load', () => {
