@@ -26,6 +26,14 @@ describe('HomePage', () => {
       'data-form',
       'c23cd1bd-eeab-4311-a159-15b079e46baf'
     );
+    expect(screen.getByRole('button', { name: /^give$/i })).toHaveClass('tithely-give-button');
+    expect(screen.getByRole('link', { name: /open secure giving form/i })).toHaveAttribute(
+      'href',
+      'https://give.tithe.ly/?formId=c23cd1bd-eeab-4311-a159-15b079e46baf'
+    );
+    expect(
+      document.querySelectorAll('script[src="https://static.tithely.com/give/give.js"]')
+    ).toHaveLength(1);
     expect(screen.getByRole('heading', { name: /come check us out/i })).toBeInTheDocument();
     expect(
       screen.getByRole('region', {

@@ -36,7 +36,13 @@ export function HeaderSimple() {
           <Group gap={5} visibleFrom="xs">
             {items}
             {givingLink ? (
-              <Button component="a" href={givingLink.href} size="sm">
+              <Button
+                component="a"
+                href={givingLink.href}
+                target="_blank"
+                rel="noreferrer"
+                size="sm"
+              >
                 Give Online
               </Button>
             ) : null}
@@ -76,7 +82,13 @@ export function HeaderSimple() {
           <Divider my="sm" />
 
           {givingLink ? (
-            <Button component="a" href={givingLink.href} onClick={toggle}>
+            <Button
+              component="a"
+              href={givingLink.href}
+              target="_blank"
+              rel="noreferrer"
+              onClick={toggle}
+            >
               Give Online
             </Button>
           ) : null}

@@ -38,6 +38,7 @@ export type SiteConfig = {
   serviceTimes: ServiceTime[];
   sermonEmbedUrl: string;
   givingFormId: string;
+  givingFormUrl: string;
   givingCopy: string;
   exteriorImageSrc?: string;
   addressLines: string[];
@@ -102,6 +103,9 @@ export type DiversityTheaterContent = {
   founderActionImage: TheaterImage;
 };
 
+const tithelyFormId = 'c23cd1bd-eeab-4311-a159-15b079e46baf';
+const tithelyFormUrl = `https://give.tithe.ly/?formId=${tithelyFormId}`;
+
 export const siteConfig: SiteConfig = {
   name: 'First Christian Church Anniston',
   shortName: 'FCC Anniston',
@@ -141,7 +145,8 @@ export const siteConfig: SiteConfig = {
     { label: 'Worship Service', time: '11:30 AM' },
   ],
   sermonEmbedUrl: 'https://open.spotify.com/embed/show/7BOIacUOhCI3jN6PcfLPUc?utm_source=generator',
-  givingFormId: 'c23cd1bd-eeab-4311-a159-15b079e46baf',
+  givingFormId: tithelyFormId,
+  givingFormUrl: tithelyFormUrl,
   givingCopy:
     'Your generous support helps us live out our love, service, and inclusion mission. By partnering with us financially, you become an essential part of our work—hosting community events like the Makers Market, supporting local outreach programs, or keeping our doors open to all who seek a spiritual home. No matter the size, every gift makes a difference and helps us continue sharing God’s love with our neighbors.',
   exteriorImageSrc: '/images/home/fcc-exterior-sunset.jpg',
@@ -189,8 +194,9 @@ export const siteConfig: SiteConfig = {
       id: 'give',
       title: 'Give Online',
       description: 'Partner with First Christian Church financially through Tithe.ly.',
-      href: '/#give',
+      href: tithelyFormUrl,
       cta: 'Give',
+      external: true,
     },
   ],
 };

@@ -29,14 +29,17 @@ import classes from './Home.page.module.css';
 
 function TithelyGiveButton() {
   useEffect(() => {
-    if (document.querySelector('script[data-tithely-give-script]')) {
+    if (
+      document.querySelector<HTMLScriptElement>(
+        'script[src="https://static.tithely.com/give/give.js"]'
+      )
+    ) {
       return;
     }
 
     const script = document.createElement('script');
     script.src = 'https://static.tithely.com/give/give.js';
     script.defer = true;
-    script.dataset.tithelyGiveScript = 'true';
     document.body.appendChild(script);
   }, []);
 
@@ -187,6 +190,16 @@ export function HomePage() {
                   </Text>
                   <Group mt="xl">
                     <TithelyGiveButton />
+                    <Button
+                      component="a"
+                      href={siteConfig.givingFormUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      variant="subtle"
+                      color="green"
+                    >
+                      Open secure giving form
+                    </Button>
                   </Group>
                 </Paper>
               </Grid.Col>
