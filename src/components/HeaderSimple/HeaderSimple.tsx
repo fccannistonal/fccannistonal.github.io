@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { Link, NavLink } from 'react-router-dom';
 import { Burger, Button, Container, Divider, Drawer, Group, Stack, Text } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { siteConfig } from '../../content/churchContent';
@@ -6,32 +6,26 @@ import classes from './HeaderSimple.module.css';
 
 export function HeaderSimple() {
   const [opened, { toggle }] = useDisclosure(false);
-  const [active, setActive] = useState(
-    typeof window !== 'undefined'
-      ? window.location.pathname
-      : (siteConfig.navigation[0]?.href ?? '/')
-  );
 
   const items = siteConfig.navigation.map((link) => (
-    <a
+    <NavLink
       key={link.label}
-      href={link.href}
-      className={classes.link}
-      data-active={active === link.href || undefined}
-      onClick={() => setActive(link.href)}
+      to={link.href}
+      end={link.href === '/'}
+      className={({ isActive }) => (isActive ? `${classes.link} ${classes.active}` : classes.link)}
     >
       {link.label}
-    </a>
+    </NavLink>
   ));
 
   return (
     <>
       <header className={classes.header}>
         <Container size="xl" className={classes.inner}>
-          <a href="/" className={classes.logo}>
+          <Link to="/" className={classes.logo}>
             <Text className={classes.kicker}>{siteConfig.denomination}</Text>
             <Text className={classes.wordmark}>{siteConfig.shortName}</Text>
-          </a>
+          </Link>
 
           <Group gap={5} visibleFrom="xs">
             {items}
@@ -65,9 +59,9 @@ export function HeaderSimple() {
       >
         <Stack gap="sm">
           {siteConfig.navigation.map((link) => (
-            <a key={link.label} href={link.href} className={classes.mobileLink} onClick={toggle}>
+            <Link key={link.label} to={link.href} className={classes.mobileLink} onClick={toggle}>
               {link.label}
-            </a>
+            </Link>
           ))}
 
           <Divider my="sm" />

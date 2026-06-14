@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { createBrowserRouter, Outlet, RouterProvider, type RouteObject } from 'react-router-dom';
 import { SiteLayout } from './layout/SiteLayout';
 import { ContactPage } from './pages/Contact.page';
@@ -29,10 +30,14 @@ const routerBasename =
     ? import.meta.env.BASE_URL.slice(0, -1)
     : import.meta.env.BASE_URL;
 
-const router = createBrowserRouter(routes, {
-  basename: routerBasename,
-});
+export function createAppRouter() {
+  return createBrowserRouter(routes, {
+    basename: routerBasename,
+  });
+}
 
 export function Router() {
+  const [router] = useState(createAppRouter);
+
   return <RouterProvider router={router} />;
 }

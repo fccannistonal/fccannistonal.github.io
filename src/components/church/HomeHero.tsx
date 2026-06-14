@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { IconPlayerPause, IconPlayerPlay } from '@tabler/icons-react';
+import { Link } from 'react-router-dom';
 import { Button, Container, Group, Text } from '@mantine/core';
 import { useReducedMotion } from '@mantine/hooks';
 import { heroSentences, siteConfig, type HeroSentence } from '../../content/churchContent';
@@ -130,12 +131,12 @@ export function HomeHero() {
         <Text className={classes.description}>{siteConfig.tagline}</Text>
 
         <Group className={classes.actions}>
-          <Button component="a" href={siteConfig.heroPrimaryAction.href} size="lg">
+          <Button component={Link} to={siteConfig.heroPrimaryAction.href} size="lg">
             {siteConfig.heroPrimaryAction.cta}
           </Button>
           <Button
-            component="a"
-            href={siteConfig.heroSecondaryAction.href}
+            component={Link}
+            to={siteConfig.heroSecondaryAction.href}
             size="lg"
             variant="outline"
             className={classes.secondaryButton}

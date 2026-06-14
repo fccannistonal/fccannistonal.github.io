@@ -6,6 +6,7 @@ import {
   IconSparkles,
   IconVideo,
 } from '@tabler/icons-react';
+import { Link } from 'react-router-dom';
 import { Carousel } from '@mantine/carousel';
 import {
   Badge,
@@ -228,7 +229,7 @@ export function HomePage() {
                     ))}
                   </List>
 
-                  <Button component="a" href="/contact" mt="xl">
+                  <Button component={Link} to="/contact" mt="xl">
                     Contact the church
                   </Button>
                 </Paper>

@@ -1,10 +1,18 @@
+import { Link } from 'react-router-dom';
 import { Anchor, Container, Group, SimpleGrid, Stack, Text } from '@mantine/core';
 import { siteConfig } from '../../content/churchContent';
 import classes from './FooterSimple.module.css';
 
 export function FooterSimple() {
   const navItems = siteConfig.navigation.map((link) => (
-    <Anchor<'a'> c="inherit" key={link.label} href={link.href} size="sm" className={classes.link}>
+    <Anchor
+      component={Link}
+      c="inherit"
+      key={link.label}
+      to={link.href}
+      size="sm"
+      className={classes.link}
+    >
       {link.label}
     </Anchor>
   ));

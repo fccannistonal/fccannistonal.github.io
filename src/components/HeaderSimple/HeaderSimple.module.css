@@ -61,7 +61,7 @@
   transform: translateY(-1px);
 }
 
-.link[data-active] {
+.link.active {
   background: rgb(222 129 54 / 14%);
   color: #2a1e15;
 }

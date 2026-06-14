@@ -1,4 +1,5 @@
 import { act, fireEvent } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import { axe, render, screen } from '@/test-utils';
 import { heroSentences } from '../../content/churchContent';
 import { HERO_ROTATION_INTERVAL_MS, HomeHero } from './HomeHero';
@@ -9,8 +10,20 @@ function getSentenceText(index: number) {
   return `${sentence.lead}${sentence.emphasis}${sentence.ending}`;
 }
 
+function renderHomeHero() {
+  return render(
+    <MemoryRouter>
+      <HomeHero />
+    </MemoryRouter>
+  );
+}
+
 describe('HomeHero', () => {
-  axe([<HomeHero key="home-hero" />]);
+  axe([
+    <MemoryRouter key="router">
+      <HomeHero />
+    </MemoryRouter>,
+  ]);
 
   afterEach(() => {
     vi.useRealTimers();
@@ -19,7 +32,7 @@ describe('HomeHero', () => {
   it('rotates hero messages when reduced motion is not requested', () => {
     vi.useFakeTimers();
 
-    render(<HomeHero />);
+    renderHomeHero();
 
     expect(screen.getByTestId('hero-current-sentence')).toHaveTextContent(getSentenceText(0));
 
@@ -33,7 +46,7 @@ describe('HomeHero', () => {
   it('keeps a stable semantic heading while the decorative text rotates', () => {
     vi.useFakeTimers();
 
-    render(<HomeHero />);
+    renderHomeHero();
 
     act(() => {
       vi.advanceTimersByTime(HERO_ROTATION_INTERVAL_MS + 100);
@@ -46,7 +59,7 @@ describe('HomeHero', () => {
   it('can pause and resume automatic rotation', () => {
     vi.useFakeTimers();
 
-    render(<HomeHero />);
+    renderHomeHero();
 
     fireEvent.click(screen.getByRole('button', { name: /pause text animation/i }));
 
@@ -81,7 +94,7 @@ describe('HomeHero', () => {
 
     vi.useFakeTimers();
 
-    render(<HomeHero />);
+    renderHomeHero();
 
     act(() => {
       vi.advanceTimersByTime(HERO_ROTATION_INTERVAL_MS * 2);

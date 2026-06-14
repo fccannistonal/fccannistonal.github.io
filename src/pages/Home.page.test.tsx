@@ -1,9 +1,14 @@
+import { MemoryRouter } from 'react-router-dom';
 import { render, screen } from '@/test-utils';
 import { HomePage } from './Home.page';
 
 describe('HomePage', () => {
   it('renders the online links, carousel controls, and map', () => {
-    render(<HomePage />);
+    render(
+      <MemoryRouter>
+        <HomePage />
+      </MemoryRouter>
+    );
 
     expect(screen.getByRole('link', { name: /listen to the podcast/i })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /join on zoom/i })).toBeInTheDocument();

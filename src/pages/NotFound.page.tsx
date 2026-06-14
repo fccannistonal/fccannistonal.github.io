@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { Button, Container, Paper, Stack, Text, Title } from '@mantine/core';
 
 export function NotFoundPage() {
@@ -9,7 +10,7 @@ export function NotFoundPage() {
           <Text c="dimmed">
             This route does not exist yet. Head back home to continue exploring the church site.
           </Text>
-          <Button component="a" href="/">
+          <Button component={Link} to="/">
             Return home
           </Button>
         </Stack>

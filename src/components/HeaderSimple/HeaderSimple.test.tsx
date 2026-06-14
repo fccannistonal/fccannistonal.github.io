@@ -1,11 +1,20 @@
+import { MemoryRouter } from 'react-router-dom';
 import { axe, render } from '@/test-utils';
 import attributes from './attributes.json';
 import { HeaderSimple } from './HeaderSimple';
 
 describe('HeaderSimple', () => {
-  axe([<HeaderSimple key="1" {...(attributes as any)} />]);
+  axe([
+    <MemoryRouter key="router">
+      <HeaderSimple {...(attributes as any)} />
+    </MemoryRouter>,
+  ]);
 
   it('renders correctly', () => {
-    render(<HeaderSimple {...(attributes as any)} />);
+    render(
+      <MemoryRouter>
+        <HeaderSimple {...(attributes as any)} />
+      </MemoryRouter>
+    );
   });
 });
