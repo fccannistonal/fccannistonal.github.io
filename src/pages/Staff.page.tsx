@@ -9,8 +9,23 @@ export function StaffPage() {
       <PageHeader
         eyebrow={siteConfig.denomination}
         title="Meet the staff"
-        description="Introduce the people who shape worship, care for the congregation, and help visitors feel at home."
+        description="Meet the people who shape worship, care for the congregation, and help visitors feel at home."
       />
+
+      <SimpleGrid cols={{ base: 1, md: 2 }} spacing="xl" mt="xl">
+        <ContentImage
+          src="/images/staff/staff.jpg"
+          alt="The First Christian Church staff standing together"
+          label="First Christian Church staff"
+          ratio={16 / 10}
+        />
+        <ContentImage
+          src="/images/staff/funny-staff.jpg"
+          alt="The First Christian Church staff sharing a playful moment"
+          label="First Christian Church staff"
+          ratio={16 / 10}
+        />
+      </SimpleGrid>
 
       <Stack gap="xl" mt="xl">
         {staffMembers.map((member, index) => {
@@ -19,7 +34,7 @@ export function StaffPage() {
               src={member.imageSrc}
               alt={member.imageAlt}
               label={member.name}
-              description="Replace with a real staff portrait when the image library is ready."
+              description="Staff portrait coming soon."
               ratio={4 / 5}
             />
           );
@@ -30,9 +45,13 @@ export function StaffPage() {
                 {member.role}
               </Badge>
               <Title order={2}>{member.name}</Title>
-              <Text c="dimmed" size="lg">
-                {member.bio}
-              </Text>
+              <Stack gap="sm">
+                {member.bio.map((paragraph) => (
+                  <Text key={paragraph} c="dimmed" size="lg">
+                    {paragraph}
+                  </Text>
+                ))}
+              </Stack>
               <Group gap="xs">
                 {member.focusAreas.map((focus) => (
                   <Badge key={focus} variant="outline" color="moss">
