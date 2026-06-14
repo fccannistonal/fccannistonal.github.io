@@ -6,6 +6,7 @@ import classes from './HeaderSimple.module.css';
 
 export function HeaderSimple() {
   const [opened, { toggle }] = useDisclosure(false);
+  const givingLink = siteConfig.homeActions.find((action) => action.id === 'give');
 
   const items = siteConfig.navigation.map((link) => (
     <NavLink
@@ -29,15 +30,11 @@ export function HeaderSimple() {
 
           <Group gap={5} visibleFrom="xs">
             {items}
-            <Button
-              component="a"
-              href={siteConfig.homeActions[2].href}
-              target="_blank"
-              rel="noreferrer"
-              size="sm"
-            >
-              Give Online
-            </Button>
+            {givingLink ? (
+              <Button component="a" href={givingLink.href} size="sm">
+                Give Online
+              </Button>
+            ) : null}
           </Group>
 
           <Burger
@@ -66,15 +63,11 @@ export function HeaderSimple() {
 
           <Divider my="sm" />
 
-          <Button
-            component="a"
-            href={siteConfig.homeActions[2].href}
-            target="_blank"
-            rel="noreferrer"
-            onClick={toggle}
-          >
-            Give Online
-          </Button>
+          {givingLink ? (
+            <Button component="a" href={givingLink.href} onClick={toggle}>
+              Give Online
+            </Button>
+          ) : null}
         </Stack>
       </Drawer>
     </>

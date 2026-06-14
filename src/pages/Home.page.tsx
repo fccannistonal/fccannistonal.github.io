@@ -1,10 +1,10 @@
+import { useEffect } from 'react';
 import {
-  IconArrowRight,
+  IconClock,
   IconHeartHandshake,
   IconMapPin,
   IconMicrophone2,
   IconSparkles,
-  IconVideo,
 } from '@tabler/icons-react';
 import { Link } from 'react-router-dom';
 import { Carousel } from '@mantine/carousel';
@@ -26,11 +26,32 @@ import { ContentImage } from '../components/church/ContentImage';
 import { HomeHero } from '../components/church/HomeHero';
 import { photoSlides, siteConfig } from '../content/churchContent';
 
-const actionIcons = {
-  podcast: IconMicrophone2,
-  zoom: IconVideo,
-  give: IconHeartHandshake,
-} as const;
+function TithelyGiveButton() {
+  useEffect(() => {
+    if (document.querySelector('script[data-tithely-give-script]')) {
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = 'https://static.tithely.com/give/give.js';
+    script.defer = true;
+    script.dataset.tithelyGiveScript = 'true';
+    document.body.appendChild(script);
+  }, []);
+
+  return (
+    <Button
+      type="button"
+      size="lg"
+      color="green"
+      className="tithely-give-button"
+      data-form={siteConfig.givingFormId}
+      leftSection={<IconHeartHandshake size={20} />}
+    >
+      Give
+    </Button>
+  );
+}
 
 export function HomePage() {
   return (
@@ -38,128 +59,132 @@ export function HomePage() {
       <HomeHero />
 
       <Container size="xl" py={{ base: 'xl', md: '4rem' }}>
-        <Stack gap="3rem">
-          <section id="welcome">
-            <SimpleGrid cols={{ base: 1, md: 2 }} spacing="xl">
-              <Paper withBorder p={{ base: 'lg', md: 'xl' }}>
-                <Badge variant="light" color="brand">
-                  Welcome
-                </Badge>
-                <Title order={2} mt="md">
-                  {siteConfig.welcomeTitle}
-                </Title>
-                <Stack gap="md" mt="md">
-                  {siteConfig.welcomeParagraphs.map((paragraph) => (
-                    <Text key={paragraph} c="dimmed" size="lg">
-                      {paragraph}
-                    </Text>
-                  ))}
-                </Stack>
-              </Paper>
+        <Stack gap="4rem">
+          <section id="welcome" aria-labelledby="welcome-title">
+            <Grid gutter="xl" align="stretch">
+              <Grid.Col span={{ base: 12, md: 7 }}>
+                <Paper withBorder p={{ base: 'lg', md: 'xl' }} h="100%">
+                  <Badge variant="light" color="brand">
+                    Welcome
+                  </Badge>
+                  <Title id="welcome-title" order={2} mt="md">
+                    {siteConfig.welcomeTitle}
+                  </Title>
+                  <Stack gap="md" mt="md">
+                    {siteConfig.welcomeParagraphs.map((paragraph) => (
+                      <Text key={paragraph} c="dimmed" size="lg">
+                        {paragraph}
+                      </Text>
+                    ))}
+                  </Stack>
 
-              <Paper
-                withBorder
-                p={{ base: 'lg', md: 'xl' }}
-                style={{
-                  background:
-                    'linear-gradient(180deg, rgba(255, 249, 241, 0.98), rgba(244, 234, 220, 0.9))',
-                }}
-              >
-                <Badge variant="light" color="moss">
-                  First visit
-                </Badge>
-                <Title order={3} mt="md">
-                  A quick sense of what this site can hold
-                </Title>
-                <List
-                  mt="lg"
-                  spacing="md"
-                  icon={
-                    <ThemeIcon color="brand" variant="light" radius="xl" size={28}>
-                      <IconSparkles size={16} stroke={1.7} />
-                    </ThemeIcon>
-                  }
-                >
-                  {siteConfig.visitHighlights.map((highlight) => (
-                    <List.Item key={highlight}>
-                      <Text c="dimmed">{highlight}</Text>
-                    </List.Item>
-                  ))}
-                </List>
-              </Paper>
-            </SimpleGrid>
+                  <Title order={3} mt="xl">
+                    Join us on Sundays for worship and connection
+                  </Title>
+                  <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md" mt="md">
+                    {siteConfig.serviceTimes.map((service) => (
+                      <Paper key={service.label} withBorder p="md">
+                        <Group wrap="nowrap">
+                          <ThemeIcon size={42} radius="xl" variant="light" color="brand">
+                            <IconClock size={21} stroke={1.7} />
+                          </ThemeIcon>
+                          <div>
+                            <Text fw={700}>{service.label}</Text>
+                            <Text c="dimmed">{service.time}</Text>
+                          </div>
+                        </Group>
+                      </Paper>
+                    ))}
+                  </SimpleGrid>
+                </Paper>
+              </Grid.Col>
+
+              <Grid.Col span={{ base: 12, md: 5 }}>
+                <Paper withBorder p="md" h="100%">
+                  <ContentImage
+                    src={siteConfig.exteriorImageSrc}
+                    alt="Exterior of First Christian Church Anniston"
+                    label="First Christian Church Anniston"
+                    description="Church exterior photo placeholder"
+                    ratio={1}
+                  />
+                  <Text fw={700} size="lg" mt="md">
+                    First Christian Church Anniston
+                  </Text>
+                  <Text c="dimmed">A welcoming spiritual home in Anniston, Alabama.</Text>
+                </Paper>
+              </Grid.Col>
+            </Grid>
           </section>
 
-          <section aria-labelledby="online-links-title">
-            <Group justify="space-between" align="end" mb="lg">
-              <div>
-                <Text
-                  fw={700}
-                  tt="uppercase"
-                  c="#8c633d"
-                  size="sm"
-                  style={{ letterSpacing: '0.18em' }}
-                >
-                  Connect online
-                </Text>
-                <Title id="online-links-title" order={2} mt="xs">
-                  Listen, worship, and give online
-                </Title>
-              </div>
-            </Group>
-
-            <SimpleGrid cols={{ base: 1, md: 3 }} spacing="lg">
-              {siteConfig.homeActions.map((action) => {
-                const Icon = actionIcons[action.id as keyof typeof actionIcons];
-
-                return (
-                  <Paper key={action.id} withBorder p="xl">
-                    <ThemeIcon size={50} radius="xl" variant="light" color="brand">
-                      <Icon size={26} stroke={1.7} />
+          <section aria-labelledby="sermons-title">
+            <Grid gutter="xl" align="stretch">
+              <Grid.Col span={{ base: 12, md: 7 }}>
+                <Paper withBorder p={{ base: 'lg', md: 'xl' }} h="100%">
+                  <Group gap="sm">
+                    <ThemeIcon size={42} radius="xl" variant="light" color="brand">
+                      <IconMicrophone2 size={21} stroke={1.7} />
                     </ThemeIcon>
-                    <Title order={3} mt="md">
-                      {action.title}
-                    </Title>
-                    <Text c="dimmed" mt="sm">
-                      {action.description}
-                    </Text>
-                    <Button
-                      component="a"
-                      href={action.href}
-                      target={action.external ? '_blank' : undefined}
-                      rel={action.external ? 'noreferrer' : undefined}
-                      variant="light"
-                      mt="lg"
-                      rightSection={<IconArrowRight size={18} />}
-                    >
-                      {action.cta}
-                    </Button>
-                  </Paper>
-                );
-              })}
-            </SimpleGrid>
+                    <div>
+                      <Text fw={700} tt="uppercase" c="#8c633d" size="sm">
+                        Listen online
+                      </Text>
+                      <Title id="sermons-title" order={2}>
+                        Uplifting Sermons by Pastor Laura Hutchinson
+                      </Title>
+                    </div>
+                  </Group>
+
+                  <iframe
+                    src={siteConfig.sermonEmbedUrl}
+                    title="Uplifting Sermons by Pastor Laura Hutchinson on Spotify"
+                    width="100%"
+                    height="352"
+                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                    loading="lazy"
+                    style={{ borderRadius: 12, marginTop: '1.5rem' }}
+                  />
+                </Paper>
+              </Grid.Col>
+
+              <Grid.Col span={{ base: 12, md: 5 }}>
+                <Paper
+                  id="give"
+                  withBorder
+                  p={{ base: 'lg', md: 'xl' }}
+                  h="100%"
+                  style={{
+                    background:
+                      'linear-gradient(180deg, rgba(255, 249, 241, 0.98), rgba(244, 234, 220, 0.9))',
+                  }}
+                >
+                  <ThemeIcon size={50} radius="xl" variant="light" color="green">
+                    <IconHeartHandshake size={26} stroke={1.7} />
+                  </ThemeIcon>
+                  <Title order={2} mt="md">
+                    Partner with Us Financially
+                  </Title>
+                  <Text c="dimmed" mt="md" size="lg">
+                    {siteConfig.givingCopy}
+                  </Text>
+                  <Group mt="xl">
+                    <TithelyGiveButton />
+                  </Group>
+                </Paper>
+              </Grid.Col>
+            </Grid>
           </section>
 
           <section aria-labelledby="gallery-title">
-            <Group justify="space-between" align="end" mb="lg">
-              <div>
-                <Text
-                  fw={700}
-                  tt="uppercase"
-                  c="#8c633d"
-                  size="sm"
-                  style={{ letterSpacing: '0.18em' }}
-                >
-                  Photo carousel
-                </Text>
-                <Title id="gallery-title" order={2} mt="xs">
-                  Life together at a glance
-                </Title>
-              </div>
-            </Group>
+            <Text fw={700} tt="uppercase" c="#8c633d" size="sm" style={{ letterSpacing: '0.18em' }}>
+              Life at FCC Anniston
+            </Text>
+            <Title id="gallery-title" order={2} mt="xs" mb="lg">
+              Come Check Us Out!
+            </Title>
 
             <Carousel
-              slideSize={{ base: '100%', md: '50%' }}
+              slideSize={{ base: '100%', sm: '50%', lg: '33.333333%' }}
               slideGap="lg"
               withIndicators
               emblaOptions={{ align: 'start' }}
@@ -168,12 +193,13 @@ export function HomePage() {
             >
               {photoSlides.map((slide) => (
                 <Carousel.Slide key={slide.id}>
-                  <Paper withBorder p="md">
+                  <Paper withBorder p="md" h="100%">
                     <ContentImage
                       src={slide.imageSrc}
                       alt={slide.imageAlt}
                       label={slide.title}
-                      description="Add a church photo here when your image library is ready."
+                      description="Photo placeholder"
+                      ratio={4 / 3}
                     />
                     <Title order={3} mt="md">
                       {slide.title}
@@ -195,23 +221,17 @@ export function HomePage() {
                     Find us
                   </Badge>
                   <Title id="map-title" order={2} mt="md">
-                    End the landing page with the church location
+                    Visit First Christian Church
                   </Title>
-                  <Text c="dimmed" mt="md">
-                    The map is ready for the church’s final address while the text block gives
-                    visitors a quick path to contact details and visit planning.
-                  </Text>
-
-                  <Stack gap="sm" mt="xl">
-                    {siteConfig.addressLines.map((line) => (
-                      <Group key={line} gap="sm" align="flex-start" wrap="nowrap">
-                        <ThemeIcon size={34} radius="xl" variant="light" color="brand">
-                          <IconMapPin size={18} stroke={1.7} />
-                        </ThemeIcon>
-                        <Text>{line}</Text>
-                      </Group>
-                    ))}
-                  </Stack>
+                  <Group gap="sm" align="flex-start" wrap="nowrap" mt="lg">
+                    <ThemeIcon size={38} radius="xl" variant="light" color="brand">
+                      <IconMapPin size={20} stroke={1.7} />
+                    </ThemeIcon>
+                    <div>
+                      <Text fw={700}>First Christian Church Anniston</Text>
+                      <Text c="dimmed">Anniston, Alabama</Text>
+                    </div>
+                  </Group>
 
                   <List
                     mt="xl"

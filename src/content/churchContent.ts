@@ -18,6 +18,11 @@ export type ContactDetail = {
   helper?: string;
 };
 
+export type ServiceTime = {
+  label: string;
+  time: string;
+};
+
 export type SiteConfig = {
   name: string;
   shortName: string;
@@ -29,6 +34,11 @@ export type SiteConfig = {
   welcomeTitle: string;
   welcomeParagraphs: string[];
   visitHighlights: string[];
+  serviceTimes: ServiceTime[];
+  sermonEmbedUrl: string;
+  givingFormId: string;
+  givingCopy: string;
+  exteriorImageSrc?: string;
   addressLines: string[];
   serviceNotes: string[];
   mapEmbedUrl: string;
@@ -78,9 +88,7 @@ export const siteConfig: SiteConfig = {
   shortName: 'FCC Anniston',
   denomination: 'Disciples of Christ',
   tagline:
-    'A welcoming church in Anniston shaped by worship, hospitality, and practical care for our neighbors.',
-  heroBackgroundSrc:
-    'https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&w=1800&q=80',
+    'Hi there! Welcome to First Christian Church, Anniston. Come as you are—we can’t wait to meet you!',
   heroPrimaryAction: {
     id: 'plan-visit',
     title: 'Plan a Visit',
@@ -95,22 +103,31 @@ export const siteConfig: SiteConfig = {
     href: '/staff',
     cta: 'Meet the staff',
   },
-  welcomeTitle: 'Welcome to First Christian Church Anniston',
+  welcomeTitle: 'All Are Welcome',
   welcomeParagraphs: [
-    'This first pass of the site is designed to feel warm, approachable, and rooted in community while leaving room for your final stories, ministry details, and photography.',
-    'The structure is ready for worship information, pastoral introductions, outreach updates, giving links, and the everyday moments that help visitors understand who your congregation is.',
+    "At First Anniston Church, we believe that everyone deserves a place to belong, a space to grow, and a community to support them. Whether you're exploring your faith or have been on this journey for years, we welcome you with open arms.",
+    'Our Worship Service is the heart of our Sunday gatherings, where we come together to celebrate, reflect, and connect with God and each other. Families are especially welcome! During the Worship Service, children can participate in Wonder and Worship, a program designed to engage their imaginations and nurture their spiritual growth in fun and meaningful ways.',
+    'Come as you are—we can’t wait to meet you!',
   ],
   visitHighlights: [
-    'A friendly, no-pressure welcome for visitors and longtime members alike.',
-    'Thoughtful worship, prayer, and opportunities to learn together.',
-    'Visible pathways into outreach, service, and community life.',
-    'Online touchpoints for listening, joining worship remotely, and giving.',
+    'A place to belong, grow, and find community.',
+    'Worship that makes room for celebration, reflection, and connection.',
+    'Wonder and Worship for children during the Worship Service.',
+    'An open and affirming congregation where all are welcome.',
   ],
+  serviceTimes: [
+    { label: 'Sunday School', time: '10:30 AM' },
+    { label: 'Worship Service', time: '11:30 AM' },
+  ],
+  sermonEmbedUrl: 'https://open.spotify.com/embed/show/7BOIacUOhCI3jN6PcfLPUc?utm_source=generator',
+  givingFormId: 'c23cd1bd-eeab-4311-a159-15b079e46baf',
+  givingCopy:
+    'Your generous support helps us live out our love, service, and inclusion mission. By partnering with us financially, you become an essential part of our work—hosting community events like the Makers Market, supporting local outreach programs, or keeping our doors open to all who seek a spiritual home. No matter the size, every gift makes a difference and helps us continue sharing God’s love with our neighbors.',
   addressLines: ['Full street address coming soon', 'Anniston, Alabama'],
   serviceNotes: [
-    'Sunday worship details can be updated here once the final schedule is confirmed.',
-    'Zoom access is already wired into the layout so the church link can be swapped in quickly.',
-    'The contact form supports a Formspree endpoint for launch on GitHub Pages.',
+    'Sunday School begins at 10:30 AM.',
+    'Worship Service begins at 11:30 AM.',
+    'Children are invited to participate in Wonder and Worship during the service.',
   ],
   mapEmbedUrl: 'https://www.google.com/maps?q=First+Christian+Church+Anniston+Alabama&output=embed',
   contactSummary:
@@ -140,28 +157,18 @@ export const siteConfig: SiteConfig = {
   homeActions: [
     {
       id: 'podcast',
-      title: 'Church Podcast',
-      description: 'Connect your published sermon or podcast feed here for weekly listening.',
-      href: 'https://podcasts.apple.com/',
-      cta: 'Listen to the podcast',
-      external: true,
-    },
-    {
-      id: 'zoom',
-      title: 'Zoom Worship',
-      description: 'Keep a ready path for remote worshippers, travelers, and homebound members.',
-      href: 'https://zoom.us/',
-      cta: 'Join on Zoom',
+      title: 'Uplifting Sermons',
+      description: 'Listen to sermons by Pastor Laura Hutchinson on Spotify.',
+      href: 'https://open.spotify.com/show/7BOIacUOhCI3jN6PcfLPUc',
+      cta: 'Listen on Spotify',
       external: true,
     },
     {
       id: 'give',
       title: 'Give Online',
-      description:
-        'Swap in the church’s final Tithe.ly giving URL without changing the page layout.',
-      href: 'https://tithe.ly/',
-      cta: 'Give through Tithe.ly',
-      external: true,
+      description: 'Partner with First Christian Church financially through Tithe.ly.',
+      href: '/#give',
+      cta: 'Give',
     },
   ],
 };
@@ -170,65 +177,63 @@ export const heroSentences: HeroSentence[] = [
   {
     id: 'disciples',
     lead: 'We are ',
-    emphasis: 'Disciples of Christ',
+    emphasis: 'followers of Christ',
     ending: '.',
-    color: '#f6d293',
+    color: '#fab638',
   },
   {
     id: 'affirming',
     lead: 'We are ',
-    emphasis: 'open and affirming',
+    emphasis: 'Anniston’s first open and affirming church',
     ending: '.',
-    color: '#d7efcb',
+    color: '#f43e53',
   },
   {
-    id: 'welcoming',
+    id: 'service',
     lead: 'We are ',
-    emphasis: 'excited to meet you',
+    emphasis: 'the hands and feet of God',
     ending: '.',
-    color: '#f3b878',
+    color: '#76d65c',
   },
   {
-    id: 'community',
+    id: 'compassion',
     lead: 'We are ',
-    emphasis: 'rooted in community',
+    emphasis: 'compassionate and caring',
     ending: '.',
-    color: '#d5e1ff',
+    color: '#7694ff',
   },
 ];
 
 export const photoSlides: PhotoSlide[] = [
   {
-    id: 'worship',
-    title: 'Worship that gathers people in',
-    caption:
-      'Use this space for images of Sunday worship, prayer, music, and the rhythms of congregational life.',
-    imageSrc: 'https://picsum.photos/seed/fccanniston-worship/1200/900',
-    imageAlt: 'Placeholder photo for a worship gathering',
-  },
-  {
     id: 'staff',
-    title: 'Leaders people can recognize',
-    caption:
-      'A simple carousel helps visitors connect names and faces before they ever step through the door.',
-    imageSrc: 'https://picsum.photos/seed/fccanniston-staff/1200/900',
-    imageAlt: 'Placeholder photo for church staff',
+    title: 'Church Staff',
+    caption: 'The people who serve and lead First Christian Church Anniston.',
+    imageAlt: 'First Christian Church Anniston staff',
   },
   {
-    id: 'community',
-    title: 'Everyday community moments',
-    caption:
-      'Photos of shared meals, conversation, and care make the church feel present and human online.',
-    imageSrc: 'https://picsum.photos/seed/fccanniston-community/1200/900',
-    imageAlt: 'Placeholder photo for community life',
+    id: 'makers-market',
+    title: 'Calhoun County Makers Market',
+    caption: 'Community, creativity, and connection at the Calhoun County Makers Market.',
+    imageAlt: 'Calhoun County Makers Market at First Christian Church',
   },
   {
-    id: 'outreach',
-    title: 'Outreach that shows up',
-    caption:
-      'This slot can hold ministry events, volunteer work, and the practical ways your church serves Anniston.',
-    imageSrc: 'https://picsum.photos/seed/fccanniston-outreach/1200/900',
-    imageAlt: 'Placeholder photo for outreach work',
+    id: 'stained-glass',
+    title: 'Sanctuary Stained Glass',
+    caption: 'Stained glass in the First Christian Church sanctuary.',
+    imageAlt: 'Stained glass in the church sanctuary',
+  },
+  {
+    id: 'tom-hutchinson-art',
+    title: 'Art by Tom Hutchinson',
+    caption: 'Artwork by Tom Hutchinson displayed at the church.',
+    imageAlt: 'Artwork by Tom Hutchinson',
+  },
+  {
+    id: 'tapestry',
+    title: 'FCC Tapestry',
+    caption: 'A tapestry at First Christian Church Anniston.',
+    imageAlt: 'First Christian Church tapestry',
   },
 ];
 

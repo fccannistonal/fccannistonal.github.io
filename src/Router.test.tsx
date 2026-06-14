@@ -5,7 +5,7 @@ import { Router, routes } from './Router';
 
 describe('Router', () => {
   it.each([
-    ['/', /welcome to first christian church anniston/i],
+    ['/', /all are welcome/i],
     ['/staff', /meet the staff/i],
     ['/outreach', /community outreach/i],
     ['/contact', /contact us/i],
