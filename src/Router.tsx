@@ -24,7 +24,14 @@ export const routes: RouteObject[] = [
   },
 ];
 
-const router = createBrowserRouter(routes);
+const routerBasename =
+  import.meta.env.BASE_URL !== '/' && import.meta.env.BASE_URL.endsWith('/')
+    ? import.meta.env.BASE_URL.slice(0, -1)
+    : import.meta.env.BASE_URL;
+
+const router = createBrowserRouter(routes, {
+  basename: routerBasename,
+});
 
 export function Router() {
   return <RouterProvider router={router} />;
