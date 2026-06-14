@@ -11,6 +11,7 @@ type Props = {
   ratio?: number;
   objectPosition?: string;
   className?: string;
+  loading?: 'eager' | 'lazy';
 };
 
 export function ContentImage({
@@ -21,6 +22,7 @@ export function ContentImage({
   ratio = 4 / 3,
   objectPosition,
   className,
+  loading = 'lazy',
 }: Props) {
   const [hasError, setHasError] = useState(false);
   const showImage = Boolean(src) && !hasError;
@@ -35,6 +37,8 @@ export function ContentImage({
             alt={alt}
             className={classes.image}
             style={{ objectPosition }}
+            loading={loading}
+            decoding="async"
             onError={() => setHasError(true)}
           />
         ) : (

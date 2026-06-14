@@ -63,6 +63,7 @@ export type PhotoSlide = {
   caption: string;
   imageSrc?: string;
   imageAlt: string;
+  objectPosition?: string;
 };
 
 export type StaffMember = {
@@ -210,34 +211,66 @@ export const heroSentences: HeroSentence[] = [
 
 export const photoSlides: PhotoSlide[] = [
   {
+    id: 'childrens-moment',
+    title: 'Children’s Moment',
+    caption: 'Children are invited into worship through stories, questions, and hands-on moments.',
+    imageSrc: '/images/gallery/childrens-moment.jpg',
+    imageAlt: 'A church leader sharing a children’s moment with two children in the sanctuary',
+    objectPosition: '50% 42%',
+  },
+  {
+    id: 'communion-table',
+    title: 'The Communion Table',
+    caption: 'The table is prepared as a sign of welcome, remembrance, and shared faith.',
+    imageSrc: '/images/gallery/communion-table.jpg',
+    imageAlt:
+      'A communion table arranged with breads, cups, candles, and serving vessels in the sanctuary',
+    objectPosition: '50% 54%',
+  },
+  {
+    id: 'sanctuary-cross',
+    title: 'Centered in Christ',
+    caption:
+      'Symbols throughout the sanctuary point toward worship, reflection, and the life of Christ.',
+    imageSrc: '/images/gallery/sanctuary-cross.jpg',
+    imageAlt:
+      'A brass processional cross in focus with the sanctuary cross and stained-glass windows behind it',
+    objectPosition: '50% 50%',
+  },
+  {
     id: 'staff',
     title: 'Church Staff',
     caption: 'The people who serve and lead First Christian Church Anniston.',
-    imageAlt: 'First Christian Church Anniston staff',
-  },
-  {
-    id: 'makers-market',
-    title: 'Calhoun County Makers Market',
-    caption: 'Community, creativity, and connection at the Calhoun County Makers Market.',
-    imageAlt: 'Calhoun County Makers Market at First Christian Church',
+    imageSrc: '/images/gallery/church-staff.jpg',
+    imageAlt: 'Five First Christian Church staff members laughing together',
+    objectPosition: '50% 48%',
   },
   {
     id: 'stained-glass',
     title: 'Sanctuary Stained Glass',
-    caption: 'Stained glass in the First Christian Church sanctuary.',
-    imageAlt: 'Stained glass in the church sanctuary',
-  },
-  {
-    id: 'tom-hutchinson-art',
-    title: 'Art by Tom Hutchinson',
-    caption: 'Artwork by Tom Hutchinson displayed at the church.',
-    imageAlt: 'Artwork by Tom Hutchinson',
+    caption: 'Historic stained glass fills the sanctuary with color and warm light.',
+    imageSrc: '/images/gallery/stained-glass.jpg',
+    imageAlt:
+      'Tall stained-glass windows glowing above the chancel in the First Christian Church sanctuary',
+    objectPosition: '52% 42%',
   },
   {
     id: 'tapestry',
-    title: 'FCC Tapestry',
-    caption: 'A tapestry at First Christian Church Anniston.',
-    imageAlt: 'First Christian Church tapestry',
+    title: 'A Story in Tapestry',
+    caption: 'A handmade tapestry preserves pieces of the congregation’s history and identity.',
+    imageSrc: '/images/gallery/church-tapestry.jpg',
+    imageAlt:
+      'A handmade tapestry illustrating the history and symbols of First Christian Church Anniston',
+    objectPosition: '50% 45%',
+  },
+  {
+    id: 'welcome-area',
+    title: 'A Place of Welcome',
+    caption: 'Our welcome area reflects a congregation committed to hospitality and belonging.',
+    imageSrc: '/images/gallery/welcome-area.jpg',
+    imageAlt:
+      'The church welcome area with artwork, visitor materials, a welcome sign, and rainbow flags',
+    objectPosition: '50% 45%',
   },
 ];
 

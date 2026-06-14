@@ -151,15 +151,17 @@ export function HomePage() {
                     </div>
                   </Group>
 
-                  <iframe
-                    src={siteConfig.sermonEmbedUrl}
-                    title="Uplifting Sermons by Pastor Laura Hutchinson on Spotify"
-                    width="100%"
-                    height="352"
-                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                    loading="lazy"
-                    style={{ borderRadius: 12, marginTop: '1.5rem' }}
-                  />
+                  <div className={classes.spotifyFrame}>
+                    <iframe
+                      src={siteConfig.sermonEmbedUrl}
+                      title="Uplifting Sermons by Pastor Laura Hutchinson on Spotify"
+                      width="100%"
+                      height="152"
+                      allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                      loading="lazy"
+                      className={classes.spotifyEmbed}
+                    />
+                  </div>
                 </Paper>
               </Grid.Col>
 
@@ -204,25 +206,35 @@ export function HomePage() {
               slideGap="lg"
               withIndicators
               emblaOptions={{ align: 'start' }}
+              role="region"
+              aria-label="Life at First Christian Church photo gallery"
               nextControlProps={{ 'aria-label': 'Next slide' }}
               previousControlProps={{ 'aria-label': 'Previous slide' }}
             >
               {photoSlides.map((slide) => (
-                <Carousel.Slide key={slide.id}>
-                  <Paper withBorder p="md" h="100%">
+                <Carousel.Slide key={slide.id} className={classes.gallerySlide}>
+                  <Paper
+                    component="figure"
+                    withBorder
+                    p="md"
+                    m={0}
+                    h="100%"
+                    className={classes.galleryCard}
+                  >
                     <ContentImage
                       src={slide.imageSrc}
                       alt={slide.imageAlt}
                       label={slide.title}
-                      description="Photo placeholder"
                       ratio={4 / 3}
+                      objectPosition={slide.objectPosition}
+                      className={classes.galleryImage}
                     />
-                    <Title order={3} mt="md">
-                      {slide.title}
-                    </Title>
-                    <Text c="dimmed" mt="xs">
-                      {slide.caption}
-                    </Text>
+                    <figcaption className={classes.galleryCaption}>
+                      <Title order={3}>{slide.title}</Title>
+                      <Text c="dimmed" mt="xs">
+                        {slide.caption}
+                      </Text>
+                    </figcaption>
                   </Paper>
                 </Carousel.Slide>
               ))}
