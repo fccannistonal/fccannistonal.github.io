@@ -51,6 +51,48 @@ describe('HeaderSimple', () => {
     );
   });
 
+  it('opens Church Life as a menu with the hub and direct subpage links', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <MemoryRouter>
+        <HeaderSimple />
+      </MemoryRouter>
+    );
+
+    await user.click(screen.getByRole('button', { name: /open church life menu/i }));
+
+    expect(await screen.findByRole('link', { name: /church life home/i })).toHaveAttribute(
+      'href',
+      '/community'
+    );
+    expect(screen.getByRole('link', { name: /worship and music/i })).toHaveAttribute(
+      'href',
+      '/community/worship-and-music'
+    );
+  });
+
+  it('shows Church Life hub and subpages as direct links in mobile navigation', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <MemoryRouter>
+        <HeaderSimple />
+      </MemoryRouter>
+    );
+
+    await user.click(screen.getByRole('button', { name: /open navigation/i }));
+
+    expect(await screen.findByRole('link', { name: /church life home/i })).toHaveAttribute(
+      'href',
+      '/community'
+    );
+    expect(screen.getByRole('link', { name: /service and outreach/i })).toHaveAttribute(
+      'href',
+      '/community/service-and-outreach'
+    );
+  });
+
   it('preserves the equivalent route when switching language', async () => {
     const user = userEvent.setup();
 

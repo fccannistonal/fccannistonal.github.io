@@ -9,3 +9,12 @@ export const PRIMARY_NAVIGATION: RouteId[] = [
   'updates',
   'contact',
 ];
+
+export const CHURCH_LIFE_NAVIGATION: RouteId[] = [
+  'community',
+  'worshipAndMusic',
+  'wonderAndWorship',
+  'hispanicMinistry',
+  'serviceAndOutreach',
+  'diversityTheater',
+];

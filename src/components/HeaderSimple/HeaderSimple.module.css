@@ -92,12 +92,142 @@
   color: #2a1e15;
 }
 
+.menuTrigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.menuTrigger svg {
+  color: #8c633d;
+  transition: transform 160ms ease;
+}
+
+.menuTrigger[data-expanded='true'] svg {
+  transform: rotate(180deg);
+}
+
+.churchLifeDropdown {
+  padding: 8px;
+  border: 1px solid rgb(83 59 39 / 12%);
+  border-radius: 16px;
+  background: #fffdf9;
+  box-shadow: 0 18px 42px rgb(69 48 33 / 14%);
+}
+
+.churchLifeHubItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 6px;
+  padding: 12px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgb(222 129 54 / 13%), rgb(99 139 73 / 13%));
+  text-decoration: none;
+  transition:
+    background 160ms ease,
+    transform 160ms ease;
+}
+
+.churchLifeHubItem:hover,
+.churchLifeHubItem:focus-visible {
+  background: linear-gradient(135deg, rgb(222 129 54 / 18%), rgb(99 139 73 / 18%));
+  transform: translateY(-1px);
+}
+
+.churchLifeHubIcon {
+  margin-top: 2px;
+  color: #638b49;
+}
+
+.churchLifeHubTitle,
+.churchLifeHubDescription {
+  display: block;
+}
+
+.churchLifeHubTitle {
+  color: #2a1e15;
+  font-weight: 800;
+}
+
+.churchLifeHubDescription {
+  max-width: 225px;
+  margin-top: 3px;
+  color: #5f4632;
+  font-size: 0.78rem;
+  line-height: 1.35;
+  white-space: normal;
+}
+
+.churchLifeMenuLabel {
+  display: block;
+  margin: 12px 10px 7px;
+}
+
+.churchLifeSubLink {
+  display: block;
+  padding: 9px 12px;
+  border-radius: 10px;
+  color: #3c2b1e;
+  font-size: var(--mantine-font-size-sm);
+  font-weight: 650;
+  text-decoration: none;
+  transition:
+    background-color 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
+}
+
+.churchLifeSubLink:hover,
+.churchLifeSubLink:focus-visible {
+  background: rgb(99 139 73 / 10%);
+  color: #1f160f;
+  transform: translateX(2px);
+}
+
 .mobileLink {
   padding: 12px 16px;
   border-radius: var(--mantine-radius-lg);
   background: rgb(222 129 54 / 8%);
   color: #2a1e15;
   font-weight: 600;
+  text-decoration: none;
+}
+
+.mobileChurchLifeGroup {
+  padding: 8px;
+  border: 1px solid rgb(83 59 39 / 10%);
+  border-radius: var(--mantine-radius-lg);
+  background: rgb(255 253 249 / 80%);
+}
+
+.mobileChurchLifeHub {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  background: linear-gradient(135deg, rgb(222 129 54 / 13%), rgb(99 139 73 / 13%));
+}
+
+.mobileChurchLifeDescription {
+  color: #5f4632;
+  font-size: 0.78rem;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+.mobileSubLink {
+  display: block;
+  padding: 10px 12px 10px 18px;
+  border-left: 3px solid rgb(99 139 73 / 35%);
+  border-radius: 0 var(--mantine-radius-md) var(--mantine-radius-md) 0;
+  background: rgb(99 139 73 / 8%);
+  color: #2a1e15;
+  font-size: var(--mantine-font-size-sm);
+  font-weight: 650;
   text-decoration: none;
 }
 

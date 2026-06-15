@@ -7,7 +7,7 @@ import { trackGivingIntent } from '../../lib/googleAnalytics';
 import { useLocale } from '../../lib/i18n';
 import { getAlternateLocalePath, getLocalizedPath } from '../../lib/routing';
 import { BrandLogo } from '../BrandLogo/BrandLogo';
-import { PRIMARY_NAVIGATION } from './navigation';
+import { CHURCH_LIFE_NAVIGATION, PRIMARY_NAVIGATION } from './navigation';
 import classes from './HeaderSimple.module.css';
 
 type MobileNavigationDrawerProps = {
@@ -20,6 +20,7 @@ export function MobileNavigationDrawer({ opened, onClose }: MobileNavigationDraw
   const locale = useLocale();
   const content = getShellContent(locale);
   const alternatePath = getAlternateLocalePath(location.pathname);
+  const churchLifeSubpages = CHURCH_LIFE_NAVIGATION.filter((routeId) => routeId !== 'community');
 
   return (
     <Drawer
@@ -37,11 +38,48 @@ export function MobileNavigationDrawer({ opened, onClose }: MobileNavigationDraw
       returnFocus={false}
     >
       <Stack gap="sm" component="nav" aria-label={content.common.navigationLabel}>
-        {PRIMARY_NAVIGATION.map((routeId) => (
-          <Link key={routeId} to={getLocalizedPath(routeId, locale)} className={classes.mobileLink}>
-            {content.common.navigation[routeId]}
-          </Link>
-        ))}
+        {PRIMARY_NAVIGATION.map((routeId) => {
+          if (routeId === 'community') {
+            return (
+              <div key={routeId} className={classes.mobileChurchLifeGroup}>
+                <Link
+                  to={getLocalizedPath(routeId, locale)}
+                  className={`${classes.mobileLink} ${classes.mobileChurchLifeHub}`}
+                >
+                  <span>{content.common.churchLifeMenu.hubLabel}</span>
+                  {` `}
+                  <Text component="span" className={classes.mobileChurchLifeDescription}>
+                    {content.common.churchLifeMenu.hubDescription}
+                  </Text>
+                </Link>
+                <Text className={classes.mobileSectionTitle} mt="sm">
+                  {content.common.churchLifeMenu.subpagesLabel}
+                </Text>
+                <Stack gap={6} mt="xs">
+                  {churchLifeSubpages.map((subpageId) => (
+                    <Link
+                      key={subpageId}
+                      to={getLocalizedPath(subpageId, locale)}
+                      className={classes.mobileSubLink}
+                    >
+                      {content.common.navigation[subpageId]}
+                    </Link>
+                  ))}
+                </Stack>
+              </div>
+            );
+          }
+
+          return (
+            <Link
+              key={routeId}
+              to={getLocalizedPath(routeId, locale)}
+              className={classes.mobileLink}
+            >
+              {content.common.navigation[routeId]}
+            </Link>
+          );
+        })}
 
         <Divider my="sm" />
 

@@ -1,14 +1,14 @@
-import { lazy, Suspense, useEffect, useState } from 'react';
-import { IconLanguage } from '@tabler/icons-react';
+import { lazy, Suspense, useEffect, useId, useState } from 'react';
+import { IconChevronDown, IconHome2, IconLanguage } from '@tabler/icons-react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
-import { Burger, Button, Container, Group, Text } from '@mantine/core';
+import { Burger, Button, Container, Group, Popover, Text } from '@mantine/core';
 import { siteConfig } from '../../content/churchContent';
 import { getShellContent } from '../../content/localizedShellContent';
 import { trackGivingIntent } from '../../lib/googleAnalytics';
 import { useLocale } from '../../lib/i18n';
-import { getAlternateLocalePath, getLocalizedPath } from '../../lib/routing';
+import { getAlternateLocalePath, getLocalizedPath, getRouteInfo } from '../../lib/routing';
 import { BrandLogo } from '../BrandLogo/BrandLogo';
-import { PRIMARY_NAVIGATION } from './navigation';
+import { CHURCH_LIFE_NAVIGATION, PRIMARY_NAVIGATION } from './navigation';
 import classes from './HeaderSimple.module.css';
 
 const MobileNavigationDrawer = lazy(() =>
@@ -19,25 +19,107 @@ const MobileNavigationDrawer = lazy(() =>
 
 export function HeaderSimple() {
   const [opened, setOpened] = useState(false);
+  const [churchLifeMenuOpened, setChurchLifeMenuOpened] = useState(false);
+  const churchLifeMenuId = useId();
   const location = useLocation();
   const locale = useLocale();
   const content = getShellContent(locale);
   const alternatePath = getAlternateLocalePath(location.pathname);
+  const currentRoute = getRouteInfo(location.pathname);
+  const churchLifeIsActive =
+    currentRoute !== undefined && CHURCH_LIFE_NAVIGATION.includes(currentRoute.id);
+  const churchLifeSubpages = CHURCH_LIFE_NAVIGATION.filter((routeId) => routeId !== 'community');
 
   useEffect(() => {
     setOpened(false);
+    setChurchLifeMenuOpened(false);
   }, [location.pathname]);
 
-  const items = PRIMARY_NAVIGATION.map((routeId) => (
-    <NavLink
-      key={routeId}
-      to={getLocalizedPath(routeId, locale)}
-      end={routeId === 'home'}
-      className={({ isActive }) => (isActive ? `${classes.link} ${classes.active}` : classes.link)}
-    >
-      {content.common.navigation[routeId]}
-    </NavLink>
-  ));
+  const items = PRIMARY_NAVIGATION.map((routeId) => {
+    if (routeId === 'community') {
+      return (
+        <Popover
+          key={routeId}
+          opened={churchLifeMenuOpened}
+          onChange={setChurchLifeMenuOpened}
+          position="bottom-start"
+          offset={8}
+          width={320}
+          shadow="lg"
+        >
+          <Popover.Target>
+            <button
+              type="button"
+              className={`${classes.link} ${classes.menuTrigger} ${
+                churchLifeIsActive ? classes.active : ''
+              }`}
+              aria-controls={churchLifeMenuOpened ? churchLifeMenuId : undefined}
+              aria-expanded={churchLifeMenuOpened}
+              aria-label={content.common.churchLifeMenu.openLabel}
+              data-expanded={churchLifeMenuOpened}
+              onClick={() => setChurchLifeMenuOpened((current) => !current)}
+            >
+              <span>{content.common.navigation.community}</span>
+              <IconChevronDown size={15} stroke={2} aria-hidden="true" />
+            </button>
+          </Popover.Target>
+          <Popover.Dropdown className={classes.churchLifeDropdown}>
+            <nav id={churchLifeMenuId} aria-label={content.common.navigation.community}>
+              <Link
+                to={getLocalizedPath('community', locale)}
+                className={classes.churchLifeHubItem}
+              >
+                <IconHome2
+                  size={18}
+                  stroke={1.8}
+                  aria-hidden="true"
+                  className={classes.churchLifeHubIcon}
+                />
+                <span>
+                  <span className={classes.churchLifeHubTitle}>
+                    {content.common.churchLifeMenu.hubLabel}
+                  </span>
+                  {` `}
+                  <span className={classes.churchLifeHubDescription}>
+                    {content.common.churchLifeMenu.hubDescription}
+                  </span>
+                </span>
+              </Link>
+
+              <Text
+                component="span"
+                className={`${classes.mobileSectionTitle} ${classes.churchLifeMenuLabel}`}
+              >
+                {content.common.churchLifeMenu.subpagesLabel}
+              </Text>
+              {churchLifeSubpages.map((subpageId) => (
+                <Link
+                  key={subpageId}
+                  to={getLocalizedPath(subpageId, locale)}
+                  className={classes.churchLifeSubLink}
+                >
+                  {content.common.navigation[subpageId]}
+                </Link>
+              ))}
+            </nav>
+          </Popover.Dropdown>
+        </Popover>
+      );
+    }
+
+    return (
+      <NavLink
+        key={routeId}
+        to={getLocalizedPath(routeId, locale)}
+        end={routeId === 'home'}
+        className={({ isActive }) =>
+          isActive ? `${classes.link} ${classes.active}` : classes.link
+        }
+      >
+        {content.common.navigation[routeId]}
+      </NavLink>
+    );
+  });
 
   return (
     <>

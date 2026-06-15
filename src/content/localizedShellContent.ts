@@ -12,6 +12,12 @@ type ShellContent = {
     closeNavigation: string;
     loadingPage: string;
     navigation: Record<RouteId, string>;
+    churchLifeMenu: {
+      openLabel: string;
+      hubLabel: string;
+      hubDescription: string;
+      subpagesLabel: string;
+    };
     languageName: string;
     switchLanguage: string;
     give: string;
@@ -68,6 +74,12 @@ export const localizedShellContent: Record<Locale, ShellContent> = {
         updates: 'Updates',
         contact: 'Contact',
         privacy: 'Privacy',
+      },
+      churchLifeMenu: {
+        openLabel: 'Open Church Life menu',
+        hubLabel: 'Church Life home',
+        hubDescription: 'Start with the full overview of worship, care, service, and belonging.',
+        subpagesLabel: 'Go directly to',
       },
       languageName: 'Español',
       switchLanguage: 'Ver el sitio en español',
@@ -128,6 +140,13 @@ export const localizedShellContent: Record<Locale, ShellContent> = {
         updates: 'Novedades',
         contact: 'Contacto',
         privacy: 'Privacidad',
+      },
+      churchLifeMenu: {
+        openLabel: 'Abrir menú de vida de la iglesia',
+        hubLabel: 'Página principal de vida de la iglesia',
+        hubDescription:
+          'Comience con la vista general de adoración, cuidado, servicio y pertenencia.',
+        subpagesLabel: 'Ir directamente a',
       },
       languageName: 'English',
       switchLanguage: 'View the site in English',
