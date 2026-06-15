@@ -11,6 +11,10 @@ describe('Router', () => {
     ['/about', /church shaped by Christ’s welcome/i],
     ['/staff', /meet the staff/i],
     ['/community', /faith takes shape in community/i],
+    ['/community/worship-and-music', /worship and music/i],
+    ['/community/wonder-and-worship', /wonder and worship/i],
+    ['/community/hispanic-ministry', /hispanic ministry/i],
+    ['/community/service-and-outreach', /service and outreach/i],
     ['/community/diversity-theater', /diversity theater company/i],
     ['/updates', /church news and announcements/i],
     ['/contact', /we would love to hear from you/i],
@@ -20,6 +24,10 @@ describe('Router', () => {
     ['/es/acerca', /iglesia formada por la bienvenida/i],
     ['/es/personal', /conozca al personal/i],
     ['/es/comunidad', /la fe toma forma en comunidad/i],
+    ['/es/comunidad/adoracion-y-musica', /adoración y música/i],
+    ['/es/comunidad/wonder-and-worship', /wonder and worship/i],
+    ['/es/comunidad/ministerio-hispano', /ministerio hispano/i],
+    ['/es/comunidad/servicio-comunitario', /servicio comunitario/i],
     ['/es/comunidad/teatro-diversidad', /compañía de teatro diversidad/i],
     ['/es/novedades', /noticias y anuncios/i],
     ['/es/contacto', /nos encantaría saber de usted/i],
@@ -30,13 +38,13 @@ describe('Router', () => {
 
     render(<RouterProvider router={router} />);
 
-    expect(await screen.findByRole('heading', { name: heading })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { level: 1, name: heading })).toBeInTheDocument();
   });
 
   it.each([
-    ['/outreach', '/community'],
+    ['/outreach', '/community/service-and-outreach'],
     ['/diversity-theater', '/community/diversity-theater'],
-    ['/es/outreach', '/es/comunidad'],
+    ['/es/outreach', '/es/comunidad/servicio-comunitario'],
     ['/es/teatro-diversidad', '/es/comunidad/teatro-diversidad'],
   ])('redirects %s to %s', async (source, destination) => {
     const router = createMemoryRouter(routes, { initialEntries: [source] });

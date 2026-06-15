@@ -55,13 +55,13 @@ describe('HeaderSimple', () => {
     const user = userEvent.setup();
 
     render(
-      <MemoryRouter initialEntries={['/contact']}>
+      <MemoryRouter initialEntries={['/community/hispanic-ministry']}>
         <HeaderSimple />
         <CurrentPath />
       </MemoryRouter>
     );
 
     await user.click(screen.getByRole('link', { name: /ver el sitio en español/i }));
-    expect(screen.getByText('/es/contacto')).toBeInTheDocument();
+    expect(screen.getByText('/es/comunidad/ministerio-hispano')).toBeInTheDocument();
   });
 });

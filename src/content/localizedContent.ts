@@ -1,5 +1,9 @@
 import type { Locale, RouteId } from '../lib/routing';
 import type { ContactMethodId, ServiceId, StaffId } from './churchContent';
+import {
+  localizedMinistryContent,
+  type LocalizedMinistryContent,
+} from './localizedMinistryContent';
 
 type HeroSentence = {
   id: string;
@@ -145,6 +149,7 @@ type LocalizedContent = {
     invitationCopy: string;
     invitationCta: string;
   };
+  ministries: LocalizedMinistryContent;
   theater: {
     eyebrow: string;
     titleLead: string;
@@ -275,6 +280,10 @@ const en: LocalizedContent = {
       about: 'About',
       staff: 'Staff',
       community: 'Church Life',
+      worshipAndMusic: 'Worship and Music',
+      wonderAndWorship: 'Wonder and Worship',
+      hispanicMinistry: 'Hispanic Ministry',
+      serviceAndOutreach: 'Service and Outreach',
       diversityTheater: 'Diversity Theater',
       updates: 'Updates',
       contact: 'Contact',
@@ -537,21 +546,21 @@ const en: LocalizedContent = {
         title: 'Worship and music',
         description:
           'Gather for prayer, scripture, preaching, communion, and music shaped by a gifted team of worship leaders.',
-        routeId: 'visit',
+        routeId: 'worshipAndMusic',
       },
       {
         id: 'children',
         title: 'Wonder and Worship',
         description:
           'Children are invited into age-appropriate stories and activities during the Worship Service.',
-        routeId: 'visit',
+        routeId: 'wonderAndWorship',
       },
       {
         id: 'hispanic',
         title: 'Hispanic ministry',
         description:
           'Rev. Maria Zamarripa offers spiritual care and ministry with Spanish-speaking individuals and families.',
-        routeId: 'staff',
+        routeId: 'hispanicMinistry',
       },
       {
         id: 'theater',
@@ -565,7 +574,7 @@ const en: LocalizedContent = {
         title: 'Service and outreach',
         description:
           'Financial gifts and volunteer participation help sustain community events and local care.',
-        routeId: 'contact',
+        routeId: 'serviceAndOutreach',
       },
       {
         id: 'updates',
@@ -580,6 +589,7 @@ const en: LocalizedContent = {
       'Tell us what you are looking for and someone from the church will help you take a practical next step.',
     invitationCta: 'Start a conversation',
   },
+  ministries: localizedMinistryContent.en,
   theater: {
     eyebrow: 'First Christian Church presents',
     titleLead: 'Diversity',
@@ -871,6 +881,10 @@ const es: LocalizedContent = {
       about: 'Acerca',
       staff: 'Personal',
       community: 'Vida de la iglesia',
+      worshipAndMusic: 'Adoración y música',
+      wonderAndWorship: 'Wonder and Worship',
+      hispanicMinistry: 'Ministerio hispano',
+      serviceAndOutreach: 'Servicio comunitario',
       diversityTheater: 'Teatro Diversidad',
       updates: 'Novedades',
       contact: 'Contacto',
@@ -1135,21 +1149,21 @@ const es: LocalizedContent = {
         title: 'Adoración y música',
         description:
           'Reúnase para la oración, la Escritura, la predicación, la comunión y la música guiada por un talentoso equipo.',
-        routeId: 'visit',
+        routeId: 'worshipAndMusic',
       },
       {
         id: 'children',
         title: 'Wonder and Worship',
         description:
           'Los niños participan en historias y actividades apropiadas para su edad durante el servicio.',
-        routeId: 'visit',
+        routeId: 'wonderAndWorship',
       },
       {
         id: 'hispanic',
         title: 'Ministerio hispano',
         description:
           'La Rev. Maria Zamarripa ofrece cuidado espiritual y ministerio con personas y familias de habla hispana.',
-        routeId: 'staff',
+        routeId: 'hispanicMinistry',
       },
       {
         id: 'theater',
@@ -1163,7 +1177,7 @@ const es: LocalizedContent = {
         title: 'Servicio comunitario',
         description:
           'Las donaciones y el voluntariado ayudan a sostener eventos comunitarios y el cuidado local.',
-        routeId: 'contact',
+        routeId: 'serviceAndOutreach',
       },
       {
         id: 'updates',
@@ -1178,6 +1192,7 @@ const es: LocalizedContent = {
       'Díganos qué está buscando y alguien de la iglesia le ayudará a dar un siguiente paso práctico.',
     invitationCta: 'Iniciar una conversación',
   },
+  ministries: localizedMinistryContent.es,
   theater: {
     eyebrow: 'Presentado por la Primera Iglesia Cristiana',
     titleLead: 'Compañía de',

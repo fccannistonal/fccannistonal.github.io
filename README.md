@@ -36,8 +36,8 @@ Most of the real app lives under `src/`. If you are trying to update the deploye
 ## Routes
 
 - `/`
-- English: `/visit`, `/about`, `/staff`, `/community`, `/community/diversity-theater`, `/updates`, `/contact`, `/privacy`
-- Spanish: `/es/visita`, `/es/acerca`, `/es/personal`, `/es/comunidad`, `/es/comunidad/teatro-diversidad`, `/es/novedades`, `/es/contacto`, `/es/privacidad`
+- English: `/visit`, `/about`, `/staff`, `/community`, `/community/worship-and-music`, `/community/wonder-and-worship`, `/community/hispanic-ministry`, `/community/service-and-outreach`, `/community/diversity-theater`, `/updates`, `/contact`, `/privacy`
+- Spanish: `/es/visita`, `/es/acerca`, `/es/personal`, `/es/comunidad`, `/es/comunidad/adoracion-y-musica`, `/es/comunidad/wonder-and-worship`, `/es/comunidad/ministerio-hispano`, `/es/comunidad/servicio-comunitario`, `/es/comunidad/teatro-diversidad`, `/es/novedades`, `/es/contacto`, `/es/privacidad`
 
 Legacy `/outreach` and diversity-theater URLs redirect to their canonical routes.
 

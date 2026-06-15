@@ -84,6 +84,70 @@
       "description": "Explore la adoración, el ministerio infantil, el ministerio hispano, la Compañía de Teatro Diversidad y la vida comunitaria."
     },
     {
+      "id": "worshipAndMusic",
+      "locale": "en",
+      "path": "/community/worship-and-music",
+      "alternatePath": "/es/comunidad/adoracion-y-musica",
+      "title": "Worship and Music | First Christian Church Anniston",
+      "description": "Explore Sunday worship, weekly communion, preaching, prayer, choir, organ, piano, and musical leadership at First Christian Church Anniston."
+    },
+    {
+      "id": "worshipAndMusic",
+      "locale": "es",
+      "path": "/es/comunidad/adoracion-y-musica",
+      "alternatePath": "/community/worship-and-music",
+      "title": "Adoración y música | Primera Iglesia Cristiana de Anniston",
+      "description": "Conozca la adoración dominical, la comunión semanal, la predicación, la oración, el coro, el órgano, el piano y el liderazgo musical."
+    },
+    {
+      "id": "wonderAndWorship",
+      "locale": "en",
+      "path": "/community/wonder-and-worship",
+      "alternatePath": "/es/comunidad/wonder-and-worship",
+      "title": "Wonder and Worship | First Christian Church Anniston",
+      "description": "Learn how children are welcomed into worship through stories, questions, participation, and Wonder and Worship at First Christian Church Anniston."
+    },
+    {
+      "id": "wonderAndWorship",
+      "locale": "es",
+      "path": "/es/comunidad/wonder-and-worship",
+      "alternatePath": "/community/wonder-and-worship",
+      "title": "Wonder and Worship | Primera Iglesia Cristiana de Anniston",
+      "description": "Conozca cómo los niños participan en la adoración mediante historias, preguntas, actividades y Wonder and Worship."
+    },
+    {
+      "id": "hispanicMinistry",
+      "locale": "en",
+      "path": "/community/hispanic-ministry",
+      "alternatePath": "/es/comunidad/ministerio-hispano",
+      "title": "Hispanic Ministry | First Christian Church Anniston",
+      "description": "Meet Rev. Maria Zamarripa and learn about spiritual care, chaplaincy, and ministry with Spanish-speaking individuals and families."
+    },
+    {
+      "id": "hispanicMinistry",
+      "locale": "es",
+      "path": "/es/comunidad/ministerio-hispano",
+      "alternatePath": "/community/hispanic-ministry",
+      "title": "Ministerio hispano | Primera Iglesia Cristiana de Anniston",
+      "description": "Conozca a la Rev. Maria Zamarripa y el cuidado espiritual, la capellanía y el ministerio con personas y familias de habla hispana."
+    },
+    {
+      "id": "serviceAndOutreach",
+      "locale": "en",
+      "path": "/community/service-and-outreach",
+      "alternatePath": "/es/comunidad/servicio-comunitario",
+      "title": "Service and Outreach | First Christian Church Anniston",
+      "description": "See how First Christian Church Anniston serves through Oxfordfest, support for JSU’s LGBT student group, pastoral care for older adults, and shared community space."
+    },
+    {
+      "id": "serviceAndOutreach",
+      "locale": "es",
+      "path": "/es/comunidad/servicio-comunitario",
+      "alternatePath": "/community/service-and-outreach",
+      "title": "Servicio comunitario | Primera Iglesia Cristiana de Anniston",
+      "description": "Conozca el servicio de la iglesia mediante Oxfordfest, el apoyo al grupo estudiantil LGBT de JSU, el cuidado de adultos mayores y espacios compartidos."
+    },
+    {
       "id": "diversityTheater",
       "locale": "en",
       "path": "/community/diversity-theater",

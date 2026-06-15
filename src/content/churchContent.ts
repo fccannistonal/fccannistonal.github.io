@@ -24,6 +24,16 @@ export type StaffAsset = {
 };
 
 export type TheaterImage = PhotoAsset;
+export type MinistryPageId =
+  | 'worshipAndMusic'
+  | 'wonderAndWorship'
+  | 'hispanicMinistry'
+  | 'serviceAndOutreach';
+
+export type MinistryPageAssets = {
+  hero: PhotoAsset;
+  features: Record<string, PhotoAsset>;
+};
 
 const tithelyFormId = 'c23cd1bd-eeab-4311-a159-15b079e46baf';
 
@@ -217,5 +227,69 @@ export const diversityTheaterAssets = {
     width: 750,
     height: 500,
     objectPosition: '50% 38%',
+  },
+};
+
+export const ministryPageAssets: Record<MinistryPageId, MinistryPageAssets> = {
+  worshipAndMusic: {
+    hero: {
+      id: 'sanctuary-hero',
+      src: '/images/home/sanctuary-hero.jpg',
+      width: 2400,
+      height: 1800,
+      objectPosition: '50% 48%',
+    },
+    features: {
+      communion: photoAssets.find((photo) => photo.id === 'communion-table')!,
+      gerald: {
+        id: 'gerald',
+        src: '/images/staff/gerald.jpg',
+        width: 1856,
+        height: 2597,
+      },
+      jason: {
+        id: 'jason',
+        src: '/images/staff/jason.jpg',
+        width: 1856,
+        height: 2597,
+      },
+    },
+  },
+  wonderAndWorship: {
+    hero: photoAssets.find((photo) => photo.id === 'childrens-moment')!,
+    features: {
+      participation: photoAssets.find((photo) => photo.id === 'childrens-moment')!,
+      welcome: photoAssets.find((photo) => photo.id === 'welcome-area')!,
+    },
+  },
+  hispanicMinistry: {
+    hero: {
+      id: 'maria',
+      src: '/images/staff/maria.jpg',
+      width: 1856,
+      height: 2597,
+      objectPosition: '50% 30%',
+    },
+    features: {
+      maria: {
+        id: 'maria',
+        src: '/images/staff/maria.jpg',
+        width: 1856,
+        height: 2597,
+      },
+      welcome: photoAssets.find((photo) => photo.id === 'welcome-area')!,
+    },
+  },
+  serviceAndOutreach: {
+    hero: {
+      id: 'church-exterior',
+      src: '/images/home/fcc-exterior-sunset.jpg',
+      width: 1800,
+      height: 1800,
+      objectPosition: '62% 52%',
+    },
+    features: {
+      space: photoAssets.find((photo) => photo.id === 'welcome-area')!,
+    },
   },
 };

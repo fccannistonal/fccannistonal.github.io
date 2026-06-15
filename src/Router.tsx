@@ -29,6 +29,26 @@ const StaffPage = lazy(() =>
 const CommunityPage = lazy(() =>
   import('./pages/Community.page').then((module) => ({ default: module.CommunityPage }))
 );
+const WorshipAndMusicPage = lazy(() =>
+  import('./pages/MinistryDetail.page').then((module) => ({
+    default: module.WorshipAndMusicPage,
+  }))
+);
+const WonderAndWorshipPage = lazy(() =>
+  import('./pages/MinistryDetail.page').then((module) => ({
+    default: module.WonderAndWorshipPage,
+  }))
+);
+const HispanicMinistryPage = lazy(() =>
+  import('./pages/MinistryDetail.page').then((module) => ({
+    default: module.HispanicMinistryPage,
+  }))
+);
+const ServiceAndOutreachPage = lazy(() =>
+  import('./pages/MinistryDetail.page').then((module) => ({
+    default: module.ServiceAndOutreachPage,
+  }))
+);
 const DiversityTheaterPage = lazy(() =>
   import('./pages/DiversityTheater.page').then((module) => ({
     default: module.DiversityTheaterPage,
@@ -149,13 +169,32 @@ export const routes: RouteObject[] = [
       { path: 'staff', element: withSuspense(<StaffPage />) },
       { path: 'community', element: withSuspense(<CommunityPage />) },
       {
+        path: 'community/worship-and-music',
+        element: withSuspense(<WorshipAndMusicPage />),
+      },
+      {
+        path: 'community/wonder-and-worship',
+        element: withSuspense(<WonderAndWorshipPage />),
+      },
+      {
+        path: 'community/hispanic-ministry',
+        element: withSuspense(<HispanicMinistryPage />),
+      },
+      {
+        path: 'community/service-and-outreach',
+        element: withSuspense(<ServiceAndOutreachPage />),
+      },
+      {
         path: 'community/diversity-theater',
         element: withSuspense(<DiversityTheaterPage />),
       },
       { path: 'updates', element: withSuspense(<UpdatesPage />) },
       { path: 'contact', element: withSuspense(<ContactPage />) },
       { path: 'privacy', element: withSuspense(<PrivacyPage />) },
-      { path: 'outreach', element: <Navigate to={getLocalizedPath('community', 'en')} replace /> },
+      {
+        path: 'outreach',
+        element: <Navigate to={getLocalizedPath('serviceAndOutreach', 'en')} replace />,
+      },
       {
         path: 'diversity-theater',
         element: <Navigate to={getLocalizedPath('diversityTheater', 'en')} replace />,
@@ -166,6 +205,22 @@ export const routes: RouteObject[] = [
       { path: 'es/personal', element: withSuspense(<StaffPage />) },
       { path: 'es/comunidad', element: withSuspense(<CommunityPage />) },
       {
+        path: 'es/comunidad/adoracion-y-musica',
+        element: withSuspense(<WorshipAndMusicPage />),
+      },
+      {
+        path: 'es/comunidad/wonder-and-worship',
+        element: withSuspense(<WonderAndWorshipPage />),
+      },
+      {
+        path: 'es/comunidad/ministerio-hispano',
+        element: withSuspense(<HispanicMinistryPage />),
+      },
+      {
+        path: 'es/comunidad/servicio-comunitario',
+        element: withSuspense(<ServiceAndOutreachPage />),
+      },
+      {
         path: 'es/comunidad/teatro-diversidad',
         element: withSuspense(<DiversityTheaterPage />),
       },
@@ -174,7 +229,7 @@ export const routes: RouteObject[] = [
       { path: 'es/privacidad', element: withSuspense(<PrivacyPage />) },
       {
         path: 'es/outreach',
-        element: <Navigate to={getLocalizedPath('community', 'es')} replace />,
+        element: <Navigate to={getLocalizedPath('serviceAndOutreach', 'es')} replace />,
       },
       {
         path: 'es/teatro-diversidad',
