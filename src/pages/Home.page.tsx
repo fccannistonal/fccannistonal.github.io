@@ -1,13 +1,19 @@
+import { useEffect, useState } from 'react';
 import {
+  IconChevronLeft,
+  IconChevronRight,
   IconClock,
   IconHeartHandshake,
   IconMapPin,
   IconMicrophone2,
   IconSparkles,
+  IconSwipe,
 } from '@tabler/icons-react';
+import type { EmblaCarouselType } from 'embla-carousel';
 import { Link } from 'react-router-dom';
 import { Carousel } from '@mantine/carousel';
 import {
+  ActionIcon,
   Badge,
   Button,
   Container,
@@ -21,12 +27,54 @@ import {
   ThemeIcon,
   Title,
 } from '@mantine/core';
+import { useMediaQuery } from '@mantine/hooks';
 import { ContentImage } from '../components/church/ContentImage';
 import { HomeHero } from '../components/church/HomeHero';
 import { photoSlides, siteConfig } from '../content/churchContent';
 import classes from './Home.page.module.css';
 
 export function HomePage() {
+  const [galleryApi, setGalleryApi] = useState<EmblaCarouselType | null>(null);
+  const [selectedGallerySlide, setSelectedGallerySlide] = useState(0);
+  const [canScrollGalleryPrevious, setCanScrollGalleryPrevious] = useState(false);
+  const [canScrollGalleryNext, setCanScrollGalleryNext] = useState(true);
+  const showsThreeGalleryCards = useMediaQuery('(min-width: 75em)');
+  const showsTwoGalleryCards = useMediaQuery('(min-width: 48em)');
+
+  useEffect(() => {
+    if (!galleryApi) {
+      return;
+    }
+
+    const updateGalleryState = () => {
+      setSelectedGallerySlide(galleryApi.selectedScrollSnap());
+      setCanScrollGalleryPrevious(galleryApi.canScrollPrev());
+      setCanScrollGalleryNext(galleryApi.canScrollNext());
+    };
+
+    updateGalleryState();
+    galleryApi.on('select', updateGalleryState);
+    galleryApi.on('reInit', updateGalleryState);
+    galleryApi.on('resize', updateGalleryState);
+
+    return () => {
+      galleryApi.off('select', updateGalleryState);
+      galleryApi.off('reInit', updateGalleryState);
+      galleryApi.off('resize', updateGalleryState);
+    };
+  }, [galleryApi]);
+
+  const visibleGalleryCardCount = showsThreeGalleryCards ? 3 : showsTwoGalleryCards ? 2 : 1;
+  const firstVisiblePhoto = selectedGallerySlide + 1;
+  const lastVisiblePhoto = Math.min(
+    firstVisiblePhoto + visibleGalleryCardCount - 1,
+    photoSlides.length
+  );
+  const galleryStatus =
+    firstVisiblePhoto === lastVisiblePhoto
+      ? `Photo ${firstVisiblePhoto} of ${photoSlides.length}`
+      : `Photos ${firstVisiblePhoto}–${lastVisiblePhoto} of ${photoSlides.length}`;
+
   return (
     <>
       <HomeHero />
@@ -176,22 +224,77 @@ export function HomePage() {
           </section>
 
           <section aria-labelledby="gallery-title">
-            <Text fw={700} tt="uppercase" c="#8c633d" size="sm" style={{ letterSpacing: '0.18em' }}>
-              Life at FCC Anniston
-            </Text>
-            <Title id="gallery-title" order={2} mt="xs" mb="lg">
-              Come Check Us Out!
-            </Title>
+            <div className={classes.galleryHeader}>
+              <div>
+                <Text
+                  fw={700}
+                  tt="uppercase"
+                  c="#8c633d"
+                  size="sm"
+                  style={{ letterSpacing: '0.18em' }}
+                >
+                  Life at FCC Anniston
+                </Text>
+                <Title id="gallery-title" order={2} mt="xs">
+                  Come Check Us Out!
+                </Title>
+                <Group gap="xs" mt="sm" className={classes.galleryHint}>
+                  <IconSwipe size={20} stroke={1.7} aria-hidden="true" />
+                  <Text size="sm" fw={600}>
+                    Swipe or drag to explore
+                  </Text>
+                </Group>
+              </div>
+
+              <div className={classes.galleryNavigation}>
+                <Text
+                  className={classes.galleryStatus}
+                  size="sm"
+                  fw={700}
+                  aria-live="polite"
+                  aria-atomic="true"
+                >
+                  {galleryStatus}
+                </Text>
+                <Group gap="sm" wrap="nowrap">
+                  <ActionIcon
+                    type="button"
+                    size={46}
+                    radius="xl"
+                    variant="default"
+                    aria-label="Previous photos"
+                    disabled={!canScrollGalleryPrevious}
+                    onClick={() => galleryApi?.scrollPrev()}
+                    className={classes.galleryControl}
+                  >
+                    <IconChevronLeft size={24} stroke={1.8} />
+                  </ActionIcon>
+                  <ActionIcon
+                    type="button"
+                    size={46}
+                    radius="xl"
+                    variant="filled"
+                    color="brand"
+                    aria-label="Next photos"
+                    disabled={!canScrollGalleryNext}
+                    onClick={() => galleryApi?.scrollNext()}
+                    className={classes.galleryControl}
+                  >
+                    <IconChevronRight size={24} stroke={1.8} />
+                  </ActionIcon>
+                </Group>
+              </div>
+            </div>
 
             <Carousel
-              slideSize={{ base: '100%', sm: '50%', lg: '33.333333%' }}
+              slideSize={{ base: '86%', sm: '47%', lg: '32%' }}
               slideGap="lg"
-              withIndicators
               emblaOptions={{ align: 'start' }}
+              getEmblaApi={setGalleryApi}
+              withControls={false}
               role="region"
               aria-label="Life at First Christian Church photo gallery"
-              nextControlProps={{ 'aria-label': 'Next slide' }}
-              previousControlProps={{ 'aria-label': 'Previous slide' }}
+              className={classes.galleryCarousel}
             >
               {photoSlides.map((slide) => (
                 <Carousel.Slide key={slide.id} className={classes.gallerySlide}>

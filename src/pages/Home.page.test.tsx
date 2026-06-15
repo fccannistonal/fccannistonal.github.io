@@ -50,8 +50,10 @@ describe('HomePage', () => {
         name: /five first christian church staff members laughing together/i,
       })
     ).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /next slide/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /previous slide/i })).toBeInTheDocument();
+    expect(screen.getByText(/swipe or drag to explore/i)).toBeInTheDocument();
+    expect(screen.getByText(/photo 1 of 7/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /next photos/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /previous photos/i })).toBeDisabled();
     expect(screen.getByTitle("Map showing the church's Anniston location")).toBeInTheDocument();
   });
 });
