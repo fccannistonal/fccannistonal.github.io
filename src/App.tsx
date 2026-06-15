@@ -1,5 +1,6 @@
 import '@mantine/carousel/styles.css';
 import '@mantine/core/styles.css';
+import './index.css';
 
 import { MantineProvider } from '@mantine/core';
 import { Router } from './Router';

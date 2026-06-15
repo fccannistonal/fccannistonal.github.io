@@ -1,43 +1,40 @@
 import { MemoryRouter } from 'react-router-dom';
-import { axe, render, screen } from '@/test-utils';
-import { diversityTheater } from '../content/churchContent';
+import { render, screen } from '@/test-utils';
 import { CommunityPage } from './Community.page';
+import { DiversityTheaterPage } from './DiversityTheater.page';
 
-describe('CommunityPage', () => {
-  axe([
-    <MemoryRouter key="router">
-      <CommunityPage />
-    </MemoryRouter>,
-  ]);
-
-  it('renders the Diversity Theater story and founder profile', () => {
+describe('Community pages', () => {
+  it('renders a broad church-life landing page', () => {
     render(
       <MemoryRouter>
         <CommunityPage />
       </MemoryRouter>
     );
 
-    expect(screen.getByRole('heading', { name: /diversity theater company/i })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: diversityTheater.founderName })).toBeInTheDocument();
-    expect(screen.getByText(diversityTheater.introduction[0])).toBeInTheDocument();
     expect(
-      screen
-        .getAllByRole('link', { name: /facebook/i })
-        .every((link) => link.getAttribute('href')?.includes('facebook.com'))
-    ).toBe(true);
+      screen.getByRole('heading', { name: /faith takes shape in community/i })
+    ).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /diversity theater company/i })).toHaveAttribute(
+      'href',
+      '/community/diversity-theater'
+    );
+    expect(screen.getByRole('link', { name: /current announcements/i })).toHaveAttribute(
+      'href',
+      '/updates'
+    );
   });
 
-  it('renders accessible production photography', () => {
+  it('renders the localized Diversity Theater story and founder profile', () => {
     render(
-      <MemoryRouter>
-        <CommunityPage />
+      <MemoryRouter initialEntries={['/es/comunidad/teatro-diversidad']}>
+        <DiversityTheaterPage />
       </MemoryRouter>
     );
 
-    expect(screen.getByAltText(diversityTheater.heroImage.alt)).toBeInTheDocument();
-    diversityTheater.galleryImages.forEach((image) => {
-      expect(screen.getByAltText(image.alt)).toBeInTheDocument();
-    });
-    expect(screen.getByAltText(diversityTheater.founderPortrait.alt)).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: /compañía de teatro diversidad/i })
+    ).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Maury Evans' })).toBeInTheDocument();
+    expect(screen.getByAltText(/el elenco de una producción del oeste/i)).toBeInTheDocument();
   });
 });

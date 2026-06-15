@@ -1,28 +1,35 @@
 import { useState } from 'react';
 import { IconPhoto } from '@tabler/icons-react';
 import { AspectRatio, Box, Center, Stack, Text, ThemeIcon } from '@mantine/core';
+import { ResponsiveImage } from './ResponsiveImage';
 import classes from './ContentImage.module.css';
 
 type Props = {
   src?: string;
   alt: string;
   label: string;
+  width?: number;
+  height?: number;
   description?: string;
   ratio?: number;
   objectPosition?: string;
   className?: string;
   loading?: 'eager' | 'lazy';
+  sizes?: string;
 };
 
 export function ContentImage({
   src,
   alt,
   label,
+  width = 1600,
+  height = 1200,
   description,
   ratio = 4 / 3,
   objectPosition,
   className,
   loading = 'lazy',
+  sizes,
 }: Props) {
   const [hasError, setHasError] = useState(false);
   const showImage = Boolean(src) && !hasError;
@@ -30,15 +37,16 @@ export function ContentImage({
   return (
     <Box className={[classes.frame, className].filter(Boolean).join(' ')}>
       <AspectRatio ratio={ratio}>
-        {showImage ? (
-          <Box
-            component="img"
+        {showImage && src ? (
+          <ResponsiveImage
             src={src}
             alt={alt}
-            className={classes.image}
+            width={width}
+            height={height}
+            sizes={sizes}
+            imageClassName={classes.image}
             style={{ objectPosition }}
             loading={loading}
-            decoding="async"
             onError={() => setHasError(true)}
           />
         ) : (

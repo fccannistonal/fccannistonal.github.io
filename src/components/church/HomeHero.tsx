@@ -1,13 +1,20 @@
 import { useCallback, useEffect, useState } from 'react';
-import { IconPlayerPause, IconPlayerPlay } from '@tabler/icons-react';
+import { IconClock, IconMapPin, IconPlayerPause, IconPlayerPlay } from '@tabler/icons-react';
 import { Link } from 'react-router-dom';
-import { Button, Container, Group, Text } from '@mantine/core';
+import { Button, Container, Group, Text, ThemeIcon } from '@mantine/core';
 import { useReducedMotion } from '@mantine/hooks';
-import { heroSentences, siteConfig, type HeroSentence } from '../../content/churchContent';
+import { siteConfig } from '../../content/churchContent';
+import { getContent } from '../../content/localizedContent';
+import { trackVisitPlanningIntent } from '../../lib/googleAnalytics';
+import { useLocale } from '../../lib/i18n';
+import { getLocalizedPath } from '../../lib/routing';
+import { ResponsiveImage } from './ResponsiveImage';
 import classes from './HomeHero.module.css';
 
 export const HERO_ROTATION_INTERVAL_MS = 3200;
 export const HERO_ROLL_DURATION_MS = 650;
+
+type HeroSentence = ReturnType<typeof getContent>['home']['heroSentences'][number];
 
 function getSentenceText(sentence: HeroSentence) {
   return `${sentence.lead}${sentence.emphasis}${sentence.ending}`;
@@ -24,6 +31,9 @@ function SentenceText({ sentence }: { sentence: HeroSentence }) {
 }
 
 export function HomeHero() {
+  const locale = useLocale();
+  const content = getContent(locale);
+  const heroSentences = content.home.heroSentences;
   const prefersReducedMotion = useReducedMotion();
   const [sentenceIndex, setSentenceIndex] = useState(0);
   const [previousSentenceIndex, setPreviousSentenceIndex] = useState(0);
@@ -33,6 +43,12 @@ export function HomeHero() {
   const finishRoll = useCallback(() => {
     setIsRolling(false);
   }, []);
+
+  useEffect(() => {
+    setSentenceIndex(0);
+    setPreviousSentenceIndex(0);
+    setIsRolling(false);
+  }, [locale]);
 
   useEffect(() => {
     if (prefersReducedMotion || isPaused || isRolling || heroSentences.length < 2) {
@@ -46,7 +62,7 @@ export function HomeHero() {
     }, HERO_ROTATION_INTERVAL_MS);
 
     return () => window.clearTimeout(timeoutId);
-  }, [isPaused, isRolling, prefersReducedMotion, sentenceIndex]);
+  }, [heroSentences.length, isPaused, isRolling, prefersReducedMotion, sentenceIndex]);
 
   useEffect(() => {
     if (!isRolling) {
@@ -62,14 +78,22 @@ export function HomeHero() {
   const visibleSentence = heroSentences[visibleSentenceIndex];
   const previousSentence = heroSentences[previousSentenceIndex];
   const showRollingTrack = isRolling && !prefersReducedMotion;
-  const backgroundImage = siteConfig.heroBackgroundSrc
-    ? `url(${siteConfig.heroBackgroundSrc})`
-    : undefined;
-
   return (
-    <section className={classes.hero} style={{ backgroundImage }}>
+    <section className={classes.hero}>
+      <ResponsiveImage
+        src={siteConfig.heroImageSrc}
+        alt=""
+        width={siteConfig.heroImageWidth}
+        height={siteConfig.heroImageHeight}
+        sizes="100vw"
+        loading="eager"
+        decoding="sync"
+        fetchPriority="high"
+        className={classes.heroMedia}
+        imageClassName={classes.heroMediaImage}
+      />
       <Container size="lg" className={classes.inner}>
-        <Text className={classes.eyebrow}>{siteConfig.denomination}</Text>
+        <Text className={classes.eyebrow}>{content.home.heroEyebrow}</Text>
 
         <div className={classes.headline}>
           <h1 className={classes.title}>
@@ -123,25 +147,47 @@ export function HomeHero() {
               aria-pressed={isPaused}
               onClick={() => setIsPaused((currentValue) => !currentValue)}
             >
-              {isPaused ? 'Resume text animation' : 'Pause text animation'}
+              {isPaused ? content.common.resumeTextAnimation : content.common.pauseTextAnimation}
             </Button>
           )}
         </div>
 
-        <Text className={classes.description}>{siteConfig.tagline}</Text>
+        <Text className={classes.description}>{content.home.heroDescription}</Text>
+
+        <Group className={classes.facts}>
+          <Group gap="xs" wrap="nowrap">
+            <ThemeIcon radius="xl" variant="light" color="brand">
+              <IconClock size={18} aria-hidden="true" />
+            </ThemeIcon>
+            <Text fw={700}>{content.home.serviceFactLabel}</Text>
+          </Group>
+          <Group gap="xs" wrap="nowrap">
+            <ThemeIcon radius="xl" variant="light" color="moss">
+              <IconMapPin size={18} aria-hidden="true" />
+            </ThemeIcon>
+            <Text fw={700}>{content.home.locationFactLabel}</Text>
+          </Group>
+        </Group>
 
         <Group className={classes.actions}>
-          <Button component={Link} to={siteConfig.heroPrimaryAction.href} size="lg">
-            {siteConfig.heroPrimaryAction.cta}
-          </Button>
           <Button
             component={Link}
-            to={siteConfig.heroSecondaryAction.href}
+            to={getLocalizedPath('visit', locale)}
+            size="lg"
+            onClick={() => trackVisitPlanningIntent('home-hero', locale)}
+          >
+            {content.home.primaryAction}
+          </Button>
+          <Button
+            component="a"
+            href={siteConfig.directionsUrl}
+            target="_blank"
+            rel="noreferrer"
             size="lg"
             variant="outline"
             className={classes.secondaryButton}
           >
-            {siteConfig.heroSecondaryAction.cta}
+            {content.home.secondaryAction}
           </Button>
         </Group>
       </Container>

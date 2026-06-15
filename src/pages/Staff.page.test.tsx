@@ -1,14 +1,24 @@
-import { render, screen } from '@/test-utils';
-import { staffMembers } from '../content/churchContent';
+import { MemoryRouter } from 'react-router-dom';
+import { render, screen, userEvent } from '@/test-utils';
 import { StaffPage } from './Staff.page';
 
 describe('StaffPage', () => {
-  it('renders staff entries from the content model', () => {
-    render(<StaffPage />);
+  it('shows concise profiles with optional expanded biographies', async () => {
+    const user = userEvent.setup();
 
-    expect(screen.getByRole('heading', { name: staffMembers[0].name })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: staffMembers.at(-1)!.name })).toBeInTheDocument();
-    expect(screen.getByText(staffMembers[0].bio[0])).toBeInTheDocument();
-    expect(screen.getByText(staffMembers[0].focusAreas[0])).toBeInTheDocument();
+    render(
+      <MemoryRouter>
+        <StaffPage />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByRole('heading', { name: 'Rev. Laura Hutchinson' })).toBeInTheDocument();
+    expect(
+      screen.getByText(/has served first christian church anniston since 2012/i)
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/master of divinity from candler/i)).not.toBeVisible();
+
+    await user.click(screen.getAllByText(/read full biography/i)[0]);
+    expect(screen.getByText(/master of divinity from candler/i)).toBeVisible();
   });
 });

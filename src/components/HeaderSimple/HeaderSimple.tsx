@@ -1,23 +1,41 @@
-import { IconBrandFacebook, IconBrandLinktree } from '@tabler/icons-react';
-import { Link, NavLink } from 'react-router-dom';
-import { Burger, Button, Container, Divider, Drawer, Group, Stack, Text } from '@mantine/core';
-import { useDisclosure } from '@mantine/hooks';
+import { lazy, Suspense, useEffect, useState } from 'react';
+import { IconLanguage } from '@tabler/icons-react';
+import { Link, NavLink, useLocation } from 'react-router-dom';
+import { Burger, Button, Container, Group, Text } from '@mantine/core';
 import { siteConfig } from '../../content/churchContent';
+import { getShellContent } from '../../content/localizedShellContent';
 import { trackGivingIntent } from '../../lib/googleAnalytics';
+import { useLocale } from '../../lib/i18n';
+import { getAlternateLocalePath, getLocalizedPath } from '../../lib/routing';
+import { BrandLogo } from '../BrandLogo/BrandLogo';
+import { PRIMARY_NAVIGATION } from './navigation';
 import classes from './HeaderSimple.module.css';
 
-export function HeaderSimple() {
-  const [opened, { toggle }] = useDisclosure(false);
-  const givingLink = siteConfig.homeActions.find((action) => action.id === 'give');
+const MobileNavigationDrawer = lazy(() =>
+  import('./MobileNavigationDrawer').then((module) => ({
+    default: module.MobileNavigationDrawer,
+  }))
+);
 
-  const items = siteConfig.navigation.map((link) => (
+export function HeaderSimple() {
+  const [opened, setOpened] = useState(false);
+  const location = useLocation();
+  const locale = useLocale();
+  const content = getShellContent(locale);
+  const alternatePath = getAlternateLocalePath(location.pathname);
+
+  useEffect(() => {
+    setOpened(false);
+  }, [location.pathname]);
+
+  const items = PRIMARY_NAVIGATION.map((routeId) => (
     <NavLink
-      key={link.label}
-      to={link.href}
-      end={link.href === '/'}
+      key={routeId}
+      to={getLocalizedPath(routeId, locale)}
+      end={routeId === 'home'}
       className={({ isActive }) => (isActive ? `${classes.link} ${classes.active}` : classes.link)}
     >
-      {link.label}
+      {content.common.navigation[routeId]}
     </NavLink>
   ));
 
@@ -25,109 +43,63 @@ export function HeaderSimple() {
     <>
       <header className={classes.header}>
         <Container size="xl" className={classes.inner}>
-          <Link to="/" className={classes.logo}>
-            <span className={classes.logoMark}>
-              <img src={siteConfig.logoSrc} alt="" />
-            </span>
+          <Link
+            to={getLocalizedPath('home', locale)}
+            className={classes.logo}
+            aria-label={content.common.churchName}
+          >
+            <BrandLogo className={classes.logoMark} />
             <span className={classes.logoText}>
-              <Text className={classes.kicker}>{siteConfig.denomination}</Text>
-              <Text className={classes.wordmark}>{siteConfig.shortName}</Text>
+              <Text className={classes.kicker}>{content.common.denomination}</Text>
+              <Text className={classes.wordmark}>{content.common.shortName}</Text>
             </span>
           </Link>
 
-          <Group gap={5} visibleFrom="xs">
+          <Group
+            gap={2}
+            visibleFrom="md"
+            component="nav"
+            aria-label={content.common.navigationLabel}
+          >
             {items}
-            {givingLink ? (
-              <Button
-                component="a"
-                href={givingLink.href}
-                target="_blank"
-                rel="noreferrer"
-                size="sm"
-                onClick={trackGivingIntent}
-              >
-                Give Online
-              </Button>
-            ) : null}
+            <Button
+              component={Link}
+              to={alternatePath}
+              variant="subtle"
+              color="dark"
+              size="compact-sm"
+              leftSection={<IconLanguage size={17} aria-hidden="true" />}
+              aria-label={content.common.switchLanguage}
+            >
+              {content.common.languageName}
+            </Button>
+            <Button
+              component="a"
+              href={siteConfig.givingFormUrl}
+              target="_blank"
+              rel="noreferrer"
+              size="sm"
+              onClick={() => trackGivingIntent(locale)}
+            >
+              {content.common.give}
+            </Button>
           </Group>
 
           <Burger
             opened={opened}
-            onClick={toggle}
-            hiddenFrom="xs"
+            onClick={() => setOpened((current) => !current)}
+            hiddenFrom="md"
             size="sm"
-            aria-label="Toggle navigation"
+            aria-label={opened ? content.common.closeNavigation : content.common.openNavigation}
           />
         </Container>
       </header>
 
-      <Drawer
-        opened={opened}
-        onClose={toggle}
-        title={
-          <Group gap="sm" wrap="nowrap">
-            <span className={`${classes.logoMark} ${classes.drawerLogoMark}`}>
-              <img src={siteConfig.logoSrc} alt="" />
-            </span>
-            <Text fw={700}>{siteConfig.shortName}</Text>
-          </Group>
-        }
-        padding="lg"
-        hiddenFrom="xs"
-      >
-        <Stack gap="sm">
-          {siteConfig.navigation.map((link) => (
-            <Link key={link.label} to={link.href} className={classes.mobileLink} onClick={toggle}>
-              {link.label}
-            </Link>
-          ))}
-
-          <Divider my="sm" />
-
-          {givingLink ? (
-            <Button
-              component="a"
-              href={givingLink.href}
-              target="_blank"
-              rel="noreferrer"
-              onClick={() => {
-                trackGivingIntent();
-                toggle();
-              }}
-            >
-              Give Online
-            </Button>
-          ) : null}
-
-          <Divider my="xs" />
-
-          <div>
-            <Text className={classes.mobileSectionTitle}>Stay connected</Text>
-            <Stack gap="xs" mt="sm">
-              {siteConfig.socialLinks.map((link) => {
-                const Icon = link.id === 'facebook' ? IconBrandFacebook : IconBrandLinktree;
-
-                return (
-                  <Button
-                    key={link.id}
-                    component="a"
-                    href={link.href}
-                    target="_blank"
-                    rel="noreferrer"
-                    variant="light"
-                    color={link.id === 'facebook' ? 'blue' : 'moss'}
-                    leftSection={<Icon size={19} stroke={1.8} />}
-                    className={classes.mobileSocialLink}
-                    onClick={toggle}
-                  >
-                    {link.cta}
-                  </Button>
-                );
-              })}
-            </Stack>
-          </div>
-        </Stack>
-      </Drawer>
+      {opened && (
+        <Suspense fallback={null}>
+          <MobileNavigationDrawer opened={opened} onClose={() => setOpened(false)} />
+        </Suspense>
+      )}
     </>
   );
 }

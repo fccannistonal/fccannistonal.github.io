@@ -1,0 +1,27 @@
+.frame {
+  overflow: hidden;
+  min-height: var(--embed-min-height, 20rem);
+  border: 1px solid rgb(83 59 39 / 12%);
+  border-radius: calc(var(--mantine-radius-xl) + 2px);
+  background:
+    radial-gradient(circle at 10% 10%, rgb(222 129 54 / 12%), transparent 34%),
+    linear-gradient(145deg, rgb(255 253 249 / 98%), rgb(245 238 226 / 96%));
+  box-shadow: 0 20px 48px rgb(61 44 30 / 8%);
+}
+
+.placeholder {
+  min-height: var(--embed-min-height, 20rem);
+  padding: clamp(1.5rem, 5vw, 3rem);
+}
+
+.iframe {
+  display: block;
+  width: 100%;
+  min-height: var(--embed-min-height, 20rem);
+  border: 0;
+  background: #fffdf9;
+}
+
+.actions {
+  justify-content: center;
+}

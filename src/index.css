@@ -21,6 +21,13 @@ a {
   text-decoration: inherit;
 }
 
+.mantine-Button-root:not([data-variant]) {
+  --button-bg: var(--mantine-primary-color-filled);
+  --button-hover: var(--mantine-primary-color-filled-hover);
+
+  background: var(--button-bg);
+}
+
 body {
   margin: 0;
   min-width: 320px;

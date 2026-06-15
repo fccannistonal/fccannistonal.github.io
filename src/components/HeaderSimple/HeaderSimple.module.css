@@ -15,7 +15,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: var(--mantine-spacing-lg);
+  gap: var(--mantine-spacing-sm);
 }
 
 .logo {
@@ -26,6 +26,7 @@
 }
 
 .logoMark {
+  display: block;
   width: 44px;
   height: 56px;
   flex: 0 0 auto;
@@ -38,6 +39,7 @@
 }
 
 .logoMark img {
+  display: block;
   width: 100%;
   height: 100%;
   object-fit: contain;
@@ -68,7 +70,7 @@
 .link {
   display: block;
   line-height: 1;
-  padding: 10px 14px;
+  padding: 9px 10px;
   border-radius: 999px;
   color: #4c3829;
   font-size: var(--mantine-font-size-sm);
@@ -117,7 +119,7 @@
   border-radius: 11px;
 }
 
-@media (max-width: 48em) {
+@media (max-width: 62em) {
   .logo {
     gap: 8px;
   }

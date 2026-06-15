@@ -6,31 +6,68 @@ import { Router, routes } from './Router';
 
 describe('Router', () => {
   it.each([
-    ['/', /all are welcome/i],
+    ['/', /followers of Christ/i],
+    ['/visit', /know what to expect/i],
+    ['/about', /church shaped by Christ’s welcome/i],
     ['/staff', /meet the staff/i],
-    ['/community', /diversity theater company/i],
-    ['/contact', /we’d love to hear from you/i],
+    ['/community', /faith takes shape in community/i],
+    ['/community/diversity-theater', /diversity theater company/i],
+    ['/updates', /church news and announcements/i],
+    ['/contact', /we would love to hear from you/i],
+    ['/privacy', /clear choices about outside services/i],
+    ['/es', /seguidores de Cristo/i],
+    ['/es/visita', /sepa qué esperar/i],
+    ['/es/acerca', /iglesia formada por la bienvenida/i],
+    ['/es/personal', /conozca al personal/i],
+    ['/es/comunidad', /la fe toma forma en comunidad/i],
+    ['/es/comunidad/teatro-diversidad', /compañía de teatro diversidad/i],
+    ['/es/novedades', /noticias y anuncios/i],
+    ['/es/contacto', /nos encantaría saber de usted/i],
+    ['/es/privacidad', /opciones claras sobre servicios externos/i],
     ['/missing', /page not found/i],
-  ])('renders %s', (pathname, heading) => {
+  ])('renders %s', async (pathname, heading) => {
     const router = createMemoryRouter(routes, { initialEntries: [pathname] });
 
     render(<RouterProvider router={router} />);
 
-    expect(screen.getByRole('heading', { name: heading })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: heading })).toBeInTheDocument();
   });
 
-  it('redirects the former outreach path to the Community page', async () => {
-    const router = createMemoryRouter(routes, { initialEntries: ['/outreach'] });
+  it.each([
+    ['/outreach', '/community'],
+    ['/diversity-theater', '/community/diversity-theater'],
+    ['/es/outreach', '/es/comunidad'],
+    ['/es/teatro-diversidad', '/es/comunidad/teatro-diversidad'],
+  ])('redirects %s to %s', async (source, destination) => {
+    const router = createMemoryRouter(routes, { initialEntries: [source] });
 
     render(<RouterProvider router={router} />);
 
-    expect(
-      await screen.findByRole('heading', { name: /diversity theater company/i })
-    ).toBeInTheDocument();
-    expect(router.state.location.pathname).toBe('/community');
+    await waitFor(() => expect(router.state.location.pathname).toBe(destination));
   });
 
-  it('renders a path restored by the GitHub Pages fallback on first load', () => {
+  it('restores scroll and focuses the new heading after navigation', async () => {
+    const router = createMemoryRouter(routes, { initialEntries: ['/'] });
+
+    render(<RouterProvider router={router} />);
+    await screen.findByRole('heading', { name: /followers of Christ/i });
+
+    await act(async () => {
+      await router.navigate('/staff');
+    });
+
+    const heading = await screen.findByRole('heading', { name: /meet the staff/i });
+    await waitFor(() =>
+      expect(window.scrollTo).toHaveBeenCalledWith({
+        top: 0,
+        left: 0,
+        behavior: 'auto',
+      })
+    );
+    await waitFor(() => expect(heading).toHaveFocus());
+  });
+
+  it('renders a path restored by the GitHub Pages fallback on first load', async () => {
     window.history.replaceState(null, '', '/');
     window.sessionStorage.setItem(getRedirectPathKey(), '/staff');
 
@@ -38,24 +75,30 @@ describe('Router', () => {
     render(<Router />);
 
     expect(window.location.pathname).toBe('/staff');
-    expect(screen.getByRole('heading', { name: /meet the staff/i })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: /meet the staff/i })).toBeInTheDocument();
   });
 
-  it('updates the document title after navigation', async () => {
+  it('updates localized metadata after navigation', async () => {
     const router = createMemoryRouter(routes, { initialEntries: ['/'] });
 
     render(<RouterProvider router={router} />);
 
     await waitFor(() => {
       expect(document.title).toBe('First Christian Church Anniston');
+      expect(document.documentElement.lang).toBe('en');
     });
 
     await act(async () => {
-      await router.navigate('/contact?source=staff');
+      await router.navigate('/es/contacto?source=staff');
     });
 
     await waitFor(() => {
-      expect(document.title).toBe('Contact | First Christian Church Anniston');
+      expect(document.title).toBe('Contacto | Primera Iglesia Cristiana de Anniston');
+      expect(document.documentElement.lang).toBe('es');
+      expect(document.querySelector('link[rel="canonical"]')).toHaveAttribute(
+        'href',
+        'https://fccanniston.com/es/contacto'
+      );
     });
   });
 });

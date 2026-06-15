@@ -1,9 +1,12 @@
-import { StoryWrapper } from '../../components/StoryWrapper/StoryWrapper';
-import attributes from './attributes.json';
+import { MemoryRouter } from 'react-router-dom';
 import { FooterSimple } from './FooterSimple';
 
-export default { title: 'FooterSimple' };
+export default { title: 'Church/Footer' };
 
 export function Usage() {
-  return <StoryWrapper attributes={attributes} component={FooterSimple} />;
+  return (
+    <MemoryRouter>
+      <FooterSimple />
+    </MemoryRouter>
+  );
 }

@@ -1,0 +1,28 @@
+.identityCard {
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 0% 100%, rgb(99 139 73 / 13%), transparent 38%),
+    radial-gradient(circle at 100% 0%, rgb(222 129 54 / 14%), transparent 36%),
+    rgb(255 251 246 / 96%);
+  box-shadow: 0 24px 55px rgb(61 44 30 / 9%);
+}
+
+.valueCard {
+  min-height: 100%;
+  background: rgb(255 253 249 / 90%);
+  border-color: rgb(83 59 39 / 10%);
+  box-shadow: 0 14px 34px rgb(61 44 30 / 7%);
+}
+
+.cta {
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 95% 10%, rgb(222 129 54 / 20%), transparent 34%),
+    linear-gradient(135deg, #44261c, #271914);
+  color: white;
+  box-shadow: 0 26px 58px rgb(50 28 18 / 18%);
+}
+
+.ctaText {
+  color: rgb(255 255 255 / 76%);
+}

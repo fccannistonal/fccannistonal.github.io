@@ -90,6 +90,17 @@ out
 # Nuxt.js build / generate output
 .nuxt
 dist
+.ssr
+/public/images/home/
+/public/images/gallery/
+/public/images/staff/
+/public/images/community/
+/public/images/social/
+/public/images/brand/fcc-logo-128.avif
+/public/images/brand/fcc-logo-128.webp
+playwright-report/
+storybook-static/
+test-results/
 
 # Gatsby files
 .cache/

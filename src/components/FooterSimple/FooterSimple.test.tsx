@@ -1,32 +1,30 @@
 import { MemoryRouter } from 'react-router-dom';
 import { axe, render, screen } from '@/test-utils';
-import attributes from './attributes.json';
 import { FooterSimple } from './FooterSimple';
 
 describe('FooterSimple', () => {
   axe([
     <MemoryRouter key="router">
-      <FooterSimple {...(attributes as any)} />
+      <FooterSimple />
     </MemoryRouter>,
   ]);
 
-  it('renders correctly', () => {
+  it('renders localized route and social links', () => {
     const { container } = render(
-      <MemoryRouter>
-        <FooterSimple {...(attributes as any)} />
+      <MemoryRouter initialEntries={['/es']}>
+        <FooterSimple />
       </MemoryRouter>
     );
 
-    expect(container.querySelector('img[src="/images/brand/fcc-logo.png"]')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /give online/i })).toHaveAttribute(
+    expect(
+      container.querySelector('source[srcset="/images/brand/fcc-logo-128.avif"]')
+    ).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /privacidad/i })).toHaveAttribute(
       'href',
-      'https://give.tithe.ly/?formId=c23cd1bd-eeab-4311-a159-15b079e46baf'
+      '/es/privacidad'
     );
     expect(
-      screen.getByRole('link', { name: /follow on facebook \(opens in a new tab\)/i })
+      screen.getByRole('link', { name: /seguir en facebook \(se abre en una pestaña nueva\)/i })
     ).toHaveAttribute('href', 'https://www.facebook.com/FCCAnniston');
-    expect(
-      screen.getByRole('link', { name: /explore our linktree \(opens in a new tab\)/i })
-    ).toHaveAttribute('href', 'https://linktr.ee/fccanniston');
   });
 });

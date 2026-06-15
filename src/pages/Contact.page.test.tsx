@@ -1,3 +1,4 @@
+import { MemoryRouter } from 'react-router-dom';
 import { render, screen, userEvent, waitFor } from '@/test-utils';
 import { ContactPage } from './Contact.page';
 
@@ -18,7 +19,11 @@ describe('ContactPage', () => {
   });
 
   it('shows direct ways to contact and visit the church', () => {
-    render(<ContactPage />);
+    render(
+      <MemoryRouter>
+        <ContactPage />
+      </MemoryRouter>
+    );
 
     expect(
       screen.getByRole('link', {
@@ -38,7 +43,11 @@ describe('ContactPage', () => {
   it('validates required fields before submission', async () => {
     const user = userEvent.setup();
 
-    render(<ContactPage />);
+    render(
+      <MemoryRouter>
+        <ContactPage />
+      </MemoryRouter>
+    );
 
     await user.click(screen.getByRole('button', { name: /send message/i }));
 
@@ -57,7 +66,11 @@ describe('ContactPage', () => {
 
     vi.stubGlobal('fetch', fetchMock);
 
-    render(<ContactPage />);
+    render(
+      <MemoryRouter>
+        <ContactPage />
+      </MemoryRouter>
+    );
 
     await user.type(screen.getByRole('textbox', { name: /^name$/i }), 'Jordan Visitor');
     await user.type(screen.getByRole('textbox', { name: /^email$/i }), 'jordan@example.com');
@@ -90,7 +103,11 @@ describe('ContactPage', () => {
 
     vi.stubGlobal('fetch', fetchMock);
 
-    render(<ContactPage />);
+    render(
+      <MemoryRouter>
+        <ContactPage />
+      </MemoryRouter>
+    );
 
     await user.type(screen.getByRole('textbox', { name: /^name$/i }), 'Jordan Visitor');
     await user.type(screen.getByRole('textbox', { name: /^email$/i }), 'jordan@example.com');

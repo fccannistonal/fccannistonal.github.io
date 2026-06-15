@@ -3,6 +3,24 @@
   color: #241a12;
 }
 
+.skipLink {
+  position: fixed;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 1000;
+  padding: 0.7rem 1rem;
+  border-radius: 999px;
+  background: #241a12;
+  color: white;
+  font-weight: 700;
+  transform: translateY(-180%);
+  transition: transform 160ms ease;
+}
+
+.skipLink:focus {
+  transform: translateY(0);
+}
+
 .main {
   padding-top: var(--site-header-height);
   position: relative;
@@ -11,4 +29,20 @@
 .content {
   position: relative;
   z-index: 1;
+}
+
+.alertContainer {
+  width: min(100% - 2rem, 90rem);
+  margin-inline: auto;
+  padding-top: 1rem;
+}
+
+.serviceAlert {
+  display: grid;
+  gap: 0.25rem;
+  padding: 1rem 1.25rem;
+  border: 1px solid rgb(222 129 54 / 35%);
+  border-radius: var(--mantine-radius-lg);
+  background: #fff2df;
+  color: #60320d;
 }

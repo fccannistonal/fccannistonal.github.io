@@ -1,0 +1,151 @@
+{
+  "siteUrl": "https://fccanniston.com",
+  "siteName": "First Christian Church Anniston",
+  "socialImage": "/images/social/fcc-anniston.jpg",
+  "routes": [
+    {
+      "id": "home",
+      "locale": "en",
+      "path": "/",
+      "alternatePath": "/es",
+      "title": "First Christian Church Anniston",
+      "description": "An open and affirming Disciples of Christ congregation in Anniston, Alabama. Plan your Sunday visit and find service times, directions, and church life."
+    },
+    {
+      "id": "home",
+      "locale": "es",
+      "path": "/es",
+      "alternatePath": "/",
+      "title": "Primera Iglesia Cristiana de Anniston",
+      "description": "Una congregación abierta y afirmativa de los Discípulos de Cristo en Anniston, Alabama. Planifique su visita dominical y encuentre horarios y direcciones."
+    },
+    {
+      "id": "visit",
+      "locale": "en",
+      "path": "/visit",
+      "alternatePath": "/es/visita",
+      "title": "Plan Your Visit | First Christian Church Anniston",
+      "description": "Know what to expect on Sunday at First Christian Church Anniston, including worship times, children’s ministry, communion, directions, and visitor support."
+    },
+    {
+      "id": "visit",
+      "locale": "es",
+      "path": "/es/visita",
+      "alternatePath": "/visit",
+      "title": "Planifique su visita | Primera Iglesia Cristiana de Anniston",
+      "description": "Conozca qué esperar el domingo en la Primera Iglesia Cristiana de Anniston, incluidos horarios, ministerio infantil, comunión, direcciones y apoyo."
+    },
+    {
+      "id": "about",
+      "locale": "en",
+      "path": "/about",
+      "alternatePath": "/es/acerca",
+      "title": "About Us | First Christian Church Anniston",
+      "description": "Learn about First Christian Church Anniston, our Disciples of Christ identity, open and affirming welcome, communion, values, and life together."
+    },
+    {
+      "id": "about",
+      "locale": "es",
+      "path": "/es/acerca",
+      "alternatePath": "/about",
+      "title": "Acerca de nosotros | Primera Iglesia Cristiana de Anniston",
+      "description": "Conozca la identidad de los Discípulos de Cristo, la bienvenida abierta y afirmativa, la comunión, los valores y la vida de la iglesia."
+    },
+    {
+      "id": "staff",
+      "locale": "en",
+      "path": "/staff",
+      "alternatePath": "/es/personal",
+      "title": "Staff | First Christian Church Anniston",
+      "description": "Meet the ministers, musicians, and staff who lead worship and care for the First Christian Church Anniston community."
+    },
+    {
+      "id": "staff",
+      "locale": "es",
+      "path": "/es/personal",
+      "alternatePath": "/staff",
+      "title": "Personal | Primera Iglesia Cristiana de Anniston",
+      "description": "Conozca a los ministros, músicos y miembros del personal que dirigen la adoración y cuidan a la comunidad de la iglesia."
+    },
+    {
+      "id": "community",
+      "locale": "en",
+      "path": "/community",
+      "alternatePath": "/es/comunidad",
+      "title": "Church Life | First Christian Church Anniston",
+      "description": "Explore worship, children’s ministry, Hispanic ministry, the Diversity Theater Company, and community life at First Christian Church Anniston."
+    },
+    {
+      "id": "community",
+      "locale": "es",
+      "path": "/es/comunidad",
+      "alternatePath": "/community",
+      "title": "Vida de la iglesia | Primera Iglesia Cristiana de Anniston",
+      "description": "Explore la adoración, el ministerio infantil, el ministerio hispano, la Compañía de Teatro Diversidad y la vida comunitaria."
+    },
+    {
+      "id": "diversityTheater",
+      "locale": "en",
+      "path": "/community/diversity-theater",
+      "alternatePath": "/es/comunidad/teatro-diversidad",
+      "title": "Diversity Theater Company | First Christian Church Anniston",
+      "description": "Discover the Diversity Theater Company and its mission of honest storytelling, open hospitality, and LGBTQ inclusion at First Christian Church."
+    },
+    {
+      "id": "diversityTheater",
+      "locale": "es",
+      "path": "/es/comunidad/teatro-diversidad",
+      "alternatePath": "/community/diversity-theater",
+      "title": "Compañía de Teatro Diversidad | Primera Iglesia Cristiana de Anniston",
+      "description": "Descubra la Compañía de Teatro Diversidad y su misión de contar historias con honestidad, hospitalidad abierta e inclusión LGBTQ."
+    },
+    {
+      "id": "updates",
+      "locale": "en",
+      "path": "/updates",
+      "alternatePath": "/es/novedades",
+      "title": "Updates | First Christian Church Anniston",
+      "description": "Find current First Christian Church Anniston announcements, schedule updates, events, photos, and links from the church’s public Facebook page."
+    },
+    {
+      "id": "updates",
+      "locale": "es",
+      "path": "/es/novedades",
+      "alternatePath": "/updates",
+      "title": "Novedades | Primera Iglesia Cristiana de Anniston",
+      "description": "Encuentre anuncios, cambios de horario, eventos, fotos y enlaces actuales de la página pública de Facebook de la iglesia."
+    },
+    {
+      "id": "contact",
+      "locale": "en",
+      "path": "/contact",
+      "alternatePath": "/es/contacto",
+      "title": "Contact | First Christian Church Anniston",
+      "description": "Contact First Christian Church Anniston by email, phone, or message, and get directions to 1327 Leighton Avenue in Anniston, Alabama."
+    },
+    {
+      "id": "contact",
+      "locale": "es",
+      "path": "/es/contacto",
+      "alternatePath": "/contact",
+      "title": "Contacto | Primera Iglesia Cristiana de Anniston",
+      "description": "Comuníquese con la Primera Iglesia Cristiana de Anniston por correo electrónico, teléfono o mensaje, y obtenga direcciones."
+    },
+    {
+      "id": "privacy",
+      "locale": "en",
+      "path": "/privacy",
+      "alternatePath": "/es/privacidad",
+      "title": "Privacy | First Christian Church Anniston",
+      "description": "Learn how First Christian Church Anniston uses analytics, contact forms, maps, media embeds, Facebook, and online giving services."
+    },
+    {
+      "id": "privacy",
+      "locale": "es",
+      "path": "/es/privacidad",
+      "alternatePath": "/privacy",
+      "title": "Privacidad | Primera Iglesia Cristiana de Anniston",
+      "description": "Conozca cómo la iglesia utiliza analítica, formularios de contacto, mapas, contenido multimedia, Facebook y servicios de donación."
+    }
+  ]
+}

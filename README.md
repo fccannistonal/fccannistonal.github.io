@@ -2,45 +2,44 @@
 
 Source for the First Christian Church Anniston website at [fccanniston.com](https://fccanniston.com/).
 
-This repo is a React 19 + TypeScript + Vite + Mantine site with GitHub Pages deployment and a FormSubmit-backed contact form. It is no longer a generic Mantine starter, although some starter-template files and component stories are still present in the repository.
+This repo is a React 19 + TypeScript + Vite + Mantine site with GitHub Pages deployment and a FormSubmit-backed contact form.
 
 ## What this repo currently contains
 
-- A multi-page church website with `Home`, `Staff`, `Outreach`, and `Contact` pages
-- Shared site layout, header, and footer
-- GitHub Pages SPA routing support with a generated `404.html`
+- Fully localized English and Spanish routes with equivalent-page language switching
+- Visitor, beliefs, staff, church-life, updates, contact, and privacy content
+- Route-specific static HTML, metadata, `hreflang`, sitemap, and Church structured data
+- GitHub Pages deep-link support with a generated `404.html`
 - A contact form that sends submissions to the church inbox through FormSubmit
-- Tests for the active site pages and church-specific components
+- Consent-gated analytics and click-to-load third-party embeds
+- Responsive AVIF/WebP/JPEG photography generated from `source-images/`
 
 ## Current content status
 
-The site structure is ready, but several pieces of content are still placeholders and should be replaced before launch or final handoff:
-
-- Staff names, bios, and portraits
-- Worship schedule details
-- Podcast, Zoom, and online giving links
-- Hero, gallery, and outreach photography
+Church leadership must complete the launch review in `CONTENT_REVIEW.md`. Spanish copy is a draft until a Spanish-speaking ministry leader approves it.
 
 ## Where to edit
 
 Most of the real app lives under `src/`. If you are trying to update the deployed church site, start here:
 
-- `src/content/churchContent.ts`: main content model for navigation, hero copy, welcome text, contact details, staff entries, outreach cards, and home-page action links
+- `src/content/churchContent.ts`: shared verified facts, links, and image assets
+- `src/content/localizedContent.ts`: all website-owned English and Spanish copy
+- `src/content/routeManifest.json`: localized routes and route metadata
 - `src/pages/*.tsx`: page composition for the live routes
 - `src/components/church/*`: church-specific UI like the hero, page headers, content image blocks, and contact form
 - `src/components/HeaderSimple/*` and `src/components/FooterSimple/*`: shared site chrome
 - `src/lib/formConfig.ts`: stores the church contact email and form submission endpoint
 - `src/lib/githubPages.ts`: restores SPA routes after GitHub Pages redirects
-- `public/`: static assets
-
-The repository still includes many Mantine demo components, stories, and tests from the original starter. Those are useful for reference, but they are not the main source of truth for the live church site.
+- `source-images/`: original photography used by the responsive-image build
+- `public/images/brand/`: source icons and logo
 
 ## Routes
 
 - `/`
-- `/staff`
-- `/outreach`
-- `/contact`
+- English: `/visit`, `/about`, `/staff`, `/community`, `/community/diversity-theater`, `/updates`, `/contact`, `/privacy`
+- Spanish: `/es/visita`, `/es/acerca`, `/es/personal`, `/es/comunidad`, `/es/comunidad/teatro-diversidad`, `/es/novedades`, `/es/contacto`, `/es/privacidad`
+
+Legacy `/outreach` and diversity-theater URLs redirect to their canonical routes.
 
 ## Local development
 
@@ -74,6 +73,8 @@ Full pre-merge gate:
 npm run test
 ```
 
+This includes unit/accessibility tests, production build validation, Playwright browser tests, and a production dependency audit.
+
 ## Build and deployment
 
 Production build:
@@ -88,16 +89,11 @@ Preview the built app locally:
 npm run preview
 ```
 
-That build currently does two things:
-
-- writes the main production bundle to `dist/`
-- writes an additional `/docs/`-based build to `docs/`
-
-The repo also generates a GitHub Pages `404.html` fallback so client-side routes continue to work after direct navigation or refreshes.
+The build writes only to `dist/`. It generates responsive images, localized static route documents, sitemap and robots files, social imagery, and the GitHub Pages `404.html` fallback.
 
 GitHub Actions:
 
-- `.github/workflows/npm_test.yml`: runs on pull requests and executes `npm ci`, `npm run build`, and `npm run test`
+- `.github/workflows/npm_test.yml`: runs the complete `npm run test` gate on pull requests
 - `.github/workflows/deploy.yml`: runs on pushes to `main` or `master`, builds the site, uploads `dist`, and deploys to GitHub Pages
 
 Because this repo includes a `CNAME` file, the production site is configured for the custom domain `fccanniston.com`.

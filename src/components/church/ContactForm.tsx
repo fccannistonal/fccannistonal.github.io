@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { IconAlertCircle, IconArrowRight, IconCircleCheck, IconMail } from '@tabler/icons-react';
 import {
   Alert,
@@ -13,8 +13,10 @@ import {
   TextInput,
   Title,
 } from '@mantine/core';
+import { getContent } from '../../content/localizedContent';
 import { CONTACT_EMAIL, getContactFormEndpoint } from '../../lib/formConfig';
 import { trackContactFormSubmission } from '../../lib/googleAnalytics';
+import { useLocale } from '../../lib/i18n';
 import classes from './ContactForm.module.css';
 
 type FormValues = {
@@ -27,67 +29,62 @@ type FormValues = {
 
 type FormErrors = Partial<Record<keyof FormValues, string>>;
 
-const INITIAL_VALUES: FormValues = {
+const createInitialValues = (topic: string): FormValues => ({
   name: '',
   email: '',
   phone: '',
-  topic: 'Planning a visit',
+  topic,
   message: '',
-};
-
-const CONTACT_TOPICS = [
-  'Planning a visit',
-  'Prayer request',
-  'Church ministries',
-  'Community events',
-  'Giving',
-  'Something else',
-];
-
-function validateForm(values: FormValues) {
-  const errors: FormErrors = {};
-
-  if (!values.name.trim()) {
-    errors.name = 'Please share your name.';
-  }
-
-  if (!values.email.trim()) {
-    errors.email = 'Please share an email address.';
-  } else if (!/\S+@\S+\.\S+/.test(values.email)) {
-    errors.email = 'Please enter a valid email address.';
-  }
-
-  if (!values.message.trim()) {
-    errors.message = 'Please add a message before sending.';
-  }
-
-  return errors;
-}
+});
 
 export function ContactForm() {
-  const [values, setValues] = useState(INITIAL_VALUES);
+  const locale = useLocale();
+  const content = getContent(locale);
+  const copy = content.contact.form;
+  const [values, setValues] = useState(() => createInitialValues(copy.topics[0]));
   const [website, setWebsite] = useState('');
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [status, setStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
+  useEffect(() => {
+    setValues((current) => ({ ...current, topic: copy.topics[0] }));
+  }, [copy.topics]);
+
+  function validateForm() {
+    const nextErrors: FormErrors = {};
+
+    if (!values.name.trim()) {
+      nextErrors.name = copy.nameRequired;
+    }
+
+    if (!values.email.trim()) {
+      nextErrors.email = copy.emailRequired;
+    } else if (!/\S+@\S+\.\S+/.test(values.email)) {
+      nextErrors.email = copy.emailInvalid;
+    }
+
+    if (!values.message.trim()) {
+      nextErrors.message = copy.messageRequired;
+    }
+
+    return nextErrors;
+  }
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    const validationErrors = validateForm(values);
+    const validationErrors = validateForm();
     setErrors(validationErrors);
 
     if (Object.keys(validationErrors).length > 0) {
-      setStatus({ type: 'error', message: 'Please review the highlighted fields.' });
+      setStatus({ type: 'error', message: copy.validationSummary });
       return;
     }
 
     if (website) {
-      setValues(INITIAL_VALUES);
-      setStatus({
-        type: 'success',
-        message: 'Thanks for reaching out. Your message has been sent.',
-      });
+      setValues(createInitialValues(copy.topics[0]));
+      setStatus({ type: 'success', message: copy.successMessage });
       return;
     }
 
@@ -103,6 +100,7 @@ export function ContactForm() {
         },
         body: JSON.stringify({
           ...values,
+          language: locale,
           _subject: `New FCC Anniston website message: ${values.topic}`,
           _template: 'table',
           _captcha: 'false',
@@ -115,25 +113,18 @@ export function ContactForm() {
           errors?: Array<{ message?: string }>;
           message?: string;
         } | null;
-        throw new Error(
-          payload?.errors?.[0]?.message ??
-            payload?.message ??
-            'Unable to send your message right now. Please email or call the church instead.'
-        );
+        throw new Error(payload?.errors?.[0]?.message ?? payload?.message ?? copy.genericError);
       }
 
-      setValues(INITIAL_VALUES);
+      setValues(createInitialValues(copy.topics[0]));
       setWebsite('');
       setErrors({});
-      setStatus({
-        type: 'success',
-        message: 'Thanks for reaching out. Your message has been sent.',
-      });
-      trackContactFormSubmission();
+      setStatus({ type: 'success', message: copy.successMessage });
+      trackContactFormSubmission(locale);
     } catch (error) {
       setStatus({
         type: 'error',
-        message: error instanceof Error ? error.message : 'Unable to send your message right now.',
+        message: error instanceof Error ? error.message : copy.genericError,
       });
     } finally {
       setIsSubmitting(false);
@@ -153,14 +144,13 @@ export function ContactForm() {
         size="lg"
         leftSection={<IconMail size={15} stroke={1.8} />}
       >
-        Start a conversation
+        {copy.badge}
       </Badge>
       <Title order={2} mt="md">
-        Send us a message
+        {copy.title}
       </Title>
       <Text c="dimmed" mt="sm" size="lg" maw={620}>
-        Have a question, prayer request, or note before your first visit? Send it here and someone
-        from the church will follow up.
+        {copy.description}
       </Text>
 
       <form onSubmit={handleSubmit} noValidate>
@@ -175,7 +165,7 @@ export function ContactForm() {
                   <IconAlertCircle size={18} />
                 )
               }
-              title={status.type === 'success' ? 'Message sent' : 'Unable to send'}
+              title={status.type === 'success' ? copy.successTitle : copy.errorTitle}
               radius="lg"
               role="status"
             >
@@ -197,7 +187,7 @@ export function ContactForm() {
 
           <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
             <TextInput
-              label="Name"
+              label={copy.name}
               name="name"
               value={values.name}
               onChange={(event) => updateValue('name', event.currentTarget.value)}
@@ -206,7 +196,7 @@ export function ContactForm() {
               required
             />
             <TextInput
-              label="Email"
+              label={copy.email}
               name="email"
               type="email"
               value={values.email}
@@ -219,26 +209,26 @@ export function ContactForm() {
 
           <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
             <TextInput
-              label="Phone"
+              label={copy.phone}
               name="phone"
               type="tel"
               value={values.phone}
               onChange={(event) => updateValue('phone', event.currentTarget.value)}
-              description="Optional"
+              description={copy.optional}
               autoComplete="tel"
             />
             <Select
-              label="How can we help?"
+              label={copy.topic}
               name="topic"
-              data={CONTACT_TOPICS}
+              data={copy.topics}
               value={values.topic}
-              onChange={(value) => updateValue('topic', value ?? INITIAL_VALUES.topic)}
+              onChange={(value) => updateValue('topic', value ?? copy.topics[0])}
               allowDeselect={false}
             />
           </SimpleGrid>
 
           <Textarea
-            label="Message"
+            label={copy.message}
             name="message"
             value={values.message}
             onChange={(event) => updateValue('message', event.currentTarget.value)}
@@ -251,18 +241,19 @@ export function ContactForm() {
           <Button
             type="submit"
             loading={isSubmitting}
+            loaderProps={{ 'aria-label': copy.sending }}
             size="md"
             rightSection={<IconArrowRight size={18} />}
           >
-            Send message
+            {copy.send}
           </Button>
 
           <Text size="sm" c="dimmed" ta="center">
-            Your message will be delivered to{' '}
+            {copy.deliveryPrefix}{' '}
             <Text component="a" href={`mailto:${CONTACT_EMAIL}`} inherit fw={700}>
               {CONTACT_EMAIL}
             </Text>
-            . We will only use your contact details to respond.
+            . {copy.deliverySuffix}
           </Text>
         </Stack>
       </form>

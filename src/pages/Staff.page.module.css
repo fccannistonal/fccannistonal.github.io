@@ -1,0 +1,26 @@
+.memberCard {
+  overflow: hidden;
+  border-color: rgb(83 59 39 / 12%);
+  background:
+    radial-gradient(circle at 100% 0%, rgb(222 129 54 / 10%), transparent 36%),
+    rgb(255 253 249 / 94%);
+  box-shadow: 0 20px 48px rgb(61 44 30 / 8%);
+}
+
+.biography {
+  border-top: 1px solid rgb(83 59 39 / 12%);
+  padding-top: var(--mantine-spacing-md);
+}
+
+.biography summary {
+  width: fit-content;
+  cursor: pointer;
+  color: var(--mantine-color-brand-8);
+  font-weight: 800;
+}
+
+.biography summary:focus-visible {
+  outline: 3px solid var(--mantine-color-brand-4);
+  outline-offset: 3px;
+  border-radius: 4px;
+}

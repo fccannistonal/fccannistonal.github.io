@@ -32,12 +32,18 @@ import {
 } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
 import { ContentImage } from '../components/church/ContentImage';
+import { DeferredEmbed } from '../components/church/DeferredEmbed';
 import { HomeHero } from '../components/church/HomeHero';
-import { photoSlides, siteConfig } from '../content/churchContent';
-import { trackGivingIntent } from '../lib/googleAnalytics';
+import { photoAssets, siteConfig } from '../content/churchContent';
+import { getContent } from '../content/localizedContent';
+import { trackGivingIntent, trackVisitPlanningIntent } from '../lib/googleAnalytics';
+import { useLocale } from '../lib/i18n';
+import { getLocalizedPath } from '../lib/routing';
 import classes from './Home.page.module.css';
 
 export function HomePage() {
+  const locale = useLocale();
+  const content = getContent(locale);
   const [galleryApi, setGalleryApi] = useState<EmblaCarouselType | null>(null);
   const [selectedGallerySlide, setSelectedGallerySlide] = useState(0);
   const [canScrollGalleryPrevious, setCanScrollGalleryPrevious] = useState(false);
@@ -72,12 +78,8 @@ export function HomePage() {
   const firstVisiblePhoto = selectedGallerySlide + 1;
   const lastVisiblePhoto = Math.min(
     firstVisiblePhoto + visibleGalleryCardCount - 1,
-    photoSlides.length
+    photoAssets.length
   );
-  const galleryStatus =
-    firstVisiblePhoto === lastVisiblePhoto
-      ? `Photo ${firstVisiblePhoto} of ${photoSlides.length}`
-      : `Photos ${firstVisiblePhoto}–${lastVisiblePhoto} of ${photoSlides.length}`;
 
   return (
     <>
@@ -90,37 +92,44 @@ export function HomePage() {
               <Grid.Col span={{ base: 12, md: 7 }}>
                 <Paper withBorder p={{ base: 'lg', md: 'xl' }} h="100%">
                   <Badge variant="light" color="brand">
-                    Welcome
+                    {content.home.welcomeEyebrow}
                   </Badge>
                   <Title id="welcome-title" order={2} mt="md">
-                    {siteConfig.welcomeTitle}
+                    {content.home.welcomeTitle}
                   </Title>
                   <Stack gap="md" mt="md">
-                    {siteConfig.welcomeParagraphs.map((paragraph) => (
+                    {content.home.welcomeParagraphs.map((paragraph) => (
                       <Text key={paragraph} c="dimmed" size="lg">
                         {paragraph}
                       </Text>
                     ))}
                   </Stack>
 
-                  <Title order={3} mt="xl">
-                    Join us on Sundays for worship and connection
-                  </Title>
-                  <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md" mt="md">
+                  <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md" mt="xl">
                     {siteConfig.serviceTimes.map((service) => (
-                      <Paper key={service.label} withBorder p="md">
+                      <Paper key={service.id} withBorder p="md">
                         <Group wrap="nowrap">
                           <ThemeIcon size={42} radius="xl" variant="light" color="brand">
                             <IconClock size={21} stroke={1.7} />
                           </ThemeIcon>
                           <div>
-                            <Text fw={700}>{service.label}</Text>
+                            <Text fw={700}>{content.common.serviceLabels[service.id]}</Text>
                             <Text c="dimmed">{service.time}</Text>
                           </div>
                         </Group>
                       </Paper>
                     ))}
                   </SimpleGrid>
+
+                  <Button
+                    component={Link}
+                    to={getLocalizedPath('visit', locale)}
+                    mt="xl"
+                    variant="light"
+                    onClick={() => trackVisitPlanningIntent('home-welcome', locale)}
+                  >
+                    {content.home.welcomeCta}
+                  </Button>
                 </Paper>
               </Grid.Col>
 
@@ -135,21 +144,24 @@ export function HomePage() {
                 >
                   <ContentImage
                     src={siteConfig.exteriorImageSrc}
-                    alt="Stone exterior of First Christian Church Anniston framed by a large tree at sunset"
-                    label="First Christian Church Anniston"
+                    alt={content.home.churchImageAlt}
+                    label={content.home.churchImageLabel}
+                    width={siteConfig.exteriorImageWidth}
+                    height={siteConfig.exteriorImageHeight}
                     ratio={4 / 5}
+                    sizes="(max-width: 48em) 100vw, 40vw"
                     objectPosition="62% 52%"
                     className={classes.exteriorImage}
                   />
                   <figcaption className={classes.exteriorCaption}>
                     <Badge variant="light" color="brand">
-                      Our church
+                      {content.home.welcomeEyebrow}
                     </Badge>
                     <Title order={3} mt="sm">
-                      First Christian Church Anniston
+                      {content.home.churchImageLabel}
                     </Title>
                     <Text c="dimmed" mt={4}>
-                      A welcoming spiritual home in Anniston, Alabama.
+                      {content.home.churchImageCaption}
                     </Text>
                   </figcaption>
                 </Paper>
@@ -167,62 +179,57 @@ export function HomePage() {
                     </ThemeIcon>
                     <div>
                       <Text fw={700} tt="uppercase" c="#8c633d" size="sm">
-                        Listen online
+                        {content.home.sermonsEyebrow}
                       </Text>
                       <Title id="sermons-title" order={2}>
-                        Uplifting Sermons by Pastor Laura Hutchinson
+                        {content.home.sermonsTitle}
                       </Title>
                     </div>
                   </Group>
-
-                  <div className={classes.spotifyFrame}>
-                    <iframe
-                      src={siteConfig.sermonEmbedUrl}
-                      title="Uplifting Sermons by Pastor Laura Hutchinson on Spotify"
-                      width="100%"
-                      height="152"
-                      allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                      loading="lazy"
-                      className={classes.spotifyEmbed}
-                    />
-                  </div>
+                  <Text c="dimmed" mt="md">
+                    {content.home.sermonsDescription}
+                  </Text>
+                  <DeferredEmbed
+                    provider="Spotify"
+                    title={content.home.sermonsTitle}
+                    description={content.home.sermonsDescription}
+                    loadLabel={content.home.loadSermons}
+                    src={siteConfig.sermonEmbedUrl}
+                    externalUrl={siteConfig.sermonUrl}
+                    externalLabel={content.home.sermonsEyebrow}
+                    iframeTitle={content.home.sermonsTitle}
+                    connectionNote={content.common.embedConnectionNote('Spotify')}
+                    minHeight="10rem"
+                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                    className={classes.spotifyFrame}
+                  />
                 </Paper>
               </Grid.Col>
 
               <Grid.Col span={{ base: 12, md: 5 }}>
-                <Paper
-                  id="give"
-                  withBorder
-                  p={{ base: 'lg', md: 'xl' }}
-                  h="100%"
-                  style={{
-                    background:
-                      'linear-gradient(180deg, rgba(255, 249, 241, 0.98), rgba(244, 234, 220, 0.9))',
-                  }}
-                >
+                <Paper id="give" withBorder p={{ base: 'lg', md: 'xl' }} h="100%">
                   <ThemeIcon size={50} radius="xl" variant="light" color="green">
                     <IconHeartHandshake size={26} stroke={1.7} />
                   </ThemeIcon>
                   <Title order={2} mt="md">
-                    Partner with Us Financially
+                    {content.home.givingTitle}
                   </Title>
                   <Text c="dimmed" mt="md" size="lg">
-                    {siteConfig.givingCopy}
+                    {content.home.givingCopy}
                   </Text>
-                  <Group mt="xl">
-                    <Button
-                      component="a"
-                      href={siteConfig.givingFormUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      size="lg"
-                      color="green"
-                      leftSection={<IconHeartHandshake size={20} />}
-                      onClick={trackGivingIntent}
-                    >
-                      Give
-                    </Button>
-                  </Group>
+                  <Button
+                    component="a"
+                    href={siteConfig.givingFormUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    mt="xl"
+                    size="lg"
+                    color="green"
+                    leftSection={<IconHeartHandshake size={20} />}
+                    onClick={() => trackGivingIntent(locale)}
+                  >
+                    {content.common.give}
+                  </Button>
                 </Paper>
               </Grid.Col>
             </Grid>
@@ -231,22 +238,16 @@ export function HomePage() {
           <section aria-labelledby="gallery-title">
             <div className={classes.galleryHeader}>
               <div>
-                <Text
-                  fw={700}
-                  tt="uppercase"
-                  c="#8c633d"
-                  size="sm"
-                  style={{ letterSpacing: '0.18em' }}
-                >
-                  Life at FCC Anniston
+                <Text fw={700} tt="uppercase" c="#8c633d" size="sm" lts="0.18em">
+                  {content.home.galleryEyebrow}
                 </Text>
                 <Title id="gallery-title" order={2} mt="xs">
-                  Come Check Us Out!
+                  {content.home.galleryTitle}
                 </Title>
                 <Group gap="xs" mt="sm" className={classes.galleryHint}>
                   <IconSwipe size={20} stroke={1.7} aria-hidden="true" />
                   <Text size="sm" fw={600}>
-                    Swipe or drag to explore
+                    {content.home.galleryHint}
                   </Text>
                 </Group>
               </div>
@@ -259,7 +260,11 @@ export function HomePage() {
                   aria-live="polite"
                   aria-atomic="true"
                 >
-                  {galleryStatus}
+                  {content.home.photoStatus(
+                    firstVisiblePhoto,
+                    lastVisiblePhoto,
+                    photoAssets.length
+                  )}
                 </Text>
                 <Group gap="sm" wrap="nowrap">
                   <ActionIcon
@@ -267,7 +272,7 @@ export function HomePage() {
                     size={46}
                     radius="xl"
                     variant="default"
-                    aria-label="Previous photos"
+                    aria-label={content.home.previousPhotos}
                     disabled={!canScrollGalleryPrevious}
                     onClick={() => galleryApi?.scrollPrev()}
                     className={classes.galleryControl}
@@ -280,7 +285,7 @@ export function HomePage() {
                     radius="xl"
                     variant="filled"
                     color="brand"
-                    aria-label="Next photos"
+                    aria-label={content.home.nextPhotos}
                     disabled={!canScrollGalleryNext}
                     onClick={() => galleryApi?.scrollNext()}
                     className={classes.galleryControl}
@@ -298,36 +303,43 @@ export function HomePage() {
               getEmblaApi={setGalleryApi}
               withControls={false}
               role="region"
-              aria-label="Life at First Christian Church photo gallery"
+              aria-label={content.home.galleryLabel}
               className={classes.galleryCarousel}
             >
-              {photoSlides.map((slide) => (
-                <Carousel.Slide key={slide.id} className={classes.gallerySlide}>
-                  <Paper
-                    component="figure"
-                    withBorder
-                    p="md"
-                    m={0}
-                    h="100%"
-                    className={classes.galleryCard}
-                  >
-                    <ContentImage
-                      src={slide.imageSrc}
-                      alt={slide.imageAlt}
-                      label={slide.title}
-                      ratio={4 / 3}
-                      objectPosition={slide.objectPosition}
-                      className={classes.galleryImage}
-                    />
-                    <figcaption className={classes.galleryCaption}>
-                      <Title order={3}>{slide.title}</Title>
-                      <Text c="dimmed" mt="xs">
-                        {slide.caption}
-                      </Text>
-                    </figcaption>
-                  </Paper>
-                </Carousel.Slide>
-              ))}
+              {photoAssets.map((photo) => {
+                const localizedPhoto = content.home.photos[photo.id];
+
+                return (
+                  <Carousel.Slide key={photo.id} className={classes.gallerySlide}>
+                    <Paper
+                      component="figure"
+                      withBorder
+                      p="md"
+                      m={0}
+                      h="100%"
+                      className={classes.galleryCard}
+                    >
+                      <ContentImage
+                        src={photo.src}
+                        alt={localizedPhoto.alt}
+                        label={localizedPhoto.title}
+                        width={photo.width}
+                        height={photo.height}
+                        ratio={4 / 3}
+                        sizes="(max-width: 48em) 86vw, (max-width: 75em) 47vw, 32vw"
+                        objectPosition={photo.objectPosition}
+                        className={classes.galleryImage}
+                      />
+                      <figcaption className={classes.galleryCaption}>
+                        <Title order={3}>{localizedPhoto.title}</Title>
+                        <Text c="dimmed" mt="xs">
+                          {localizedPhoto.caption}
+                        </Text>
+                      </figcaption>
+                    </Paper>
+                  </Carousel.Slide>
+                );
+              })}
             </Carousel>
           </section>
 
@@ -336,61 +348,69 @@ export function HomePage() {
               <Grid gutter={{ base: 'xl', md: '3rem' }} align="center">
                 <Grid.Col span={{ base: 12, md: 5 }}>
                   <Badge variant="light" color="moss">
-                    Stay connected
+                    {content.home.connectEyebrow}
                   </Badge>
                   <Title id="connect-title" order={2} mt="md">
-                    Keep up with life at FCC Anniston
+                    {content.home.connectTitle}
                   </Title>
                   <Text c="dimmed" size="lg" mt="md">
-                    Follow along between Sundays for church news, upcoming events, photos, sermons,
-                    giving, and helpful resources.
+                    {content.home.connectCopy}
                   </Text>
                 </Grid.Col>
-
                 <Grid.Col span={{ base: 12, md: 7 }}>
                   <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
-                    {siteConfig.socialLinks.map((link) => {
-                      const Icon = link.id === 'facebook' ? IconBrandFacebook : IconBrandLinktree;
-
-                      return (
-                        <Paper
-                          key={link.id}
-                          component="a"
-                          href={link.href}
-                          target="_blank"
-                          rel="noreferrer"
-                          withBorder
-                          p="lg"
-                          className={classes.socialCard}
-                          aria-label={`${link.cta} (opens in a new tab)`}
-                        >
-                          <Group justify="space-between" align="flex-start" wrap="nowrap">
-                            <ThemeIcon
-                              size={48}
-                              radius="xl"
-                              variant="light"
-                              color={link.id === 'facebook' ? 'blue' : 'moss'}
-                            >
-                              <Icon size={25} stroke={1.8} />
-                            </ThemeIcon>
-                            <IconArrowUpRight
-                              className={classes.socialArrow}
-                              size={21}
-                              stroke={1.8}
-                            />
-                          </Group>
-                          <Title order={3} mt="lg">
-                            {link.title}
-                          </Title>
-                          <Text c="dimmed" mt="xs">
-                            {link.description}
-                          </Text>
-                          <Text className={classes.socialCta} mt="lg">
-                            {link.cta}
-                          </Text>
-                        </Paper>
-                      );
-                    })}
+                    {[
+                      {
+                        id: 'facebook',
+                        href: siteConfig.facebookUrl,
+                        title: content.common.social.facebookTitle,
+                        description: content.common.social.facebookDescription,
+                        cta: content.common.social.facebookCta,
+                        icon: IconBrandFacebook,
+                        color: 'blue',
+                      },
+                      {
+                        id: 'linktree',
+                        href: siteConfig.linktreeUrl,
+                        title: content.common.social.linktreeTitle,
+                        description: content.common.social.linktreeDescription,
+                        cta: content.common.social.linktreeCta,
+                        icon: IconBrandLinktree,
+                        color: 'moss',
+                      },
+                    ].map((social) => (
+                      <Paper
+                        key={social.id}
+                        component="a"
+                        href={social.href}
+                        target="_blank"
+                        rel="noreferrer"
+                        withBorder
+                        p="lg"
+                        className={classes.socialCard}
+                        aria-label={`${social.cta} (${content.common.opensNewTab})`}
+                      >
+                        <Group justify="space-between" align="flex-start" wrap="nowrap">
+                          <ThemeIcon size={48} radius="xl" variant="light" color={social.color}>
+                            <social.icon size={25} stroke={1.8} />
+                          </ThemeIcon>
+                          <IconArrowUpRight
+                            className={classes.socialArrow}
+                            size={21}
+                            stroke={1.8}
+                          />
+                        </Group>
+                        <Title order={3} mt="lg">
+                          {social.title}
+                        </Title>
+                        <Text c="dimmed" mt="xs">
+                          {social.description}
+                        </Text>
+                        <Text className={classes.socialCta} mt="lg">
+                          {social.cta}
+                        </Text>
+                      </Paper>
+                    ))}
                   </SimpleGrid>
                 </Grid.Col>
               </Grid>
@@ -402,21 +422,23 @@ export function HomePage() {
               <Grid.Col span={{ base: 12, md: 5 }}>
                 <Paper withBorder p={{ base: 'lg', md: 'xl' }} h="100%">
                   <Badge variant="light" color="moss">
-                    Find us
+                    {content.home.visitEyebrow}
                   </Badge>
                   <Title id="map-title" order={2} mt="md">
-                    Visit First Christian Church
+                    {content.home.visitTitle}
                   </Title>
+                  <Text c="dimmed" mt="md">
+                    {content.home.visitCopy}
+                  </Text>
                   <Group gap="sm" align="flex-start" wrap="nowrap" mt="lg">
                     <ThemeIcon size={38} radius="xl" variant="light" color="brand">
                       <IconMapPin size={20} stroke={1.7} />
                     </ThemeIcon>
                     <div>
-                      <Text fw={700}>First Christian Church Anniston</Text>
-                      <Text c="dimmed">Anniston, Alabama</Text>
+                      <Text fw={700}>{content.common.churchName}</Text>
+                      <Text c="dimmed">{siteConfig.addressLines.join(', ')}</Text>
                     </div>
                   </Group>
-
                   <List
                     mt="xl"
                     spacing="sm"
@@ -426,29 +448,36 @@ export function HomePage() {
                       </ThemeIcon>
                     }
                   >
-                    {siteConfig.serviceNotes.map((note) => (
+                    {content.home.visitNotes.map((note) => (
                       <List.Item key={note}>
                         <Text c="dimmed">{note}</Text>
                       </List.Item>
                     ))}
                   </List>
-
-                  <Button component={Link} to="/contact" mt="xl">
-                    Contact the church
+                  <Button
+                    component={Link}
+                    to={getLocalizedPath('visit', locale)}
+                    mt="xl"
+                    onClick={() => trackVisitPlanningIntent('home-map', locale)}
+                  >
+                    {content.home.primaryAction}
                   </Button>
                 </Paper>
               </Grid.Col>
-
               <Grid.Col span={{ base: 12, md: 7 }}>
-                <Paper withBorder p={0} radius="xl" style={{ overflow: 'hidden', minHeight: 420 }}>
-                  <iframe
-                    src={siteConfig.mapEmbedUrl}
-                    title="Map showing the church's Anniston location"
-                    loading="lazy"
-                    referrerPolicy="no-referrer-when-downgrade"
-                    style={{ width: '100%', minHeight: 420 }}
-                  />
-                </Paper>
+                <DeferredEmbed
+                  provider="Google Maps"
+                  title={content.home.mapTitle}
+                  description={siteConfig.addressLines.join(', ')}
+                  loadLabel={content.home.loadMap}
+                  src={siteConfig.mapEmbedUrl}
+                  externalUrl={siteConfig.directionsUrl}
+                  externalLabel={content.common.directions}
+                  iframeTitle={content.home.mapTitle}
+                  connectionNote={content.common.embedConnectionNote('Google Maps')}
+                  minHeight="26rem"
+                  referrerPolicy="no-referrer-when-downgrade"
+                />
               </Grid.Col>
             </Grid>
           </section>

@@ -9,13 +9,8 @@ export default defineConfig(
   {
     ignores: [
       '**/*.{mjs,cjs,js,d.ts,d.mts}',
-      '*.ts',
-      '*.tsx',
-      'components/**',
-      'pages/**',
-      'Welcome/**',
-      'ColorSchemeToggle/**',
-      'src/components/ProjectCard/ProjectCard.tsx',
+      'dist/**',
+      'public/images/**',
     ],
   },
   {

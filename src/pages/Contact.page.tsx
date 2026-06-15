@@ -20,43 +20,68 @@ import {
   Title,
 } from '@mantine/core';
 import { ContactForm } from '../components/church/ContactForm';
+import { DeferredEmbed } from '../components/church/DeferredEmbed';
 import { PageHeader } from '../components/church/PageHeader';
-import { siteConfig } from '../content/churchContent';
+import { siteConfig, type ContactMethodId } from '../content/churchContent';
+import { getContent } from '../content/localizedContent';
 import { trackContactIntent } from '../lib/googleAnalytics';
+import { useLocale } from '../lib/i18n';
 import classes from './Contact.page.module.css';
 
-const DETAIL_ICONS: Record<string, ComponentType<{ size?: number; stroke?: number }>> = {
-  Email: IconMail,
-  Phone: IconPhone,
-  Location: IconMapPin,
+const DETAIL_ICONS: Record<ContactMethodId, ComponentType<{ size?: number; stroke?: number }>> = {
+  email: IconMail,
+  phone: IconPhone,
+  location: IconMapPin,
 };
 
 export function ContactPage() {
+  const locale = useLocale();
+  const content = getContent(locale);
+  const contactDetails = [
+    {
+      id: 'location' as const,
+      value: siteConfig.addressLines.join(', '),
+      href: siteConfig.directionsUrl,
+      external: true,
+    },
+    {
+      id: 'email' as const,
+      value: siteConfig.email,
+      href: `mailto:${siteConfig.email}`,
+      external: false,
+    },
+    {
+      id: 'phone' as const,
+      value: siteConfig.phoneDisplay,
+      href: siteConfig.phoneHref,
+      external: false,
+    },
+  ];
+
   return (
     <Container size="xl" py={{ base: 'xl', md: '4rem' }}>
       <PageHeader
-        eyebrow={`${siteConfig.denomination} · Anniston, Alabama`}
-        title="We’d love to hear from you"
-        description="Whether you are planning your first Sunday, looking for a church home, or simply have a question, there is a place for you here."
+        eyebrow={`${content.common.denomination} · ${content.contact.eyebrow}`}
+        title={content.contact.title}
+        description={content.contact.description}
       />
 
       <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="lg" mt="xl">
-        {siteConfig.contactDetails.map((detail) => {
-          const Icon = DETAIL_ICONS[detail.label] ?? IconSparkles;
-          const isExternal = detail.label === 'Location';
+        {contactDetails.map((detail) => {
+          const Icon = DETAIL_ICONS[detail.id];
 
           return (
             <Paper
-              key={detail.label}
+              key={detail.id}
               component="a"
               href={detail.href}
-              target={isExternal ? '_blank' : undefined}
-              rel={isExternal ? 'noreferrer' : undefined}
+              target={detail.external ? '_blank' : undefined}
+              rel={detail.external ? 'noreferrer' : undefined}
               withBorder
               p="lg"
               className={classes.detailCard}
-              aria-label={`${detail.actionLabel}: ${detail.value}`}
-              onClick={() => trackContactIntent(detail.label)}
+              aria-label={`${content.contact.detailActions[detail.id]}: ${detail.value}`}
+              onClick={() => trackContactIntent(detail.id, locale)}
             >
               <Group justify="space-between" align="flex-start" wrap="nowrap">
                 <ThemeIcon size={46} radius="xl" color="brand" variant="light">
@@ -65,13 +90,13 @@ export function ContactPage() {
                 <IconArrowUpRight className={classes.detailArrow} size={20} stroke={1.7} />
               </Group>
               <Text className={classes.detailLabel} mt="lg">
-                {detail.label}
+                {content.contact.detailLabels[detail.id]}
               </Text>
               <Text fw={700} size="lg" mt={4}>
                 {detail.value}
               </Text>
               <Text c="dimmed" size="sm" mt="xs">
-                {detail.helper}
+                {content.contact.detailHelpers[detail.id]}
               </Text>
             </Paper>
           );
@@ -82,25 +107,24 @@ export function ContactPage() {
         <Stack gap="xl">
           <Paper withBorder p={{ base: 'lg', md: 'xl' }} className={classes.visitCard}>
             <Badge variant="light" color="moss" size="lg" leftSection={<IconClock size={15} />}>
-              Plan your Sunday
+              {content.contact.visitBadge}
             </Badge>
             <Title order={2} mt="md">
-              Come worship with us
+              {content.contact.visitTitle}
             </Title>
             <Text c="dimmed" size="lg" mt="sm">
-              You do not need to dress a certain way or know what to expect. Come as you are and
-              know that you are welcome at the table.
+              {content.contact.visitCopy}
             </Text>
 
             <Stack gap="sm" mt="xl">
               {siteConfig.serviceTimes.map((service) => (
                 <Group
-                  key={service.label}
+                  key={service.id}
                   justify="space-between"
                   gap="md"
                   className={classes.serviceRow}
                 >
-                  <Text fw={700}>{service.label}</Text>
+                  <Text fw={700}>{content.common.serviceLabels[service.id]}</Text>
                   <Text c="brand.7" fw={800}>
                     {service.time}
                   </Text>
@@ -112,7 +136,7 @@ export function ContactPage() {
               <ThemeIcon color="moss" variant="light" radius="xl" size={34}>
                 <IconSparkles size={17} stroke={1.7} />
               </ThemeIcon>
-              <Text c="dimmed">{siteConfig.serviceNotes[2]}</Text>
+              <Text c="dimmed">{content.contact.childrenNote}</Text>
             </Group>
 
             <Button
@@ -124,27 +148,25 @@ export function ContactPage() {
               size="md"
               leftSection={<IconMapPin size={18} />}
               rightSection={<IconArrowUpRight size={17} />}
-              onClick={() => trackContactIntent('directions')}
+              onClick={() => trackContactIntent('directions', locale)}
             >
-              Get directions
+              {content.common.directions}
             </Button>
           </Paper>
 
-          <Paper withBorder p={0} className={classes.mapCard}>
-            <iframe
-              src={siteConfig.mapEmbedUrl}
-              title="Map showing First Christian Church at 1327 Leighton Avenue in Anniston"
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-              className={classes.mapFrame}
-            />
-            <div className={classes.mapCaption}>
-              <Text fw={800}>First Christian Church Anniston</Text>
-              <Text c="dimmed" size="sm">
-                {siteConfig.addressLines.join(' · ')}
-              </Text>
-            </div>
-          </Paper>
+          <DeferredEmbed
+            provider="Google Maps"
+            title={content.contact.mapTitle}
+            description={siteConfig.addressLines.join(', ')}
+            loadLabel={content.contact.loadMap}
+            src={siteConfig.mapEmbedUrl}
+            externalUrl={siteConfig.directionsUrl}
+            externalLabel={content.common.directions}
+            iframeTitle={content.contact.mapTitle}
+            connectionNote={content.common.embedConnectionNote('Google Maps')}
+            minHeight="24rem"
+            referrerPolicy="no-referrer-when-downgrade"
+          />
         </Stack>
 
         <ContactForm />
