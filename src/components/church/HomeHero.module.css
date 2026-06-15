@@ -109,6 +109,7 @@
 .sentenceContent {
   display: block;
   width: 100%;
+  padding-block: 0.06em 0.14em;
 }
 
 .sentenceContent > span {
@@ -117,7 +118,8 @@
 
 .sentenceStage {
   position: relative;
-  overflow: hidden;
+  overflow: clip;
+  overflow-clip-margin: 0.2em;
 }
 
 .settledSentence,
