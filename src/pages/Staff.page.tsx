@@ -1,4 +1,17 @@
-import { Badge, Container, Group, Paper, SimpleGrid, Stack, Text, Title } from '@mantine/core';
+import { useId, useState } from 'react';
+import { IconChevronDown } from '@tabler/icons-react';
+import {
+  Badge,
+  Button,
+  Collapse,
+  Container,
+  Group,
+  Paper,
+  SimpleGrid,
+  Stack,
+  Text,
+  Title,
+} from '@mantine/core';
 import { ContentImage } from '../components/church/ContentImage';
 import { PageHeader } from '../components/church/PageHeader';
 import { staffAssets, staffGroupImages } from '../content/churchContent';
@@ -65,16 +78,11 @@ export function StaffPage() {
                   </Badge>
                 ))}
               </Group>
-              <details className={classes.biography}>
-                <summary>{content.staff.detailsLabel}</summary>
-                <Stack gap="sm" mt="md">
-                  {member.biography.map((paragraph) => (
-                    <Text key={paragraph} c="dimmed">
-                      {paragraph}
-                    </Text>
-                  ))}
-                </Stack>
-              </details>
+              <StaffBiography
+                biography={member.biography}
+                detailsLabel={content.staff.detailsLabel}
+                name={asset.name}
+              />
             </Stack>
           );
 
@@ -103,5 +111,46 @@ export function StaffPage() {
         })}
       </Stack>
     </Container>
+  );
+}
+
+function StaffBiography({
+  biography,
+  detailsLabel,
+  name,
+}: {
+  biography: string[];
+  detailsLabel: string;
+  name: string;
+}) {
+  const [opened, setOpened] = useState(false);
+  const panelId = useId();
+
+  return (
+    <div className={classes.biography}>
+      <Button
+        aria-controls={panelId}
+        aria-expanded={opened}
+        className={classes.biographyButton}
+        color="brand"
+        onClick={() => setOpened((current) => !current)}
+        rightSection={
+          <IconChevronDown aria-hidden className={classes.biographyChevron} size={16} />
+        }
+        size="compact-md"
+        variant="subtle"
+      >
+        {detailsLabel}
+      </Button>
+      <Collapse id={panelId} in={opened} transitionDuration={260} transitionTimingFunction="ease">
+        <Stack aria-label={`${name} biography`} className={classes.biographyPanel} gap="sm">
+          {biography.map((paragraph) => (
+            <Text key={paragraph} c="dimmed">
+              {paragraph}
+            </Text>
+          ))}
+        </Stack>
+      </Collapse>
+    </div>
   );
 }

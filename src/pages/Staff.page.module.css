@@ -12,15 +12,24 @@
   padding-top: var(--mantine-spacing-md);
 }
 
-.biography summary {
-  width: fit-content;
-  cursor: pointer;
+.biographyButton {
+  padding-inline: 0;
   color: var(--mantine-color-brand-8);
   font-weight: 800;
 }
 
-.biography summary:focus-visible {
-  outline: 3px solid var(--mantine-color-brand-4);
-  outline-offset: 3px;
-  border-radius: 4px;
+.biographyButton:hover {
+  background: transparent;
+}
+
+.biographyChevron {
+  transition: transform 180ms ease;
+}
+
+.biographyButton[aria-expanded='true'] .biographyChevron {
+  transform: rotate(180deg);
+}
+
+.biographyPanel {
+  padding-top: var(--mantine-spacing-md);
 }

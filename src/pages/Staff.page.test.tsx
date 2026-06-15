@@ -1,5 +1,5 @@
 import { MemoryRouter } from 'react-router-dom';
-import { render, screen, userEvent } from '@/test-utils';
+import { render, screen, userEvent, waitFor } from '@/test-utils';
 import { StaffPage } from './Staff.page';
 
 describe('StaffPage', () => {
@@ -19,6 +19,6 @@ describe('StaffPage', () => {
     expect(screen.queryByText(/mdiv from candler/i)).not.toBeVisible();
 
     await user.click(screen.getAllByText(/read full biography/i)[0]);
-    expect(screen.getByText(/mdiv from candler/i)).toBeVisible();
+    await waitFor(() => expect(screen.getByText(/mdiv from candler/i)).toBeVisible());
   });
 });
