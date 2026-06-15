@@ -687,8 +687,10 @@ const en: LocalizedContent = {
         summary:
           'Rev. Laura Hutchinson has served First Christian Church Anniston since 2012, leading with a focus on God’s fierce and unconditional love.',
         biography: [
-          'Laura earned her Master of Divinity from Candler School of Theology and was ordained in the Christian Church (Disciples of Christ) in 2001. Her ministry has included youth ministry, college chaplaincy, teaching, associate ministry, and senior pastoral leadership.',
-          'Her work includes preaching, pastoral care, interactive Bible study, community involvement, anti-racism and reconciliation, and open and affirming ministry with the LGBTQ community.',
+          'After graduating with an MDiv from Candler School of Theology in Atlanta, GA, Reverend Laura Hutchinson was ordained in the Christian Church (Disciples of Christ) in Georgia on August 5, 2001. She has served in various capacities throughout her ministry, including youth ministry at several churches, college chaplaincy and adjunct professorship in the Religion Department at Barton College in Wilson, NC, associate ministry at First Christian Church (Disciples of Christ) in Florence, AL, and senior pastorship here at First Christian Church (Disciples of Christ) in Anniston, AL. She has been serving FCC in Anniston since 2012.',
+          'Her primary focus as a pastor is to love people the way God loves them. Many in this world do not know they are loved, and that reality drives her passion for ministry. God’s fierce and unconditional love is at the heart of her preaching and pastoral care. Laura feels blessed to pastor a church that actively encourages reaching out to and welcoming all people, sharing the gospel message alongside her.',
+          'Laura shares the light of Christ through preaching, interactive Bible study sessions where questions and thoughtful challenges to tradition are welcomed, pastoral care and counseling, community involvement, anti-racism and pro-reconciliation work through the Christian Church in Alabama & Northwest Florida, open and affirming ministries within the LGBTQ+ community, and co-hosting her podcast, “Untangling Faith,” with colleague Rev. Tammy Jackson of Anniston, AL.',
+          'Rev. Hutchinson is deeply grateful for her calling to ministry in the name of Jesus Christ and warmly invites all to join her in this meaningful journey at First Christian Church (Disciples of Christ) in Anniston, AL.',
         ],
         focusAreas: ['Preaching', 'Pastoral care', 'Reconciliation', 'Open and affirming ministry'],
         imageAlt: 'Portrait of Rev. Laura Hutchinson',
@@ -698,8 +700,9 @@ const en: LocalizedContent = {
         summary:
           'Rev. Maria Zamarripa serves Spanish-speaking individuals and families with spiritual guidance, compassion, and deep roots in the congregation.',
         biography: [
-          'Maria has been part of First Christian Church since the early 1980s and has served in many congregational leadership roles. She entered Lexington Theological Seminary in 2016 and was ordained in 2020.',
-          'Her ministry includes care within Calhoun County’s Latin community and chaplaincy at RMC Hospital and the County Jail.',
+          'Rev. Maria Zamarripa has been an official member of First Christian Church since the early 1980s, following her affirmation of commitment to Christ. Throughout her long-standing relationship with the congregation, Maria has diligently served in nearly every leadership role the church offers.',
+          'Recognizing a profound call to ministry, Maria formally responded by enrolling at Lexington Theological Seminary in 2016. She was ordained by the Christian Church in Alabama & Northwest Florida in 2020. Maria’s heart has always been with the growing Latin community in Calhoun County, where she faithfully ministers, serving as a spiritual guide and compassionate presence. She also extends her ministry as a chaplain at RMC Hospital and the County Jail.',
+          'Today, in her role as Associate Minister for Hispanic Ministries, Rev. Zamarripa dedicates her ministry to serving Spanish-speaking individuals and families. Her steadfast commitment to God’s call is reflected daily through acts of love, compassion, and spiritual support.',
         ],
         focusAreas: ['Hispanic ministry', 'Chaplaincy', 'Spiritual care'],
         imageAlt: 'Portrait of Rev. Maria Zamarripa',
@@ -709,8 +712,9 @@ const en: LocalizedContent = {
         summary:
           'Gerald Roberts has served the church through organ, piano, choir, and worship music since 1987.',
         biography: [
-          'Gerald understands music as a sacred way to express faith, strengthen community, and enrich worship.',
-          'His love of lifelong learning, spiritual growth, travel, and the outdoors continues to shape his creative service.',
+          'Gerald Roberts has had the honor and privilege of serving First Christian Church since August 1987 as organist, pianist, choral director, and musical coordinator. Gerald views music as a profound and sacred means of expressing faith, fostering community, and enhancing worship.',
+          'His commitment to lifelong learning is evident in his continuous pursuit of new insights, both musical and spiritual, guided by the Holy Spirit. Gerald finds joy in activities that nurture his physical and spiritual health, including exercise classes, cycling, attending courses, exploring the outdoors, and traveling.',
+          'Gerald remains dedicated to enriching worship experiences and contributing to the vibrant community at First Christian Church through his passion for music and faith-driven service.',
         ],
         focusAreas: ['Organ and piano', 'Choir', 'Worship music'],
         imageAlt: 'Portrait of Gerald Roberts',
@@ -720,8 +724,10 @@ const en: LocalizedContent = {
         summary:
           'Judy Engelhart brings decades of church administration, education, and community experience to the church office.',
         biography: [
-          'Judy has served First Christian Church for more than 20 years. Her earlier work included educational counseling and leadership at Gadsden State Community College and the Army Education Center at Fort McClellan.',
-          'A lifelong Calhoun County resident, she values the caring community and practical support she helps sustain each week.',
+          'Judy Engelhart has faithfully served as the secretary of First Christian Church in Anniston for over 20 years. Prior to her tenure at FCC, she was a church secretary in a small Florida town, bringing significant administrative expertise to her role.',
+          'Before joining First Christian Church, Judy had an impactful career as an educational counselor and test administrator at Gadsden State Community College. Additionally, she served as an educational counselor and later as Director of the Army Education Center at Fort McClellan until its closure in 1999.',
+          'A lifelong resident of Calhoun County, Judy grew up in Saks and attended Saks School for 12 years. She pursued higher education at Jacksonville State University and later completed master’s degrees from both Georgia State University in Atlanta and Troy State University.',
+          'Her life experiences include living in Okinawa for 1.5 years and a spiritually enriching visit to the Holy Land, where she walked in the footsteps of Jesus. Judy deeply loves her role at First Christian Church and values the supportive and caring community around her.',
         ],
         focusAreas: ['Church administration', 'Communication', 'Congregational support'],
         imageAlt: 'Portrait of Judy Engelhart',
@@ -731,8 +737,9 @@ const en: LocalizedContent = {
         summary:
           'Jason Wright leads the congregation in joyful song and brings musical, theatrical, and visual creativity to church life.',
         biography: [
-          'Jason serves through worship leadership and also teaches and coaches children in drama, frequently directing theatrical productions in Jacksonville.',
-          'His warmth and creativity help make worship inviting, expressive, and participatory.',
+          'Jason Wright serves First Christian Church as our Worship Leader, guiding our congregation in vibrant song and joyful praise. He shares his musical leadership and creative talents with another local church, demonstrating his deep commitment to serving God through music and worship.',
+          'Jason’s passion extends beyond worship leadership; he actively teaches and coaches children in drama, frequently directing theatrical productions in Jacksonville. As a man of many talents, he is not only a gifted musician but also a skilled visual artist whose creativity enriches our community.',
+          'Jason’s presence is always uplifting and inviting, making worship experiences warm and meaningful. He is thrilled to welcome everyone to join him in celebrating faith and fellowship at First Christian Church.',
         ],
         focusAreas: ['Worship leadership', 'Music', 'Drama', 'Visual arts'],
         imageAlt: 'Portrait of Jason Wright',
@@ -1290,8 +1297,10 @@ const es: LocalizedContent = {
         summary:
           'La Rev. Laura Hutchinson sirve a la Primera Iglesia Cristiana de Anniston desde 2012 y dirige con énfasis en el amor incondicional de Dios.',
         biography: [
-          'Laura obtuvo su Maestría en Divinidad en la Escuela de Teología Candler y fue ordenada en la Iglesia Cristiana (Discípulos de Cristo) en 2001. Su ministerio ha incluido jóvenes, capellanía universitaria, enseñanza y liderazgo pastoral.',
-          'Su labor incluye predicación, cuidado pastoral, estudio bíblico interactivo, participación comunitaria, antirracismo, reconciliación y ministerio abierto y afirmativo con la comunidad LGBTQ.',
+          'Después de graduarse con una Maestría en Divinidad de la Escuela de Teología Candler en Atlanta, GA, la Reverenda Laura Hutchinson fue ordenada en la Iglesia Cristiana (Discípulos de Cristo) en Georgia el 5 de agosto de 2001. Ha servido en varias capacidades durante su ministerio, incluyendo ministerio juvenil en varias iglesias, capellanía universitaria y docencia adjunta en el Departamento de Religión de Barton College en Wilson, NC, ministerio asociado en First Christian Church (Disciples of Christ) en Florence, AL, y pastorado principal aquí en First Christian Church (Disciples of Christ) en Anniston, AL. Sirve a FCC en Anniston desde 2012.',
+          'Su enfoque principal como pastora es amar a las personas como Dios las ama. Muchas personas en este mundo no saben que son amadas, y esa realidad impulsa su pasión por el ministerio. El amor feroz e incondicional de Dios está en el centro de su predicación y cuidado pastoral. Laura se siente bendecida de pastorear una iglesia que anima activamente a acercarse a todas las personas y darles la bienvenida, compartiendo junto a ella el mensaje del evangelio.',
+          'Laura comparte la luz de Cristo por medio de la predicación, estudios bíblicos interactivos donde se reciben preguntas y desafíos reflexivos a la tradición, cuidado pastoral y consejería, participación comunitaria, trabajo antirracista y de reconciliación a través de la Christian Church in Alabama & Northwest Florida, ministerios abiertos y afirmativos dentro de la comunidad LGBTQ+, y como coanfitriona del podcast “Untangling Faith” con su colega, la Rev. Tammy Jackson de Anniston, AL.',
+          'La Rev. Hutchinson está profundamente agradecida por su llamado al ministerio en el nombre de Jesucristo e invita cordialmente a todos a acompañarla en este camino significativo en First Christian Church (Disciples of Christ) en Anniston, AL.',
         ],
         focusAreas: ['Predicación', 'Cuidado pastoral', 'Reconciliación', 'Ministerio afirmativo'],
         imageAlt: 'Retrato de la Rev. Laura Hutchinson',
@@ -1301,8 +1310,9 @@ const es: LocalizedContent = {
         summary:
           'La Rev. Maria Zamarripa sirve a personas y familias de habla hispana con guía espiritual, compasión y profundas raíces en la congregación.',
         biography: [
-          'Maria forma parte de la Primera Iglesia Cristiana desde principios de la década de 1980 y ha ocupado muchos puestos de liderazgo. Ingresó al Seminario Teológico de Lexington en 2016 y fue ordenada en 2020.',
-          'Su ministerio incluye el cuidado de la comunidad latina del condado de Calhoun y la capellanía en RMC Hospital y la cárcel del condado.',
+          'La Rev. Maria Zamarripa ha sido miembro oficial de First Christian Church desde principios de la década de 1980, después de afirmar su compromiso con Cristo. A lo largo de su relación de muchos años con la congregación, Maria ha servido diligentemente en casi todos los roles de liderazgo que ofrece la iglesia.',
+          'Al reconocer un profundo llamado al ministerio, Maria respondió formalmente al inscribirse en Lexington Theological Seminary en 2016. Fue ordenada por la Christian Church in Alabama & Northwest Florida en 2020. El corazón de Maria siempre ha estado con la creciente comunidad latina del condado de Calhoun, donde ministra fielmente como guía espiritual y presencia compasiva. También extiende su ministerio como capellana en RMC Hospital y en la cárcel del condado.',
+          'Hoy, en su función como Ministra asociada de Ministerios Hispanos, la Rev. Zamarripa dedica su ministerio a servir a personas y familias de habla hispana. Su compromiso constante con el llamado de Dios se refleja cada día en actos de amor, compasión y apoyo espiritual.',
         ],
         focusAreas: ['Ministerio hispano', 'Capellanía', 'Cuidado espiritual'],
         imageAlt: 'Retrato de la Rev. Maria Zamarripa',
@@ -1312,8 +1322,9 @@ const es: LocalizedContent = {
         summary:
           'Gerald Roberts sirve a la iglesia mediante el órgano, el piano, el coro y la música de adoración desde 1987.',
         biography: [
-          'Gerald entiende la música como una forma sagrada de expresar la fe, fortalecer la comunidad y enriquecer la adoración.',
-          'Su amor por el aprendizaje continuo, el crecimiento espiritual, los viajes y la naturaleza sigue formando su servicio creativo.',
+          'Gerald Roberts ha tenido el honor y el privilegio de servir a First Christian Church desde agosto de 1987 como organista, pianista, director coral y coordinador musical. Gerald ve la música como un medio profundo y sagrado para expresar la fe, fomentar la comunidad y enriquecer la adoración.',
+          'Su compromiso con el aprendizaje permanente se nota en su búsqueda continua de nuevas perspectivas, tanto musicales como espirituales, guiado por el Espíritu Santo. Gerald encuentra alegría en actividades que nutren su salud física y espiritual, incluyendo clases de ejercicio, ciclismo, cursos, exploración de la naturaleza y viajes.',
+          'Gerald permanece dedicado a enriquecer las experiencias de adoración y contribuir a la comunidad vibrante de First Christian Church a través de su pasión por la música y su servicio guiado por la fe.',
         ],
         focusAreas: ['Órgano y piano', 'Coro', 'Música de adoración'],
         imageAlt: 'Retrato de Gerald Roberts',
@@ -1323,8 +1334,10 @@ const es: LocalizedContent = {
         summary:
           'Judy Engelhart aporta décadas de experiencia en administración e instituciones educativas a la oficina de la iglesia.',
         biography: [
-          'Judy sirve a la Primera Iglesia Cristiana desde hace más de 20 años. Antes trabajó en orientación educativa y liderazgo en Gadsden State Community College y el Army Education Center de Fort McClellan.',
-          'Como residente de toda la vida del condado de Calhoun, valora la comunidad atenta y el apoyo práctico que ayuda a sostener cada semana.',
+          'Judy Engelhart ha servido fielmente como secretaria de First Christian Church en Anniston por más de 20 años. Antes de su tiempo en FCC, fue secretaria de una iglesia en un pequeño pueblo de Florida, aportando una importante experiencia administrativa a su función.',
+          'Antes de unirse a First Christian Church, Judy tuvo una carrera significativa como consejera educativa y administradora de pruebas en Gadsden State Community College. Además, sirvió como consejera educativa y luego como Directora del Army Education Center en Fort McClellan hasta su cierre en 1999.',
+          'Residente de toda la vida del condado de Calhoun, Judy creció en Saks y asistió a Saks School durante 12 años. Continuó su educación en Jacksonville State University y luego completó maestrías en Georgia State University en Atlanta y Troy State University.',
+          'Sus experiencias de vida incluyen haber vivido en Okinawa durante 1.5 años y una visita espiritualmente enriquecedora a Tierra Santa, donde caminó tras las huellas de Jesús. Judy ama profundamente su función en First Christian Church y valora la comunidad solidaria y atenta que la rodea.',
         ],
         focusAreas: ['Administración', 'Comunicación', 'Apoyo congregacional'],
         imageAlt: 'Retrato de Judy Engelhart',
@@ -1334,8 +1347,9 @@ const es: LocalizedContent = {
         summary:
           'Jason Wright guía a la congregación en el canto y aporta creatividad musical, teatral y visual a la vida de la iglesia.',
         biography: [
-          'Jason sirve mediante el liderazgo de adoración y también enseña teatro a niños, dirigiendo con frecuencia producciones en Jacksonville.',
-          'Su calidez y creatividad ayudan a que la adoración sea acogedora, expresiva y participativa.',
+          'Jason Wright sirve a First Christian Church como nuestro Líder de adoración, guiando a la congregación en canto vibrante y alabanza gozosa. Comparte su liderazgo musical y sus talentos creativos con otra iglesia local, demostrando su profundo compromiso de servir a Dios por medio de la música y la adoración.',
+          'La pasión de Jason va más allá del liderazgo de adoración; enseña y dirige a niños en teatro, y con frecuencia dirige producciones teatrales en Jacksonville. Como una persona de muchos talentos, no solo es un músico dotado, sino también un artista visual hábil cuya creatividad enriquece nuestra comunidad.',
+          'La presencia de Jason siempre anima e invita, haciendo que las experiencias de adoración sean cálidas y significativas. Está encantado de dar la bienvenida a todos para unirse a él en la celebración de la fe y la comunidad en First Christian Church.',
         ],
         focusAreas: ['Liderazgo de adoración', 'Música', 'Teatro', 'Artes visuales'],
         imageAlt: 'Retrato de Jason Wright',

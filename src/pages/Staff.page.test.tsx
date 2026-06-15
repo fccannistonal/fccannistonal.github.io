@@ -16,9 +16,9 @@ describe('StaffPage', () => {
     expect(
       screen.getByText(/has served first christian church anniston since 2012/i)
     ).toBeInTheDocument();
-    expect(screen.queryByText(/master of divinity from candler/i)).not.toBeVisible();
+    expect(screen.queryByText(/mdiv from candler/i)).not.toBeVisible();
 
     await user.click(screen.getAllByText(/read full biography/i)[0]);
-    expect(screen.getByText(/master of divinity from candler/i)).toBeVisible();
+    expect(screen.getByText(/mdiv from candler/i)).toBeVisible();
   });
 });
