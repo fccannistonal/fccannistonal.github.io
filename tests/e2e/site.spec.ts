@@ -72,7 +72,10 @@ test('third-party embeds are click-to-load with direct fallbacks', async ({ page
     'https://www.facebook.com/FCCAnniston'
   );
   await page.getByRole('button', { name: /load facebook updates/i }).click();
-  await expect(page.locator('iframe')).toHaveAttribute('src', /facebook\.com\/plugins\/page\.php/);
+  const facebookIframe = page.locator('iframe');
+  await expect(facebookIframe).toHaveAttribute('src', /facebook\.com\/plugins\/page\.php/);
+  await expect(facebookIframe).toHaveAttribute('src', /height=760/);
+  await expect(facebookIframe).toHaveAttribute('src', /small_header=false/);
 });
 
 test('remembered embed providers load without another click', async ({ page }) => {

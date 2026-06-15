@@ -29,7 +29,10 @@
 
 .loadedFrame {
   position: relative;
+  width: 100%;
+  max-width: var(--embed-loaded-max-width, none);
   min-height: var(--embed-min-height, 20rem);
+  margin-inline: auto;
 }
 
 .iframe {

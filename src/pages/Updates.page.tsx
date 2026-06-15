@@ -24,7 +24,7 @@ export function UpdatesPage() {
   const content = getContent(locale);
   const facebookPluginUrl = `https://www.facebook.com/plugins/page.php?href=${encodeURIComponent(
     siteConfig.facebookUrl
-  )}&tabs=timeline&width=500&height=700&small_header=true&adapt_container_width=true&hide_cover=false&show_facepile=false`;
+  )}&tabs=timeline&width=500&height=760&small_header=false&adapt_container_width=true&hide_cover=false&show_facepile=true`;
 
   return (
     <Container size="xl" py={{ base: 'xl', md: '4rem' }}>
@@ -86,7 +86,8 @@ export function UpdatesPage() {
           externalLabel={content.updates.openFacebook}
           iframeTitle={content.updates.facebookTitle}
           connectionNote={content.common.embedConnectionNote('Meta / Facebook')}
-          minHeight="44rem"
+          minHeight="48rem"
+          loadedMaxWidth="31.25rem"
         />
       </Paper>
 

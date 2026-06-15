@@ -33,6 +33,7 @@ type Props = {
   iframeTitle: string;
   connectionNote: string;
   minHeight?: string;
+  loadedMaxWidth?: string;
   allow?: string;
   referrerPolicy?: React.HTMLAttributeReferrerPolicy;
   className?: string;
@@ -51,13 +52,17 @@ export function DeferredEmbed({
   iframeTitle,
   connectionNote,
   minHeight = '20rem',
+  loadedMaxWidth,
   allow,
   referrerPolicy,
   className,
 }: Props) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasIframeLoaded, setHasIframeLoaded] = useState(false);
-  const style = { '--embed-min-height': minHeight } as CSSProperties;
+  const style = {
+    '--embed-min-height': minHeight,
+    ...(loadedMaxWidth ? { '--embed-loaded-max-width': loadedMaxWidth } : {}),
+  } as CSSProperties;
 
   useEffect(() => {
     if (getEmbedConsent(providerId)) {
