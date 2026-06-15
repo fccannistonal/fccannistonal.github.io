@@ -1,23 +1,36 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   createBrowserRouter,
   Navigate,
   Outlet,
   RouterProvider,
+  useLocation,
   type RouteObject,
 } from 'react-router-dom';
 import { SiteLayout } from './layout/SiteLayout';
+import { getPageTitle } from './lib/pageMetadata';
 import { CommunityPage } from './pages/Community.page';
 import { ContactPage } from './pages/Contact.page';
 import { HomePage } from './pages/Home.page';
 import { NotFoundPage } from './pages/NotFound.page';
 import { StaffPage } from './pages/Staff.page';
 
+function PageTitleTracker() {
+  const location = useLocation();
+
+  useEffect(() => {
+    document.title = getPageTitle(location.pathname);
+  }, [location.pathname, location.search]);
+
+  return null;
+}
+
 export const routes: RouteObject[] = [
   {
     path: '/',
     element: (
       <SiteLayout>
+        <PageTitleTracker />
         <Outlet />
       </SiteLayout>
     ),

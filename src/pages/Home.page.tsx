@@ -34,6 +34,7 @@ import { useMediaQuery } from '@mantine/hooks';
 import { ContentImage } from '../components/church/ContentImage';
 import { HomeHero } from '../components/church/HomeHero';
 import { photoSlides, siteConfig } from '../content/churchContent';
+import { trackGivingIntent } from '../lib/googleAnalytics';
 import classes from './Home.page.module.css';
 
 export function HomePage() {
@@ -217,6 +218,7 @@ export function HomePage() {
                       size="lg"
                       color="green"
                       leftSection={<IconHeartHandshake size={20} />}
+                      onClick={trackGivingIntent}
                     >
                       Give
                     </Button>

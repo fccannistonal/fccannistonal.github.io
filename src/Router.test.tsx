@@ -1,5 +1,6 @@
+import { act } from '@testing-library/react';
 import { createMemoryRouter, RouterProvider } from 'react-router-dom';
-import { render, screen } from '@/test-utils';
+import { render, screen, waitFor } from '@/test-utils';
 import { getRedirectPathKey, restoreRedirectPath } from './lib/githubPages';
 import { Router, routes } from './Router';
 
@@ -38,5 +39,23 @@ describe('Router', () => {
 
     expect(window.location.pathname).toBe('/staff');
     expect(screen.getByRole('heading', { name: /meet the staff/i })).toBeInTheDocument();
+  });
+
+  it('updates the document title after navigation', async () => {
+    const router = createMemoryRouter(routes, { initialEntries: ['/'] });
+
+    render(<RouterProvider router={router} />);
+
+    await waitFor(() => {
+      expect(document.title).toBe('First Christian Church Anniston');
+    });
+
+    await act(async () => {
+      await router.navigate('/contact?source=staff');
+    });
+
+    await waitFor(() => {
+      expect(document.title).toBe('Contact | First Christian Church Anniston');
+    });
   });
 });

@@ -1,10 +1,20 @@
 import { render, screen, userEvent, waitFor } from '@/test-utils';
 import { ContactPage } from './Contact.page';
 
+const { trackContactFormSubmission } = vi.hoisted(() => ({
+  trackContactFormSubmission: vi.fn(),
+}));
+
+vi.mock('../lib/googleAnalytics', () => ({
+  trackContactFormSubmission,
+  trackContactIntent: vi.fn(),
+}));
+
 describe('ContactPage', () => {
   afterEach(() => {
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
+    trackContactFormSubmission.mockClear();
   });
 
   it('shows direct ways to contact and visit the church', () => {
@@ -66,6 +76,7 @@ describe('ContactPage', () => {
       })
     );
     expect(await screen.findByText(/thanks for reaching out/i)).toBeInTheDocument();
+    expect(trackContactFormSubmission).toHaveBeenCalledTimes(1);
   });
 
   it('surfaces a service error when submission fails', async () => {

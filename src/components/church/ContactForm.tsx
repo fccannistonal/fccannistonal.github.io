@@ -14,6 +14,7 @@ import {
   Title,
 } from '@mantine/core';
 import { CONTACT_EMAIL, getContactFormEndpoint } from '../../lib/formConfig';
+import { trackContactFormSubmission } from '../../lib/googleAnalytics';
 import classes from './ContactForm.module.css';
 
 type FormValues = {
@@ -128,6 +129,7 @@ export function ContactForm() {
         type: 'success',
         message: 'Thanks for reaching out. Your message has been sent.',
       });
+      trackContactFormSubmission();
     } catch (error) {
       setStatus({
         type: 'error',

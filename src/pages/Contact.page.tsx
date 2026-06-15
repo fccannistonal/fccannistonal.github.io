@@ -22,6 +22,7 @@ import {
 import { ContactForm } from '../components/church/ContactForm';
 import { PageHeader } from '../components/church/PageHeader';
 import { siteConfig } from '../content/churchContent';
+import { trackContactIntent } from '../lib/googleAnalytics';
 import classes from './Contact.page.module.css';
 
 const DETAIL_ICONS: Record<string, ComponentType<{ size?: number; stroke?: number }>> = {
@@ -55,6 +56,7 @@ export function ContactPage() {
               p="lg"
               className={classes.detailCard}
               aria-label={`${detail.actionLabel}: ${detail.value}`}
+              onClick={() => trackContactIntent(detail.label)}
             >
               <Group justify="space-between" align="flex-start" wrap="nowrap">
                 <ThemeIcon size={46} radius="xl" color="brand" variant="light">
@@ -122,6 +124,7 @@ export function ContactPage() {
               size="md"
               leftSection={<IconMapPin size={18} />}
               rightSection={<IconArrowUpRight size={17} />}
+              onClick={() => trackContactIntent('directions')}
             >
               Get directions
             </Button>

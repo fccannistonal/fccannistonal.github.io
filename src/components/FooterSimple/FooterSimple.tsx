@@ -2,6 +2,7 @@ import { IconArrowUpRight, IconBrandFacebook, IconBrandLinktree } from '@tabler/
 import { Link } from 'react-router-dom';
 import { Anchor, Container, Group, SimpleGrid, Stack, Text, ThemeIcon } from '@mantine/core';
 import { siteConfig } from '../../content/churchContent';
+import { trackGivingIntent } from '../../lib/googleAnalytics';
 import classes from './FooterSimple.module.css';
 
 export function FooterSimple() {
@@ -27,6 +28,7 @@ export function FooterSimple() {
       target={link.external ? '_blank' : undefined}
       rel={link.external ? 'noreferrer' : undefined}
       className={classes.link}
+      onClick={link.id === 'give' ? trackGivingIntent : undefined}
     >
       {link.title}
     </Anchor>

@@ -3,6 +3,7 @@ import { Link, NavLink } from 'react-router-dom';
 import { Burger, Button, Container, Divider, Drawer, Group, Stack, Text } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { siteConfig } from '../../content/churchContent';
+import { trackGivingIntent } from '../../lib/googleAnalytics';
 import classes from './HeaderSimple.module.css';
 
 export function HeaderSimple() {
@@ -43,6 +44,7 @@ export function HeaderSimple() {
                 target="_blank"
                 rel="noreferrer"
                 size="sm"
+                onClick={trackGivingIntent}
               >
                 Give Online
               </Button>
@@ -88,7 +90,10 @@ export function HeaderSimple() {
               href={givingLink.href}
               target="_blank"
               rel="noreferrer"
-              onClick={toggle}
+              onClick={() => {
+                trackGivingIntent();
+                toggle();
+              }}
             >
               Give Online
             </Button>
