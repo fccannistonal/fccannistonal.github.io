@@ -25,6 +25,14 @@ export type ServiceTime = {
   time: string;
 };
 
+export type SocialLink = {
+  id: 'facebook' | 'linktree';
+  title: string;
+  description: string;
+  href: string;
+  cta: string;
+};
+
 export type SiteConfig = {
   name: string;
   shortName: string;
@@ -51,6 +59,7 @@ export type SiteConfig = {
   contactDetails: ContactDetail[];
   navigation: NavItem[];
   homeActions: ActionLink[];
+  socialLinks: SocialLink[];
 };
 
 export type HeroSentence = {
@@ -210,6 +219,22 @@ export const siteConfig: SiteConfig = {
       href: tithelyFormUrl,
       cta: 'Give',
       external: true,
+    },
+  ],
+  socialLinks: [
+    {
+      id: 'facebook',
+      title: 'Facebook',
+      description: 'Follow church news, photos, events, and community updates.',
+      href: 'https://www.facebook.com/FCCAnniston',
+      cta: 'Follow on Facebook',
+    },
+    {
+      id: 'linktree',
+      title: 'FCC Anniston Links',
+      description: 'Find our latest links, resources, giving, sermons, and more in one place.',
+      href: 'https://linktr.ee/fccanniston',
+      cta: 'Explore our Linktree',
     },
   ],
 };

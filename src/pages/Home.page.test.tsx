@@ -54,6 +54,12 @@ describe('HomePage', () => {
     expect(screen.getByText(/photo 1 of 7/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /next photos/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /previous photos/i })).toBeDisabled();
+    expect(
+      screen.getByRole('link', { name: /follow on facebook \(opens in a new tab\)/i })
+    ).toHaveAttribute('href', 'https://www.facebook.com/FCCAnniston');
+    expect(
+      screen.getByRole('link', { name: /explore our linktree \(opens in a new tab\)/i })
+    ).toHaveAttribute('href', 'https://linktr.ee/fccanniston');
     expect(screen.getByTitle("Map showing the church's Anniston location")).toBeInTheDocument();
   });
 });

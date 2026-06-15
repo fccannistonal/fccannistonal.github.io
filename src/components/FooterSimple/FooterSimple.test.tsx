@@ -22,5 +22,11 @@ describe('FooterSimple', () => {
       'href',
       'https://give.tithe.ly/?formId=c23cd1bd-eeab-4311-a159-15b079e46baf'
     );
+    expect(
+      screen.getByRole('link', { name: /follow on facebook \(opens in a new tab\)/i })
+    ).toHaveAttribute('href', 'https://www.facebook.com/FCCAnniston');
+    expect(
+      screen.getByRole('link', { name: /explore our linktree \(opens in a new tab\)/i })
+    ).toHaveAttribute('href', 'https://linktr.ee/fccanniston');
   });
 });

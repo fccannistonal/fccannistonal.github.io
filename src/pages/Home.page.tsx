@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react';
 import {
+  IconArrowUpRight,
+  IconBrandFacebook,
+  IconBrandLinktree,
   IconChevronLeft,
   IconChevronRight,
   IconClock,
@@ -324,6 +327,72 @@ export function HomePage() {
                 </Carousel.Slide>
               ))}
             </Carousel>
+          </section>
+
+          <section aria-labelledby="connect-title">
+            <Paper withBorder p={{ base: 'lg', md: 'xl' }} className={classes.connectPanel}>
+              <Grid gutter={{ base: 'xl', md: '3rem' }} align="center">
+                <Grid.Col span={{ base: 12, md: 5 }}>
+                  <Badge variant="light" color="moss">
+                    Stay connected
+                  </Badge>
+                  <Title id="connect-title" order={2} mt="md">
+                    Keep up with life at FCC Anniston
+                  </Title>
+                  <Text c="dimmed" size="lg" mt="md">
+                    Follow along between Sundays for church news, upcoming events, photos, sermons,
+                    giving, and helpful resources.
+                  </Text>
+                </Grid.Col>
+
+                <Grid.Col span={{ base: 12, md: 7 }}>
+                  <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
+                    {siteConfig.socialLinks.map((link) => {
+                      const Icon = link.id === 'facebook' ? IconBrandFacebook : IconBrandLinktree;
+
+                      return (
+                        <Paper
+                          key={link.id}
+                          component="a"
+                          href={link.href}
+                          target="_blank"
+                          rel="noreferrer"
+                          withBorder
+                          p="lg"
+                          className={classes.socialCard}
+                          aria-label={`${link.cta} (opens in a new tab)`}
+                        >
+                          <Group justify="space-between" align="flex-start" wrap="nowrap">
+                            <ThemeIcon
+                              size={48}
+                              radius="xl"
+                              variant="light"
+                              color={link.id === 'facebook' ? 'blue' : 'moss'}
+                            >
+                              <Icon size={25} stroke={1.8} />
+                            </ThemeIcon>
+                            <IconArrowUpRight
+                              className={classes.socialArrow}
+                              size={21}
+                              stroke={1.8}
+                            />
+                          </Group>
+                          <Title order={3} mt="lg">
+                            {link.title}
+                          </Title>
+                          <Text c="dimmed" mt="xs">
+                            {link.description}
+                          </Text>
+                          <Text className={classes.socialCta} mt="lg">
+                            {link.cta}
+                          </Text>
+                        </Paper>
+                      );
+                    })}
+                  </SimpleGrid>
+                </Grid.Col>
+              </Grid>
+            </Paper>
           </section>
 
           <section aria-labelledby="map-title">

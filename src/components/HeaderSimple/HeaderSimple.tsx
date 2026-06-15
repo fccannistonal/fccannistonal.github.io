@@ -1,3 +1,4 @@
+import { IconBrandFacebook, IconBrandLinktree } from '@tabler/icons-react';
 import { Link, NavLink } from 'react-router-dom';
 import { Burger, Button, Container, Divider, Drawer, Group, Stack, Text } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
@@ -92,6 +93,34 @@ export function HeaderSimple() {
               Give Online
             </Button>
           ) : null}
+
+          <Divider my="xs" />
+
+          <div>
+            <Text className={classes.mobileSectionTitle}>Stay connected</Text>
+            <Stack gap="xs" mt="sm">
+              {siteConfig.socialLinks.map((link) => {
+                const Icon = link.id === 'facebook' ? IconBrandFacebook : IconBrandLinktree;
+
+                return (
+                  <Button
+                    key={link.id}
+                    component="a"
+                    href={link.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    variant="light"
+                    color={link.id === 'facebook' ? 'blue' : 'moss'}
+                    leftSection={<Icon size={19} stroke={1.8} />}
+                    className={classes.mobileSocialLink}
+                    onClick={toggle}
+                  >
+                    {link.cta}
+                  </Button>
+                );
+              })}
+            </Stack>
+          </div>
         </Stack>
       </Drawer>
     </>

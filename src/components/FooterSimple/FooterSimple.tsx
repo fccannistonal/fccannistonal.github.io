@@ -1,5 +1,6 @@
+import { IconArrowUpRight, IconBrandFacebook, IconBrandLinktree } from '@tabler/icons-react';
 import { Link } from 'react-router-dom';
-import { Anchor, Container, Group, SimpleGrid, Stack, Text } from '@mantine/core';
+import { Anchor, Container, Group, SimpleGrid, Stack, Text, ThemeIcon } from '@mantine/core';
 import { siteConfig } from '../../content/churchContent';
 import classes from './FooterSimple.module.css';
 
@@ -31,10 +32,44 @@ export function FooterSimple() {
     </Anchor>
   ));
 
+  const socialItems = siteConfig.socialLinks.map((link) => {
+    const Icon = link.id === 'facebook' ? IconBrandFacebook : IconBrandLinktree;
+
+    return (
+      <Anchor<'a'>
+        c="inherit"
+        key={link.id}
+        href={link.href}
+        target="_blank"
+        rel="noreferrer"
+        className={classes.socialLink}
+        aria-label={`${link.cta} (opens in a new tab)`}
+      >
+        <ThemeIcon
+          size={38}
+          radius="xl"
+          variant="light"
+          color={link.id === 'facebook' ? 'blue' : 'moss'}
+        >
+          <Icon size={20} stroke={1.8} />
+        </ThemeIcon>
+        <span className={classes.socialLinkText}>
+          <Text component="span" fw={700} size="sm">
+            {link.title}
+          </Text>
+          <Text component="span" c="dimmed" size="xs">
+            {link.cta}
+          </Text>
+        </span>
+        <IconArrowUpRight className={classes.socialArrow} size={17} stroke={1.8} />
+      </Anchor>
+    );
+  });
+
   return (
     <div className={classes.footer}>
       <Container size="xl" className={classes.inner}>
-        <SimpleGrid cols={{ base: 1, md: 3 }} spacing="xl">
+        <SimpleGrid cols={{ base: 1, sm: 2, lg: 4 }} spacing="xl">
           <Stack gap="xs">
             <Link to="/" className={classes.brand}>
               <span className={classes.logoMark}>
@@ -62,6 +97,11 @@ export function FooterSimple() {
             <Group gap="xs" className={classes.links}>
               {actionItems}
             </Group>
+          </Stack>
+
+          <Stack gap="sm">
+            <Text className={classes.sectionTitle}>Connect</Text>
+            <Stack gap="xs">{socialItems}</Stack>
           </Stack>
         </SimpleGrid>
       </Container>

@@ -99,6 +99,18 @@
   text-decoration: none;
 }
 
+.mobileSectionTitle {
+  color: #684931;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.mobileSocialLink {
+  min-height: 44px;
+}
+
 .drawerLogoMark {
   width: 36px;
   height: 46px;
