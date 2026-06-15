@@ -18,5 +18,9 @@ describe('page metadata', () => {
       'href',
       'https://fccanniston.com/visit'
     );
+    expect(document.querySelector('meta[property="og:image"]')).toHaveAttribute(
+      'content',
+      'https://fccanniston.com/images/social/visit.jpg'
+    );
   });
 });

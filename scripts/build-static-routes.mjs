@@ -131,10 +131,37 @@ const churchStructuredData = {
   ],
 };
 
+const getRouteSocialImage = (route) =>
+  absoluteUrl(route.socialImage ?? manifest.socialImage);
+
+function createStructuredData(route) {
+  const blocks = [churchStructuredData];
+
+  if (route.faq) {
+    blocks.push({
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: route.faq.map((item) => ({
+        '@type': 'Question',
+        name: item.question,
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: item.answer,
+        },
+      })),
+    });
+  }
+
+  return blocks
+    .map((block) => `<script type="application/ld+json">${JSON.stringify(block)}</script>`)
+    .join('\n    ');
+}
+
 function createMeta(route) {
   const canonicalUrl = absoluteUrl(route.path);
   const englishPath = route.locale === 'en' ? route.path : route.alternatePath;
   const spanishPath = route.locale === 'es' ? route.path : route.alternatePath;
+  const socialImage = getRouteSocialImage(route);
 
   return `<!-- ROUTE_META_START -->
     <meta name="description" content="${escapeHtml(route.description)}" />
@@ -146,13 +173,13 @@ function createMeta(route) {
     <meta property="og:title" content="${escapeHtml(route.title)}" />
     <meta property="og:description" content="${escapeHtml(route.description)}" />
     <meta property="og:url" content="${canonicalUrl}" />
-    <meta property="og:image" content="${absoluteUrl(manifest.socialImage)}" />
+    <meta property="og:image" content="${socialImage}" />
     <meta property="og:locale" content="${route.locale === 'es' ? 'es_US' : 'en_US'}" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="${escapeHtml(route.title)}" />
     <meta name="twitter:description" content="${escapeHtml(route.description)}" />
-    <meta name="twitter:image" content="${absoluteUrl(manifest.socialImage)}" />
-    <script type="application/ld+json">${JSON.stringify(churchStructuredData)}</script>
+    <meta name="twitter:image" content="${socialImage}" />
+    ${createStructuredData(route)}
     <!-- ROUTE_META_END -->`;
 }
 

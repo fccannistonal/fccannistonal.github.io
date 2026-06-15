@@ -8,8 +8,8 @@ This repo is a React 19 + TypeScript + Vite + Mantine site with GitHub Pages dep
 
 - Fully localized English and Spanish routes with equivalent-page language switching
 - Visitor, beliefs, staff, church-life, updates, contact, and privacy content
-- Route-specific static HTML, metadata, `hreflang`, sitemap, and Church structured data
-- GitHub Pages deep-link support with a generated `404.html`
+- Route-specific static HTML, metadata, social images, `hreflang`, sitemap, Church structured data, and Visit FAQ structured data
+- GitHub Pages deep-link support with a generated `404.html` and generated static pages for legacy redirects
 - A contact form that sends submissions to the church inbox through FormSubmit
 - Consent-gated analytics and click-to-load third-party embeds
 - Responsive AVIF/WebP/JPEG photography generated from `source-images/`
@@ -39,7 +39,8 @@ Most of the real app lives under `src/`. If you are trying to update the deploye
 - English: `/visit`, `/about`, `/staff`, `/community`, `/community/worship-and-music`, `/community/wonder-and-worship`, `/community/hispanic-ministry`, `/community/service-and-outreach`, `/community/diversity-theater`, `/updates`, `/contact`, `/privacy`
 - Spanish: `/es/visita`, `/es/acerca`, `/es/personal`, `/es/comunidad`, `/es/comunidad/adoracion-y-musica`, `/es/comunidad/wonder-and-worship`, `/es/comunidad/ministerio-hispano`, `/es/comunidad/servicio-comunitario`, `/es/comunidad/teatro-diversidad`, `/es/novedades`, `/es/contacto`, `/es/privacidad`
 
-Legacy `/outreach` and diversity-theater URLs redirect to their canonical routes.
+Legacy `/outreach`, `/diversity-theater`, `/es/outreach`, and `/es/teatro-diversidad`
+URLs are generated as static redirect pages so old links do not return a GitHub Pages 404.
 
 ## Local development
 
@@ -75,6 +76,14 @@ npm run test
 
 This includes unit/accessibility tests, production build validation, Playwright browser tests, and a production dependency audit.
 
+Post-deploy production smoke check:
+
+```bash
+npm run smoke:production
+```
+
+This fetches every public route and legacy redirect URL from `https://fccanniston.com` and verifies status, language, title, canonical metadata, social image metadata, and redirect-page integrity. Use `SMOKE_BASE_URL=https://example.com npm run smoke:production` to check another deployed base URL.
+
 ## Build and deployment
 
 Production build:
@@ -89,7 +98,7 @@ Preview the built app locally:
 npm run preview
 ```
 
-The build writes only to `dist/`. It generates responsive images, localized static route documents, sitemap and robots files, social imagery, and the GitHub Pages `404.html` fallback.
+The build writes only to `dist/`. It generates responsive images, localized static route documents, legacy redirect pages, sitemap and robots files, social imagery, and the GitHub Pages `404.html` fallback. Build validation fails if duplicate conflict-copy artifacts such as `index 2.html` are present in `dist`.
 
 GitHub Actions:
 

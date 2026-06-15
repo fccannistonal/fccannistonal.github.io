@@ -48,7 +48,10 @@ export function updatePageMetadata(pathname: string) {
     localizedRoutes[0];
   const metadata = route ?? fallbackRoute;
   const canonicalUrl = getCanonicalUrl(metadata.path);
-  const socialImageUrl = new URL(routeManifest.socialImage, routeManifest.siteUrl).toString();
+  const socialImageUrl = new URL(
+    metadata.socialImage ?? routeManifest.socialImage,
+    routeManifest.siteUrl
+  ).toString();
 
   document.title = route ? metadata.title : getPageTitle(pathname);
   document.documentElement.lang = locale;

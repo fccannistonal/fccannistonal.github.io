@@ -22,4 +22,13 @@ The implementation is ready for technical review. Publication approval still req
 - [ ] Run `npx playwright install chromium`.
 - [ ] Run `npm run test`.
 - [ ] Deploy through `.github/workflows/deploy.yml`.
+- [ ] Run `npm run smoke:production` after deploy.
 - [ ] Verify deep links, redirects, caching, metadata, social previews, and third-party embeds on `https://fccanniston.com`.
+- [ ] Verify legacy URLs (`/outreach`, `/diversity-theater`, `/es/outreach`, `/es/teatro-diversidad`) load redirect pages and send visitors to the canonical pages.
+
+## Ongoing freshness
+
+- [ ] Assign a ministry owner who can request bilingual schedule alerts for cancellations or exceptions.
+- [ ] Confirm the website owner knows where to update `serviceAlert` content in `src/content/localizedContent.ts`.
+- [ ] Review service times, contact details, giving links, staff details, ministry descriptions, and privacy language at least quarterly.
+- [ ] Re-run `npm run smoke:production` after any deploy that changes routes, metadata, redirects, or third-party embeds.

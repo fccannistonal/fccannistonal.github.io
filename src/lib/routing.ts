@@ -23,6 +23,11 @@ export type LocalizedRoute = {
   alternatePath: string;
   title: string;
   description: string;
+  socialImage?: string;
+  faq?: Array<{
+    question: string;
+    answer: string;
+  }>;
 };
 
 type RouteManifest = {

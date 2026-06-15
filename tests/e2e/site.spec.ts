@@ -78,6 +78,23 @@ test('third-party embeds are click-to-load with direct fallbacks', async ({ page
   await expect(facebookIframe).toHaveAttribute('src', /small_header=false/);
 });
 
+test('legacy static redirect pages reach canonical destinations', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name.startsWith('mobile'), 'run legacy redirects once');
+
+  const redirects = [
+    ['/outreach', '/community/service-and-outreach'],
+    ['/diversity-theater', '/community/diversity-theater'],
+    ['/es/outreach', '/es/comunidad/servicio-comunitario'],
+    ['/es/teatro-diversidad', '/es/comunidad/teatro-diversidad'],
+  ] as const;
+
+  for (const [sourcePath, destinationPath] of redirects) {
+    await page.goto(sourcePath);
+    await expect(page).toHaveURL(new RegExp(`${destinationPath}/?$`));
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+  }
+});
+
 test('remembered embed providers load without another click', async ({ page }) => {
   await page.addInitScript(() => {
     window.localStorage.setItem('fccanniston.embed-consent.v1', '["facebook"]');

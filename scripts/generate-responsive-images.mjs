@@ -114,19 +114,33 @@ if (!sourceStats?.isDirectory()) {
 const imagePaths = await listImages(sourceDir);
 await Promise.all(imagePaths.map(generateImage));
 
-const socialSource = resolve(sourceDir, 'home', 'sanctuary-hero.jpg');
 const socialOutputDir = resolve(outputDir, 'social');
-const socialOutput = resolve(socialOutputDir, 'fcc-anniston.jpg');
+const socialImages = [
+  ['home/sanctuary-hero.jpg', 'fcc-anniston.jpg'],
+  ['home/fcc-exterior-sunset.jpg', 'visit.jpg'],
+  ['gallery/church-tapestry.jpg', 'about.jpg'],
+  ['staff/staff.jpg', 'staff.jpg'],
+  ['gallery/childrens-moment.jpg', 'church-life.jpg'],
+  ['gallery/communion-table.jpg', 'worship.jpg'],
+  ['community/diversity-theater/cast-1600.jpg', 'diversity-theater.jpg'],
+];
+
 await mkdir(socialOutputDir, { recursive: true });
-if (await outputsAreCurrent(socialSource, [socialOutput])) {
-  skippedCount += 1;
-} else {
-  await sharp(socialSource)
-    .rotate()
-    .resize(1200, 630, { fit: 'cover', position: 'centre' })
-    .jpeg({ quality: 84, progressive: true, mozjpeg: true })
-    .toFile(socialOutput);
-  generatedCount += 1;
+
+for (const [sourceRelativePath, outputFileName] of socialImages) {
+  const socialSource = resolve(sourceDir, sourceRelativePath);
+  const socialOutput = resolve(socialOutputDir, outputFileName);
+
+  if (await outputsAreCurrent(socialSource, [socialOutput])) {
+    skippedCount += 1;
+  } else {
+    await sharp(socialSource)
+      .rotate()
+      .resize(1200, 630, { fit: 'cover', position: 'centre' })
+      .jpeg({ quality: 84, progressive: true, mozjpeg: true })
+      .toFile(socialOutput);
+    generatedCount += 1;
+  }
 }
 
 await generateBrandAssets();

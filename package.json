@@ -7,7 +7,7 @@
     "dev": "npm run build:assets && vite",
     "build": "npm run build:assets && tsc && npm run build:dist",
     "build:assets": "node ./scripts/generate-responsive-images.mjs",
-    "build:dist": "vite build && vite build --ssr src/entry-server.tsx --outDir .ssr && node ./scripts/build-static-routes.mjs && node ./scripts/build-pages-404.mjs && node ./scripts/validate-build.mjs",
+    "build:dist": "vite build && vite build --ssr src/entry-server.tsx --outDir .ssr && node ./scripts/build-static-routes.mjs && node ./scripts/build-legacy-redirects.mjs && node ./scripts/build-pages-404.mjs && node ./scripts/validate-build.mjs",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "lint": "npm run eslint && npm run stylelint",
@@ -19,6 +19,7 @@
     "vitest:watch": "vitest",
     "test:e2e": "playwright test",
     "audit:production": "npm audit --omit=dev --audit-level=high",
+    "smoke:production": "node ./scripts/smoke-production.mjs",
     "test": "npm run typecheck && npm run prettier && npm run lint && npm run vitest && npm run build && npm run test:e2e && npm run audit:production",
     "storybook": "npm run build:assets && storybook dev -p 6006",
     "storybook:build": "npm run build:assets && storybook build"

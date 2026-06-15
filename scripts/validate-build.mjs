@@ -2,6 +2,8 @@
 import { access, readdir, readFile, stat } from 'node:fs/promises';
 import { dirname, extname, parse, relative, resolve } from 'node:path';
 import { gzipSync } from 'node:zlib';
+import { isConflictCopyArtifactPath } from './build-validation-rules.mjs';
+import { legacyRedirects } from './legacy-redirects.mjs';
 
 const rootDir = resolve(import.meta.dirname, '..');
 const outDir = process.env.BUILD_OUT_DIR ?? 'dist';
@@ -12,6 +14,8 @@ const manifest = JSON.parse(
 );
 const errors = [];
 const initialJavascriptPaths = new Set();
+
+const absoluteUrl = (path) => new URL(path, manifest.siteUrl).toString();
 
 for (const route of manifest.routes) {
   const routePath =
@@ -62,6 +66,20 @@ for (const route of manifest.routes) {
 
     for (const match of html.matchAll(/<script[^>]+src="([^"]+\.js)"[^>]*>/g)) {
       initialJavascriptPaths.add(match[1].replace(/^\//, ''));
+    }
+
+    const routeSocialImage = absoluteUrl(route.socialImage ?? manifest.socialImage);
+    if (!html.includes(`<meta property="og:image" content="${routeSocialImage}"`)) {
+      errors.push(`${route.path}: missing route social image metadata`);
+    }
+
+    if (route.faq) {
+      if (!html.includes('"@type":"FAQPage"')) {
+        errors.push(`${route.path}: FAQ structured data is missing`);
+      }
+      if (route.faq.some((item) => !html.includes(item.question) || !html.includes(item.answer))) {
+        errors.push(`${route.path}: FAQ structured data is incomplete`);
+      }
     }
   } catch {
     errors.push(`${route.path}: static HTML was not generated`);
@@ -118,6 +136,60 @@ async function listFiles(directory) {
   return files;
 }
 
+async function listPaths(directory) {
+  const entries = await readdir(directory, { withFileTypes: true });
+  const paths = [];
+
+  for (const entry of entries) {
+    const path = resolve(directory, entry.name);
+    paths.push(path);
+    if (entry.isDirectory()) {
+      paths.push(...(await listPaths(path)));
+    }
+  }
+
+  return paths;
+}
+
+const outputPaths = await listPaths(outputDir);
+const conflictCopyArtifacts = outputPaths
+  .map((path) => relative(outputDir, path))
+  .filter(isConflictCopyArtifactPath);
+
+if (conflictCopyArtifacts.length > 0) {
+  errors.push(
+    `Unexpected duplicate build artifacts: ${conflictCopyArtifacts.slice(0, 12).join(', ')}`
+  );
+}
+
+for (const redirect of legacyRedirects) {
+  const redirectPath = resolve(
+    outputDir,
+    redirect.sourcePath.replace(/^\/|\/$/g, ''),
+    'index.html'
+  );
+
+  try {
+    const html = await readFile(redirectPath, 'utf8');
+    const canonicalUrl = absoluteUrl(redirect.destinationPath);
+    const requiredFragments = [
+      `<html lang="${redirect.locale}"`,
+      `<meta name="robots" content="noindex, follow"`,
+      `<link rel="canonical" href="${canonicalUrl}"`,
+      `window.location.replace(destination)`,
+      `href="${redirect.destinationPath}"`,
+    ];
+
+    requiredFragments.forEach((fragment) => {
+      if (!html.includes(fragment)) {
+        errors.push(`${redirect.sourcePath}: legacy redirect is missing ${fragment}`);
+      }
+    });
+  } catch {
+    errors.push(`${redirect.sourcePath}: legacy redirect page was not generated`);
+  }
+}
+
 const sourceImages = (await listFiles(sourceImageDir)).filter((path) =>
   ['.jpg', '.jpeg', '.png'].includes(extname(path).toLowerCase())
 );
@@ -142,6 +214,17 @@ for (const sourceImage of sourceImages) {
     }
   } catch {
     errors.push(`${sourceRelativePath}: optimized fallback image is missing`);
+  }
+}
+
+for (const socialImagePath of new Set([
+  manifest.socialImage,
+  ...manifest.routes.flatMap((route) => (route.socialImage ? [route.socialImage] : [])),
+])) {
+  try {
+    await access(resolve(outputDir, socialImagePath.replace(/^\//, '')));
+  } catch {
+    errors.push(`Missing social image: ${socialImagePath}`);
   }
 }
 

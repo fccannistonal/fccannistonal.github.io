@@ -25,7 +25,26 @@
       "path": "/visit",
       "alternatePath": "/es/visita",
       "title": "Plan Your Visit | First Christian Church Anniston",
-      "description": "Know what to expect on Sunday at First Christian Church Anniston, including worship times, children’s ministry, communion, directions, and visitor support."
+      "description": "Know what to expect on Sunday at First Christian Church Anniston, including worship times, children’s ministry, communion, directions, and visitor support.",
+      "socialImage": "/images/social/visit.jpg",
+      "faq": [
+        {
+          "question": "What time are Sunday services?",
+          "answer": "Sunday School begins at 10:30 AM and worship begins at 11:30 AM."
+        },
+        {
+          "question": "What should I wear?",
+          "answer": "There is no dress code. Wear what helps you feel comfortable and able to participate."
+        },
+        {
+          "question": "Are children welcome?",
+          "answer": "Families are welcome. Children can participate in Wonder and Worship during the Worship Service."
+        },
+        {
+          "question": "Who can take communion?",
+          "answer": "Communion is central to weekly worship and reflects Christ’s welcome at the table."
+        }
+      ]
     },
     {
       "id": "visit",
@@ -33,7 +52,26 @@
       "path": "/es/visita",
       "alternatePath": "/visit",
       "title": "Planifique su visita | Primera Iglesia Cristiana de Anniston",
-      "description": "Conozca qué esperar el domingo en la Primera Iglesia Cristiana de Anniston, incluidos horarios, ministerio infantil, comunión, direcciones y apoyo."
+      "description": "Conozca qué esperar el domingo en la Primera Iglesia Cristiana de Anniston, incluidos horarios, ministerio infantil, comunión, direcciones y apoyo.",
+      "socialImage": "/images/social/visit.jpg",
+      "faq": [
+        {
+          "question": "¿A qué hora son los servicios del domingo?",
+          "answer": "La escuela dominical comienza a las 10:30 AM y la adoración comienza a las 11:30 AM."
+        },
+        {
+          "question": "¿Cómo debo vestirme?",
+          "answer": "No hay código de vestimenta. Use lo que le permita sentirse cómodo y participar."
+        },
+        {
+          "question": "¿Son bienvenidos los niños?",
+          "answer": "Las familias son bienvenidas. Los niños pueden participar en Wonder and Worship durante el servicio de adoración."
+        },
+        {
+          "question": "¿Quién puede participar en la comunión?",
+          "answer": "La comunión es central en la adoración semanal y refleja la bienvenida de Cristo a la mesa."
+        }
+      ]
     },
     {
       "id": "about",
@@ -41,7 +79,8 @@
       "path": "/about",
       "alternatePath": "/es/acerca",
       "title": "About Us | First Christian Church Anniston",
-      "description": "Learn about First Christian Church Anniston, our Disciples of Christ identity, open and affirming welcome, communion, values, and life together."
+      "description": "Learn about First Christian Church Anniston, our Disciples of Christ identity, open and affirming welcome, communion, values, and life together.",
+      "socialImage": "/images/social/about.jpg"
     },
     {
       "id": "about",
@@ -49,7 +88,8 @@
       "path": "/es/acerca",
       "alternatePath": "/about",
       "title": "Acerca de nosotros | Primera Iglesia Cristiana de Anniston",
-      "description": "Conozca la identidad de los Discípulos de Cristo, la bienvenida abierta y afirmativa, la comunión, los valores y la vida de la iglesia."
+      "description": "Conozca la identidad de los Discípulos de Cristo, la bienvenida abierta y afirmativa, la comunión, los valores y la vida de la iglesia.",
+      "socialImage": "/images/social/about.jpg"
     },
     {
       "id": "staff",
@@ -57,7 +97,8 @@
       "path": "/staff",
       "alternatePath": "/es/personal",
       "title": "Staff | First Christian Church Anniston",
-      "description": "Meet the ministers, musicians, and staff who lead worship and care for the First Christian Church Anniston community."
+      "description": "Meet the ministers, musicians, and staff who lead worship and care for the First Christian Church Anniston community.",
+      "socialImage": "/images/social/staff.jpg"
     },
     {
       "id": "staff",
@@ -65,7 +106,8 @@
       "path": "/es/personal",
       "alternatePath": "/staff",
       "title": "Personal | Primera Iglesia Cristiana de Anniston",
-      "description": "Conozca a los ministros, músicos y miembros del personal que dirigen la adoración y cuidan a la comunidad de la iglesia."
+      "description": "Conozca a los ministros, músicos y miembros del personal que dirigen la adoración y cuidan a la comunidad de la iglesia.",
+      "socialImage": "/images/social/staff.jpg"
     },
     {
       "id": "community",
@@ -73,7 +115,8 @@
       "path": "/community",
       "alternatePath": "/es/comunidad",
       "title": "Church Life | First Christian Church Anniston",
-      "description": "Explore worship, children’s ministry, Hispanic ministry, the Diversity Theater Company, and community life at First Christian Church Anniston."
+      "description": "Explore worship, children’s ministry, Hispanic ministry, the Diversity Theater Company, and community life at First Christian Church Anniston.",
+      "socialImage": "/images/social/church-life.jpg"
     },
     {
       "id": "community",
@@ -81,7 +124,8 @@
       "path": "/es/comunidad",
       "alternatePath": "/community",
       "title": "Vida de la iglesia | Primera Iglesia Cristiana de Anniston",
-      "description": "Explore la adoración, el ministerio infantil, el ministerio hispano, la Compañía de Teatro Diversidad y la vida comunitaria."
+      "description": "Explore la adoración, el ministerio infantil, el ministerio hispano, la Compañía de Teatro Diversidad y la vida comunitaria.",
+      "socialImage": "/images/social/church-life.jpg"
     },
     {
       "id": "worshipAndMusic",
@@ -89,7 +133,8 @@
       "path": "/community/worship-and-music",
       "alternatePath": "/es/comunidad/adoracion-y-musica",
       "title": "Worship and Music | First Christian Church Anniston",
-      "description": "Explore Sunday worship, weekly communion, preaching, prayer, choir, organ, piano, and musical leadership at First Christian Church Anniston."
+      "description": "Explore Sunday worship, weekly communion, preaching, prayer, choir, organ, piano, and musical leadership at First Christian Church Anniston.",
+      "socialImage": "/images/social/worship.jpg"
     },
     {
       "id": "worshipAndMusic",
@@ -97,7 +142,8 @@
       "path": "/es/comunidad/adoracion-y-musica",
       "alternatePath": "/community/worship-and-music",
       "title": "Adoración y música | Primera Iglesia Cristiana de Anniston",
-      "description": "Conozca la adoración dominical, la comunión semanal, la predicación, la oración, el coro, el órgano, el piano y el liderazgo musical."
+      "description": "Conozca la adoración dominical, la comunión semanal, la predicación, la oración, el coro, el órgano, el piano y el liderazgo musical.",
+      "socialImage": "/images/social/worship.jpg"
     },
     {
       "id": "wonderAndWorship",
@@ -105,7 +151,8 @@
       "path": "/community/wonder-and-worship",
       "alternatePath": "/es/comunidad/wonder-and-worship",
       "title": "Wonder and Worship | First Christian Church Anniston",
-      "description": "Learn how children are welcomed into worship through stories, questions, participation, and Wonder and Worship at First Christian Church Anniston."
+      "description": "Learn how children are welcomed into worship through stories, questions, participation, and Wonder and Worship at First Christian Church Anniston.",
+      "socialImage": "/images/social/church-life.jpg"
     },
     {
       "id": "wonderAndWorship",
@@ -113,7 +160,8 @@
       "path": "/es/comunidad/wonder-and-worship",
       "alternatePath": "/community/wonder-and-worship",
       "title": "Wonder and Worship | Primera Iglesia Cristiana de Anniston",
-      "description": "Conozca cómo los niños participan en la adoración mediante historias, preguntas, actividades y Wonder and Worship."
+      "description": "Conozca cómo los niños participan en la adoración mediante historias, preguntas, actividades y Wonder and Worship.",
+      "socialImage": "/images/social/church-life.jpg"
     },
     {
       "id": "hispanicMinistry",
@@ -121,7 +169,8 @@
       "path": "/community/hispanic-ministry",
       "alternatePath": "/es/comunidad/ministerio-hispano",
       "title": "Hispanic Ministry | First Christian Church Anniston",
-      "description": "Meet Rev. Maria Zamarripa and learn about spiritual care, chaplaincy, and ministry with Spanish-speaking individuals and families."
+      "description": "Meet Rev. Maria Zamarripa and learn about spiritual care, chaplaincy, and ministry with Spanish-speaking individuals and families.",
+      "socialImage": "/images/social/church-life.jpg"
     },
     {
       "id": "hispanicMinistry",
@@ -129,7 +178,8 @@
       "path": "/es/comunidad/ministerio-hispano",
       "alternatePath": "/community/hispanic-ministry",
       "title": "Ministerio hispano | Primera Iglesia Cristiana de Anniston",
-      "description": "Conozca a la Rev. Maria Zamarripa y el cuidado espiritual, la capellanía y el ministerio con personas y familias de habla hispana."
+      "description": "Conozca a la Rev. Maria Zamarripa y el cuidado espiritual, la capellanía y el ministerio con personas y familias de habla hispana.",
+      "socialImage": "/images/social/church-life.jpg"
     },
     {
       "id": "serviceAndOutreach",
@@ -137,7 +187,8 @@
       "path": "/community/service-and-outreach",
       "alternatePath": "/es/comunidad/servicio-comunitario",
       "title": "Service and Outreach | First Christian Church Anniston",
-      "description": "See how First Christian Church Anniston serves through Oxfordfest, support for JSU’s LGBT student group, pastoral care for older adults, and shared community space."
+      "description": "See how First Christian Church Anniston serves through Oxfordfest, support for JSU’s LGBT student group, pastoral care for older adults, and shared community space.",
+      "socialImage": "/images/social/church-life.jpg"
     },
     {
       "id": "serviceAndOutreach",
@@ -145,7 +196,8 @@
       "path": "/es/comunidad/servicio-comunitario",
       "alternatePath": "/community/service-and-outreach",
       "title": "Servicio comunitario | Primera Iglesia Cristiana de Anniston",
-      "description": "Conozca el servicio de la iglesia mediante Oxfordfest, el apoyo al grupo estudiantil LGBT de JSU, el cuidado de adultos mayores y espacios compartidos."
+      "description": "Conozca el servicio de la iglesia mediante Oxfordfest, el apoyo al grupo estudiantil LGBT de JSU, el cuidado de adultos mayores y espacios compartidos.",
+      "socialImage": "/images/social/church-life.jpg"
     },
     {
       "id": "diversityTheater",
@@ -153,7 +205,8 @@
       "path": "/community/diversity-theater",
       "alternatePath": "/es/comunidad/teatro-diversidad",
       "title": "Diversity Theater Company | First Christian Church Anniston",
-      "description": "Discover the Diversity Theater Company and its mission of honest storytelling, open hospitality, and LGBTQ inclusion at First Christian Church."
+      "description": "Discover the Diversity Theater Company and its mission of honest storytelling, open hospitality, and LGBTQ inclusion at First Christian Church.",
+      "socialImage": "/images/social/diversity-theater.jpg"
     },
     {
       "id": "diversityTheater",
@@ -161,7 +214,8 @@
       "path": "/es/comunidad/teatro-diversidad",
       "alternatePath": "/community/diversity-theater",
       "title": "Compañía de Teatro Diversidad | Primera Iglesia Cristiana de Anniston",
-      "description": "Descubra la Compañía de Teatro Diversidad y su misión de contar historias con honestidad, hospitalidad abierta e inclusión LGBTQ."
+      "description": "Descubra la Compañía de Teatro Diversidad y su misión de contar historias con honestidad, hospitalidad abierta e inclusión LGBTQ.",
+      "socialImage": "/images/social/diversity-theater.jpg"
     },
     {
       "id": "updates",
