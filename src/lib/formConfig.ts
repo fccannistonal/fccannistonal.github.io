@@ -1,3 +1,5 @@
-export function getFormspreeEndpoint() {
-  return import.meta.env.VITE_FORMSPREE_ENDPOINT?.trim() ?? '';
+export const CONTACT_EMAIL = 'fccannistonal@gmail.com';
+
+export function getContactFormEndpoint() {
+  return `https://formsubmit.co/ajax/${CONTACT_EMAIL}`;
 }

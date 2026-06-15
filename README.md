@@ -2,14 +2,14 @@
 
 Source for the First Christian Church Anniston website at [fccanniston.com](https://fccanniston.com/).
 
-This repo is a React 19 + TypeScript + Vite + Mantine site with GitHub Pages deployment and a Formspree-backed contact form. It is no longer a generic Mantine starter, although some starter-template files and component stories are still present in the repository.
+This repo is a React 19 + TypeScript + Vite + Mantine site with GitHub Pages deployment and a FormSubmit-backed contact form. It is no longer a generic Mantine starter, although some starter-template files and component stories are still present in the repository.
 
 ## What this repo currently contains
 
 - A multi-page church website with `Home`, `Staff`, `Outreach`, and `Contact` pages
 - Shared site layout, header, and footer
 - GitHub Pages SPA routing support with a generated `404.html`
-- A contact form that posts to Formspree when `VITE_FORMSPREE_ENDPOINT` is configured
+- A contact form that sends submissions to the church inbox through FormSubmit
 - Tests for the active site pages and church-specific components
 
 ## Current content status
@@ -17,7 +17,6 @@ This repo is a React 19 + TypeScript + Vite + Mantine site with GitHub Pages dep
 The site structure is ready, but several pieces of content are still placeholders and should be replaced before launch or final handoff:
 
 - Staff names, bios, and portraits
-- Street address, phone number, and email
 - Worship schedule details
 - Podcast, Zoom, and online giving links
 - Hero, gallery, and outreach photography
@@ -30,7 +29,7 @@ Most of the real app lives under `src/`. If you are trying to update the deploye
 - `src/pages/*.tsx`: page composition for the live routes
 - `src/components/church/*`: church-specific UI like the hero, page headers, content image blocks, and contact form
 - `src/components/HeaderSimple/*` and `src/components/FooterSimple/*`: shared site chrome
-- `src/lib/formConfig.ts`: reads `VITE_FORMSPREE_ENDPOINT`
+- `src/lib/formConfig.ts`: stores the church contact email and form submission endpoint
 - `src/lib/githubPages.ts`: restores SPA routes after GitHub Pages redirects
 - `public/`: static assets
 
@@ -51,12 +50,6 @@ Use the Node version from `.nvmrc` and use `npm` for installs and CI-aligned wor
 nvm use
 npm ci
 npm run dev
-```
-
-If you want the contact form to submit successfully, add a local env file first:
-
-```bash
-cp .env.example .env.local
 ```
 
 To work on Storybook:
@@ -109,13 +102,11 @@ GitHub Actions:
 
 Because this repo includes a `CNAME` file, the production site is configured for the custom domain `fccanniston.com`.
 
-## Environment
+## Contact form
 
-Example local environment file:
-
-```bash
-VITE_FORMSPREE_ENDPOINT=https://formspree.io/f/your-form-id
-```
+The contact form posts to FormSubmit's AJAX endpoint and delivers submissions to
+`fccannistonal@gmail.com`. FormSubmit requires a one-time email confirmation the first time the
+form is used with this recipient address.
 
 ## Stack
 

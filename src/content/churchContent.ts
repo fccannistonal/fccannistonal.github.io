@@ -16,6 +16,8 @@ export type ContactDetail = {
   label: string;
   value: string;
   helper?: string;
+  href: string;
+  actionLabel: string;
 };
 
 export type ServiceTime = {
@@ -42,6 +44,7 @@ export type SiteConfig = {
   givingCopy: string;
   exteriorImageSrc?: string;
   addressLines: string[];
+  directionsUrl: string;
   serviceNotes: string[];
   mapEmbedUrl: string;
   contactSummary: string;
@@ -150,29 +153,39 @@ export const siteConfig: SiteConfig = {
   givingCopy:
     'Your generous support helps us live out our love, service, and inclusion mission. By partnering with us financially, you become an essential part of our work—hosting community events like the Makers Market, supporting local outreach programs, or keeping our doors open to all who seek a spiritual home. No matter the size, every gift makes a difference and helps us continue sharing God’s love with our neighbors.',
   exteriorImageSrc: '/images/home/fcc-exterior-sunset.jpg',
-  addressLines: ['Full street address coming soon', 'Anniston, Alabama'],
+  addressLines: ['1327 Leighton Ave.', 'Anniston, AL 36207'],
+  directionsUrl:
+    'https://www.google.com/maps/dir/?api=1&destination=1327+Leighton+Ave%2C+Anniston%2C+AL+36207',
   serviceNotes: [
     'Sunday School begins at 10:30 AM.',
     'Worship Service begins at 11:30 AM.',
     'Children are invited to participate in Wonder and Worship during the service.',
   ],
-  mapEmbedUrl: 'https://www.google.com/maps?q=First+Christian+Church+Anniston+Alabama&output=embed',
+  mapEmbedUrl:
+    'https://www.google.com/maps?q=1327+Leighton+Ave%2C+Anniston%2C+AL+36207&output=embed',
   contactSummary:
     'A Disciples of Christ congregation serving Anniston with worship, welcome, and community outreach.',
   contactDetails: [
     {
       label: 'Location',
-      value: 'Anniston, Alabama',
-      helper: 'Update the street address in the content file when it is ready.',
+      value: '1327 Leighton Ave., Anniston, AL 36207',
+      helper: 'Get turn-by-turn directions to the church.',
+      href: 'https://www.google.com/maps/dir/?api=1&destination=1327+Leighton+Ave%2C+Anniston%2C+AL+36207',
+      actionLabel: 'Get directions',
     },
     {
       label: 'Email',
-      value: 'Church email link coming soon',
-      helper: 'The contact form can handle messages in the meantime.',
+      value: 'fccannistonal@gmail.com',
+      helper: 'Send a message any time.',
+      href: 'mailto:fccannistonal@gmail.com',
+      actionLabel: 'Email the church',
     },
     {
       label: 'Phone',
-      value: 'Church phone number coming soon',
+      value: '(256) 236-1316',
+      helper: 'Call the church office.',
+      href: 'tel:+12562361316',
+      actionLabel: 'Call now',
     },
   ],
   navigation: [

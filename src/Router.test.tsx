@@ -8,7 +8,7 @@ describe('Router', () => {
     ['/', /all are welcome/i],
     ['/staff', /meet the staff/i],
     ['/community', /diversity theater company/i],
-    ['/contact', /contact us/i],
+    ['/contact', /we’d love to hear from you/i],
     ['/missing', /page not found/i],
   ])('renders %s', (pathname, heading) => {
     const router = createMemoryRouter(routes, { initialEntries: [pathname] });

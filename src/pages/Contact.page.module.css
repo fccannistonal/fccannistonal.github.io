@@ -1,0 +1,83 @@
+.detailCard {
+  display: block;
+  min-height: 13.5rem;
+  background:
+    radial-gradient(circle at 100% 0%, rgb(99 139 73 / 9%), transparent 38%),
+    rgb(255 253 249 / 94%);
+  border-color: rgb(83 59 39 / 11%);
+  box-shadow: 0 16px 36px rgb(61 44 30 / 7%);
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.detailCard:hover {
+  transform: translateY(-4px);
+  border-color: rgb(222 129 54 / 32%);
+  box-shadow: 0 22px 44px rgb(61 44 30 / 12%);
+}
+
+.detailCard:focus-visible {
+  outline: 3px solid var(--mantine-color-brand-4);
+  outline-offset: 3px;
+}
+
+.detailArrow {
+  color: var(--mantine-color-brand-7);
+}
+
+.detailLabel {
+  color: #8c633d;
+  font-size: var(--mantine-font-size-xs);
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.mainGrid {
+  align-items: start;
+}
+
+.visitCard {
+  background:
+    radial-gradient(circle at 0% 100%, rgb(99 139 73 / 12%), transparent 36%),
+    linear-gradient(145deg, rgb(255 253 249 / 98%), rgb(245 238 226 / 96%));
+  border-color: rgb(83 59 39 / 12%);
+  box-shadow: 0 20px 48px rgb(61 44 30 / 8%);
+}
+
+.serviceRow {
+  padding: 0.9rem 1rem;
+  border: 1px solid rgb(83 59 39 / 10%);
+  border-radius: var(--mantine-radius-lg);
+  background: rgb(255 253 249 / 76%);
+}
+
+.mapCard {
+  overflow: hidden;
+  border-color: rgb(83 59 39 / 12%);
+  box-shadow: 0 20px 48px rgb(61 44 30 / 8%);
+}
+
+.mapFrame {
+  display: block;
+  width: 100%;
+  min-height: 22rem;
+}
+
+.mapCaption {
+  padding: var(--mantine-spacing-lg);
+  background: rgb(255 253 249 / 96%);
+  border-top: 1px solid rgb(83 59 39 / 10%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .detailCard {
+    transition: none;
+  }
+
+  .detailCard:hover {
+    transform: none;
+  }
+}

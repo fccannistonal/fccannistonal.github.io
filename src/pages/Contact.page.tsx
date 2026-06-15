@@ -1,10 +1,17 @@
-import { IconArrowUpRight, IconMapPin, IconSparkles } from '@tabler/icons-react';
+import type { ComponentType } from 'react';
+import {
+  IconArrowUpRight,
+  IconClock,
+  IconMail,
+  IconMapPin,
+  IconPhone,
+  IconSparkles,
+} from '@tabler/icons-react';
 import {
   Badge,
   Button,
   Container,
   Group,
-  List,
   Paper,
   SimpleGrid,
   Stack,
@@ -15,97 +22,125 @@ import {
 import { ContactForm } from '../components/church/ContactForm';
 import { PageHeader } from '../components/church/PageHeader';
 import { siteConfig } from '../content/churchContent';
+import classes from './Contact.page.module.css';
+
+const DETAIL_ICONS: Record<string, ComponentType<{ size?: number; stroke?: number }>> = {
+  Email: IconMail,
+  Phone: IconPhone,
+  Location: IconMapPin,
+};
 
 export function ContactPage() {
   return (
     <Container size="xl" py={{ base: 'xl', md: '4rem' }}>
       <PageHeader
-        eyebrow={siteConfig.denomination}
-        title="Contact us"
-        description="Combine clear contact information with a simple message form so first-time visitors have an easy next step."
+        eyebrow={`${siteConfig.denomination} · Anniston, Alabama`}
+        title="We’d love to hear from you"
+        description="Whether you are planning your first Sunday, looking for a church home, or simply have a question, there is a place for you here."
       />
 
-      <SimpleGrid cols={{ base: 1, md: 2 }} spacing="xl" mt="xl">
+      <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="lg" mt="xl">
+        {siteConfig.contactDetails.map((detail) => {
+          const Icon = DETAIL_ICONS[detail.label] ?? IconSparkles;
+          const isExternal = detail.label === 'Location';
+
+          return (
+            <Paper
+              key={detail.label}
+              component="a"
+              href={detail.href}
+              target={isExternal ? '_blank' : undefined}
+              rel={isExternal ? 'noreferrer' : undefined}
+              withBorder
+              p="lg"
+              className={classes.detailCard}
+              aria-label={`${detail.actionLabel}: ${detail.value}`}
+            >
+              <Group justify="space-between" align="flex-start" wrap="nowrap">
+                <ThemeIcon size={46} radius="xl" color="brand" variant="light">
+                  <Icon size={23} stroke={1.7} />
+                </ThemeIcon>
+                <IconArrowUpRight className={classes.detailArrow} size={20} stroke={1.7} />
+              </Group>
+              <Text className={classes.detailLabel} mt="lg">
+                {detail.label}
+              </Text>
+              <Text fw={700} size="lg" mt={4}>
+                {detail.value}
+              </Text>
+              <Text c="dimmed" size="sm" mt="xs">
+                {detail.helper}
+              </Text>
+            </Paper>
+          );
+        })}
+      </SimpleGrid>
+
+      <SimpleGrid cols={{ base: 1, md: 2 }} spacing="xl" mt="xl" className={classes.mainGrid}>
         <Stack gap="xl">
-          <Paper withBorder p={{ base: 'lg', md: 'xl' }}>
-            <Badge variant="light" color="brand">
-              Visit and connect
+          <Paper withBorder p={{ base: 'lg', md: 'xl' }} className={classes.visitCard}>
+            <Badge variant="light" color="moss" size="lg" leftSection={<IconClock size={15} />}>
+              Plan your Sunday
             </Badge>
             <Title order={2} mt="md">
-              Contact details and visit planning
+              Come worship with us
             </Title>
-            <Text c="dimmed" mt="sm">
-              Keep the essentials in one place, then replace placeholder values in the content file
-              as the final church information is confirmed.
+            <Text c="dimmed" size="lg" mt="sm">
+              You do not need to dress a certain way or know what to expect. Come as you are and
+              know that you are welcome at the table.
             </Text>
 
-            <Stack gap="md" mt="xl">
-              {siteConfig.contactDetails.map((detail) => (
-                <div key={detail.label}>
-                  <Text fw={700}>{detail.label}</Text>
-                  <Text>{detail.value}</Text>
-                  {detail.helper ? (
-                    <Text size="sm" c="dimmed" mt={4}>
-                      {detail.helper}
-                    </Text>
-                  ) : null}
-                </div>
+            <Stack gap="sm" mt="xl">
+              {siteConfig.serviceTimes.map((service) => (
+                <Group
+                  key={service.label}
+                  justify="space-between"
+                  gap="md"
+                  className={classes.serviceRow}
+                >
+                  <Text fw={700}>{service.label}</Text>
+                  <Text c="brand.7" fw={800}>
+                    {service.time}
+                  </Text>
+                </Group>
               ))}
             </Stack>
 
-            <List
-              mt="xl"
-              spacing="sm"
-              icon={
-                <ThemeIcon color="moss" variant="light" radius="xl" size={28}>
-                  <IconSparkles size={16} stroke={1.7} />
-                </ThemeIcon>
-              }
-            >
-              {siteConfig.serviceNotes.map((note) => (
-                <List.Item key={note}>
-                  <Text c="dimmed">{note}</Text>
-                </List.Item>
-              ))}
-            </List>
-
-            <Group mt="xl">
-              {siteConfig.homeActions.map((action) => (
-                <Button
-                  key={action.id}
-                  component="a"
-                  href={action.href}
-                  target={action.external ? '_blank' : undefined}
-                  rel={action.external ? 'noreferrer' : undefined}
-                  variant="light"
-                  rightSection={<IconArrowUpRight size={16} />}
-                >
-                  {action.title}
-                </Button>
-              ))}
+            <Group gap="sm" mt="xl" align="flex-start" wrap="nowrap">
+              <ThemeIcon color="moss" variant="light" radius="xl" size={34}>
+                <IconSparkles size={17} stroke={1.7} />
+              </ThemeIcon>
+              <Text c="dimmed">{siteConfig.serviceNotes[2]}</Text>
             </Group>
+
+            <Button
+              component="a"
+              href={siteConfig.directionsUrl}
+              target="_blank"
+              rel="noreferrer"
+              mt="xl"
+              size="md"
+              leftSection={<IconMapPin size={18} />}
+              rightSection={<IconArrowUpRight size={17} />}
+            >
+              Get directions
+            </Button>
           </Paper>
 
-          <Paper withBorder p={0} radius="xl" style={{ overflow: 'hidden', minHeight: 360 }}>
+          <Paper withBorder p={0} className={classes.mapCard}>
             <iframe
               src={siteConfig.mapEmbedUrl}
-              title="Contact page map showing the church's Anniston location"
+              title="Map showing First Christian Church at 1327 Leighton Avenue in Anniston"
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
-              style={{ width: '100%', minHeight: 360 }}
+              className={classes.mapFrame}
             />
-          </Paper>
-
-          <Paper withBorder p="lg">
-            <Group gap="sm">
-              <ThemeIcon color="brand" variant="light" radius="xl" size={38}>
-                <IconMapPin size={18} stroke={1.7} />
-              </ThemeIcon>
-              <div>
-                <Title order={3}>Location placeholder</Title>
-                <Text c="dimmed">{siteConfig.addressLines.join(' • ')}</Text>
-              </div>
-            </Group>
+            <div className={classes.mapCaption}>
+              <Text fw={800}>First Christian Church Anniston</Text>
+              <Text c="dimmed" size="sm">
+                {siteConfig.addressLines.join(' · ')}
+              </Text>
+            </div>
           </Paper>
         </Stack>
 

@@ -4,8 +4,25 @@ import { ContactPage } from './Contact.page';
 describe('ContactPage', () => {
   afterEach(() => {
     vi.restoreAllMocks();
-    vi.unstubAllEnvs();
     vi.unstubAllGlobals();
+  });
+
+  it('shows direct ways to contact and visit the church', () => {
+    render(<ContactPage />);
+
+    expect(
+      screen.getByRole('link', {
+        name: /email the church: fccannistonal@gmail\.com/i,
+      })
+    ).toHaveAttribute('href', 'mailto:fccannistonal@gmail.com');
+    expect(
+      screen.getByRole('link', {
+        name: /call now: \(256\) 236-1316/i,
+      })
+    ).toHaveAttribute('href', 'tel:+12562361316');
+    expect(screen.getAllByText(/1327 leighton ave\./i)).toHaveLength(2);
+    expect(screen.getByText(/sunday school/i)).toBeInTheDocument();
+    expect(screen.getByText(/worship service/i)).toBeInTheDocument();
   });
 
   it('validates required fields before submission', async () => {
@@ -21,14 +38,13 @@ describe('ContactPage', () => {
     expect(screen.getByText(/please add a message before sending\./i)).toBeInTheDocument();
   });
 
-  it('submits successfully when the Formspree endpoint is configured', async () => {
+  it('submits successfully to the church email endpoint', async () => {
     const user = userEvent.setup();
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
       json: vi.fn(),
     });
 
-    vi.stubEnv('VITE_FORMSPREE_ENDPOINT', 'https://formspree.io/f/test');
     vi.stubGlobal('fetch', fetchMock);
 
     render(<ContactPage />);
@@ -42,6 +58,13 @@ describe('ContactPage', () => {
     await user.click(screen.getByRole('button', { name: /send message/i }));
 
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://formsubmit.co/ajax/fccannistonal@gmail.com',
+      expect.objectContaining({
+        method: 'POST',
+        body: expect.stringContaining('"email":"jordan@example.com"'),
+      })
+    );
     expect(await screen.findByText(/thanks for reaching out/i)).toBeInTheDocument();
   });
 
@@ -50,11 +73,10 @@ describe('ContactPage', () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: false,
       json: vi.fn().mockResolvedValue({
-        errors: [{ message: 'Formspree rejected the submission.' }],
+        errors: [{ message: 'The message service rejected the submission.' }],
       }),
     });
 
-    vi.stubEnv('VITE_FORMSPREE_ENDPOINT', 'https://formspree.io/f/test');
     vi.stubGlobal('fetch', fetchMock);
 
     render(<ContactPage />);
@@ -67,6 +89,8 @@ describe('ContactPage', () => {
     );
     await user.click(screen.getByRole('button', { name: /send message/i }));
 
-    expect(await screen.findByText(/formspree rejected the submission\./i)).toBeInTheDocument();
+    expect(
+      await screen.findByText(/the message service rejected the submission\./i)
+    ).toBeInTheDocument();
   });
 });
