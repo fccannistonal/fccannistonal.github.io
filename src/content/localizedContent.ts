@@ -1,3 +1,4 @@
+import type { EmbedProviderId } from '../lib/embedConsent';
 import type { Locale, RouteId } from '../lib/routing';
 import type { ContactMethodId, ServiceId, StaffId } from './churchContent';
 import {
@@ -247,6 +248,12 @@ type LocalizedContent = {
     currentAccepted: string;
     currentDeclined: string;
     currentUnset: string;
+    embedPreferencesTitle: string;
+    embedPreferencesCopy: string;
+    embedProviderLabels: Record<EmbedProviderId, string>;
+    clearEmbedPreference: string;
+    clearAllEmbedPreferences: string;
+    noEmbedPreferences: string;
   };
   consent: {
     title: string;
@@ -296,7 +303,8 @@ const en: LocalizedContent = {
     contact: 'Contact us',
     learnMore: 'Learn more',
     opensNewTab: 'opens in a new tab',
-    embedConnectionNote: (provider) => `Loading connects your browser to ${provider}.`,
+    embedConnectionNote: (provider) =>
+      `Loading connects your browser to ${provider}. This browser will remember that choice for ${provider}.`,
     serviceLabels: {
       sundaySchool: 'Sunday School',
       worship: 'Worship Service',
@@ -831,6 +839,7 @@ const en: LocalizedContent = {
         title: 'Maps, Spotify, and Facebook',
         paragraphs: [
           'Google Maps, Spotify, and Facebook content are blocked until you choose to load them. Loading an embed connects your browser to that provider, which may receive technical information such as your IP address and browser details.',
+          'When you load an embed, this site saves that provider choice in this browser so the same provider can load more smoothly next time. You can clear saved embed choices below.',
         ],
       },
       {
@@ -854,6 +863,17 @@ const en: LocalizedContent = {
     currentAccepted: 'Analytics is currently allowed in this browser.',
     currentDeclined: 'Analytics is currently disabled in this browser.',
     currentUnset: 'No analytics choice has been saved in this browser.',
+    embedPreferencesTitle: 'Saved embed choices',
+    embedPreferencesCopy:
+      'These choices are stored only in this browser. Clearing one blocks that provider again until you choose to load it.',
+    embedProviderLabels: {
+      'google-maps': 'Google Maps',
+      spotify: 'Spotify',
+      facebook: 'Facebook',
+    },
+    clearEmbedPreference: 'Clear',
+    clearAllEmbedPreferences: 'Clear all embed choices',
+    noEmbedPreferences: 'No embed choices have been saved in this browser.',
   },
   consent: {
     title: 'Your privacy choices',
@@ -904,7 +924,8 @@ const es: LocalizedContent = {
     contact: 'Contáctenos',
     learnMore: 'Más información',
     opensNewTab: 'se abre en una pestaña nueva',
-    embedConnectionNote: (provider) => `Al cargar, su navegador se conecta con ${provider}.`,
+    embedConnectionNote: (provider) =>
+      `Al cargar, su navegador se conecta con ${provider}. Este navegador recordará esa opción para ${provider}.`,
     serviceLabels: {
       sundaySchool: 'Escuela dominical',
       worship: 'Servicio de adoración',
@@ -1440,6 +1461,7 @@ const es: LocalizedContent = {
         title: 'Mapas, Spotify y Facebook',
         paragraphs: [
           'Google Maps, Spotify y Facebook permanecen bloqueados hasta que usted decida cargarlos. Al hacerlo, su navegador se conecta con el proveedor, que puede recibir datos técnicos como su dirección IP y detalles del navegador.',
+          'Cuando carga contenido incrustado, este sitio guarda esa opción de proveedor en este navegador para que el mismo proveedor pueda cargarse con más facilidad la próxima vez. Puede borrar esas opciones guardadas abajo.',
         ],
       },
       {
@@ -1463,6 +1485,17 @@ const es: LocalizedContent = {
     currentAccepted: 'La analítica está permitida actualmente en este navegador.',
     currentDeclined: 'La analítica está desactivada actualmente en este navegador.',
     currentUnset: 'No se ha guardado una preferencia de analítica en este navegador.',
+    embedPreferencesTitle: 'Opciones guardadas de contenido',
+    embedPreferencesCopy:
+      'Estas opciones se guardan solo en este navegador. Al borrar una, ese proveedor vuelve a quedar bloqueado hasta que usted decida cargarlo.',
+    embedProviderLabels: {
+      'google-maps': 'Google Maps',
+      spotify: 'Spotify',
+      facebook: 'Facebook',
+    },
+    clearEmbedPreference: 'Borrar',
+    clearAllEmbedPreferences: 'Borrar todas las opciones de contenido',
+    noEmbedPreferences: 'No se han guardado opciones de contenido en este navegador.',
   },
   consent: {
     title: 'Sus opciones de privacidad',

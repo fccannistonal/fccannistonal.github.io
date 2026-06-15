@@ -4,6 +4,7 @@ import routeManifest from '../../src/content/routeManifest.json' with { type: 'j
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => {
     window.localStorage.setItem('fccanniston.analytics-consent.v1', 'denied');
+    window.localStorage.removeItem('fccanniston.embed-consent.v1');
   });
 });
 
@@ -65,13 +66,27 @@ test('contact form reports required fields without sending content', async ({ pa
 test('third-party embeds are click-to-load with direct fallbacks', async ({ page }) => {
   await page.goto('/updates');
 
-  await expect(page.locator('iframe[title="Facebook timeline"]')).toHaveCount(0);
+  await expect(page.locator('iframe[title="Public Facebook timeline"]')).toHaveCount(0);
   await expect(page.getByRole('link', { name: /open facebook/i })).toHaveAttribute(
     'href',
     'https://www.facebook.com/FCCAnniston'
   );
   await page.getByRole('button', { name: /load facebook updates/i }).click();
   await expect(page.locator('iframe')).toHaveAttribute('src', /facebook\.com\/plugins\/page\.php/);
+});
+
+test('remembered embed providers load without another click', async ({ page }) => {
+  await page.addInitScript(() => {
+    window.localStorage.setItem('fccanniston.embed-consent.v1', '["facebook"]');
+  });
+
+  await page.goto('/updates');
+
+  await expect(page.locator('iframe[title="Public Facebook timeline"]')).toHaveAttribute(
+    'src',
+    /facebook\.com\/plugins\/page\.php/
+  );
+  await expect(page.getByRole('button', { name: /load facebook updates/i })).toHaveCount(0);
 });
 
 test('all localized routes have healthy images and valid links', async ({ page }, testInfo) => {

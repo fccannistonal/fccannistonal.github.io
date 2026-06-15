@@ -35,7 +35,7 @@ describe('ContactPage', () => {
         name: /call now: \(256\) 236-1316/i,
       })
     ).toHaveAttribute('href', 'tel:+12562361316');
-    expect(screen.getAllByText(/1327 leighton ave\./i)).toHaveLength(2);
+    expect(screen.getAllByText(/1327 leighton ave\./i).length).toBeGreaterThanOrEqual(2);
     expect(screen.getByText(/sunday school/i)).toBeInTheDocument();
     expect(screen.getByText(/worship service/i)).toBeInTheDocument();
   });

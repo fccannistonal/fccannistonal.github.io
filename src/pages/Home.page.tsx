@@ -190,6 +190,8 @@ export function HomePage() {
                     {content.home.sermonsDescription}
                   </Text>
                   <DeferredEmbed
+                    providerId="spotify"
+                    preview="spotify"
                     provider="Spotify"
                     title={content.home.sermonsTitle}
                     description={content.home.sermonsDescription}
@@ -466,6 +468,8 @@ export function HomePage() {
               </Grid.Col>
               <Grid.Col span={{ base: 12, md: 7 }}>
                 <DeferredEmbed
+                  providerId="google-maps"
+                  preview="map"
                   provider="Google Maps"
                   title={content.home.mapTitle}
                   description={siteConfig.addressLines.join(', ')}

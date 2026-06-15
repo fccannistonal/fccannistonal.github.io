@@ -102,6 +102,8 @@ export function VisitPage() {
         </Paper>
 
         <DeferredEmbed
+          providerId="google-maps"
+          preview="map"
           provider="Google Maps"
           title={content.visit.mapTitle}
           description={siteConfig.addressLines.join(', ')}

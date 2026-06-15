@@ -75,6 +75,8 @@ export function UpdatesPage() {
           </Text>
         </Stack>
         <DeferredEmbed
+          providerId="facebook"
+          preview="facebook"
           provider="Meta / Facebook"
           title={content.updates.facebookTitle}
           description={content.updates.privacyNote}

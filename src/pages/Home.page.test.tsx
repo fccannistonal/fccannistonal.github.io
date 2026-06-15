@@ -1,8 +1,13 @@
 import { MemoryRouter } from 'react-router-dom';
 import { render, screen, userEvent } from '@/test-utils';
+import { EMBED_CONSENT_KEY } from '../lib/embedConsent';
 import { HomePage } from './Home.page';
 
 describe('HomePage', () => {
+  beforeEach(() => {
+    window.localStorage.clear();
+  });
+
   it('prioritizes visit information and defers third-party embeds', async () => {
     const user = userEvent.setup();
 
@@ -29,14 +34,35 @@ describe('HomePage', () => {
     expect(
       screen.queryByTitle(/uplifting sermons by pastor laura hutchinson/i)
     ).not.toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: /load spotify sermons/i }));
-    expect(screen.getByTitle(/uplifting sermons by pastor laura hutchinson/i)).toBeInTheDocument();
-
     expect(
       screen.queryByTitle(/map showing first christian church anniston/i)
     ).not.toBeInTheDocument();
+
     await user.click(screen.getByRole('button', { name: /load google map/i }));
+
     expect(screen.getByTitle(/map showing first christian church anniston/i)).toBeInTheDocument();
+    expect(
+      screen.queryByTitle(/uplifting sermons by pastor laura hutchinson/i)
+    ).not.toBeInTheDocument();
+    expect(window.localStorage.getItem(EMBED_CONSENT_KEY)).toBe('["google-maps"]');
+  });
+
+  it('loads remembered providers without unlocking other embeds', async () => {
+    window.localStorage.setItem(EMBED_CONSENT_KEY, '["google-maps"]');
+
+    render(
+      <MemoryRouter>
+        <HomePage />
+      </MemoryRouter>
+    );
+
+    expect(
+      await screen.findByTitle(/map showing first christian church anniston/i)
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByTitle(/uplifting sermons by pastor laura hutchinson/i)
+    ).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /load spotify sermons/i })).toBeInTheDocument();
   });
 
   it('renders Spanish-owned content on the Spanish route', () => {

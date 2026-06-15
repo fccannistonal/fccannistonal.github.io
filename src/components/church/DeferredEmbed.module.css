@@ -1,4 +1,5 @@
 .frame {
+  position: relative;
   overflow: hidden;
   min-height: var(--embed-min-height, 20rem);
   border: 1px solid rgb(83 59 39 / 12%);
@@ -10,8 +11,25 @@
 }
 
 .placeholder {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(18rem, 1fr);
+  gap: clamp(1.25rem, 4vw, 2.5rem);
+  align-items: center;
   min-height: var(--embed-min-height, 20rem);
   padding: clamp(1.5rem, 5vw, 3rem);
+}
+
+.placeholderContent {
+  position: relative;
+  z-index: 1;
+  max-width: 39rem;
+  text-align: center;
+}
+
+.loadedFrame {
+  position: relative;
+  min-height: var(--embed-min-height, 20rem);
 }
 
 .iframe {
@@ -22,6 +40,239 @@
   background: #fffdf9;
 }
 
+.loadingOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  min-height: var(--embed-min-height, 20rem);
+  background: rgb(255 253 249 / 92%);
+}
+
+.loadingIcon {
+  animation: embed-spin 900ms linear infinite;
+}
+
 .actions {
   justify-content: center;
+}
+
+.mapPreview,
+.playerPreview,
+.timelinePreview {
+  position: relative;
+  min-height: clamp(11rem, 24vw, 16rem);
+  overflow: hidden;
+  border: 1px solid rgb(83 59 39 / 12%);
+  border-radius: var(--mantine-radius-xl);
+  background: rgb(255 253 249 / 72%);
+  box-shadow: inset 0 0 0 1px rgb(255 253 249 / 72%);
+}
+
+.mapPreview {
+  background:
+    linear-gradient(45deg, transparent 48%, rgb(255 253 249 / 78%) 48% 52%, transparent 52%),
+    linear-gradient(135deg, rgb(99 139 73 / 18%), rgb(222 129 54 / 15%)),
+    rgb(242 238 226);
+}
+
+.mapRoadHorizontal,
+.mapRoadVertical {
+  position: absolute;
+  background: rgb(255 253 249 / 82%);
+  box-shadow: 0 0 0 1px rgb(83 59 39 / 8%);
+}
+
+.mapRoadHorizontal {
+  top: 45%;
+  left: -10%;
+  width: 120%;
+  height: 2.25rem;
+  transform: rotate(-8deg);
+}
+
+.mapRoadVertical {
+  top: -12%;
+  left: 58%;
+  width: 2.5rem;
+  height: 124%;
+  transform: rotate(18deg);
+}
+
+.mapPin {
+  position: absolute;
+  top: 35%;
+  left: 49%;
+  display: grid;
+  width: 3.1rem;
+  height: 3.1rem;
+  place-items: center;
+  color: var(--mantine-color-brand-8);
+  background: rgb(255 253 249 / 96%);
+  border-radius: 999px;
+  box-shadow: 0 14px 28px rgb(61 44 30 / 18%);
+}
+
+.mapLabel {
+  position: absolute;
+  right: 1rem;
+  bottom: 1rem;
+  left: 1rem;
+  padding: 0.8rem 0.9rem;
+  color: #3a291d;
+  background: rgb(255 253 249 / 92%);
+  border: 1px solid rgb(83 59 39 / 10%);
+  border-radius: var(--mantine-radius-lg);
+}
+
+.playerPreview {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 1rem;
+  align-items: center;
+  padding: clamp(1rem, 3vw, 1.35rem);
+  background:
+    radial-gradient(circle at 10% 15%, rgb(30 215 96 / 20%), transparent 34%),
+    linear-gradient(145deg, #30281f, #17120e);
+}
+
+.albumArt {
+  display: grid;
+  width: clamp(4.5rem, 12vw, 6.25rem);
+  aspect-ratio: 1;
+  place-items: center;
+  color: #1db954;
+  background:
+    radial-gradient(circle at 30% 25%, rgb(255 253 249 / 18%), transparent 30%),
+    linear-gradient(145deg, #2a3f2b, #10130f);
+  border-radius: var(--mantine-radius-lg);
+}
+
+.trackInfo {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.trackLineWide,
+.trackLineShort,
+.timelineTitle,
+.timelineDate,
+.timelineLine,
+.timelineLineShort {
+  height: 0.65rem;
+  border-radius: 999px;
+  background: rgb(255 253 249 / 82%);
+}
+
+.trackLineWide {
+  width: min(100%, 14rem);
+}
+
+.trackLineShort {
+  width: min(72%, 10rem);
+  opacity: 0.58;
+}
+
+.playerBar {
+  height: 0.35rem;
+  overflow: hidden;
+  background: rgb(255 253 249 / 24%);
+  border-radius: 999px;
+}
+
+.playerBar span {
+  display: block;
+  width: 38%;
+  height: 100%;
+  background: #1db954;
+  border-radius: inherit;
+}
+
+.playBubble {
+  display: grid;
+  width: 2.75rem;
+  height: 2.75rem;
+  place-items: center;
+  color: #14100d;
+  background: #1db954;
+  border-radius: 999px;
+}
+
+.timelinePreview {
+  display: grid;
+  align-content: start;
+  gap: 0.85rem;
+  padding: clamp(1rem, 3vw, 1.35rem);
+  background:
+    radial-gradient(circle at 90% 10%, rgb(66 103 178 / 18%), transparent 34%),
+    rgb(255 253 249 / 80%);
+}
+
+.timelineHeader {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.7rem;
+  align-items: center;
+}
+
+.facebookMark {
+  display: grid;
+  width: 2.9rem;
+  height: 2.9rem;
+  place-items: center;
+  color: #4267b2;
+  background: rgb(66 103 178 / 12%);
+  border-radius: 999px;
+}
+
+.timelineTitle {
+  width: min(100%, 12rem);
+  background: rgb(66 103 178 / 24%);
+}
+
+.timelineDate {
+  width: min(55%, 7rem);
+  height: 0.5rem;
+  margin-top: 0.45rem;
+  background: rgb(83 59 39 / 16%);
+}
+
+.timelineLine {
+  width: 100%;
+  background: rgb(83 59 39 / 12%);
+}
+
+.timelineLineShort {
+  width: 72%;
+  background: rgb(83 59 39 / 12%);
+}
+
+.timelineCard {
+  min-height: 4.5rem;
+  margin-top: 0.3rem;
+  background:
+    linear-gradient(90deg, rgb(66 103 178 / 14%), transparent 42%),
+    rgb(83 59 39 / 8%);
+  border-radius: var(--mantine-radius-lg);
+}
+
+@keyframes embed-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 48em) {
+  .placeholder {
+    grid-template-columns: 1fr;
+  }
+
+  .placeholderContent {
+    max-width: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loadingIcon {
+    animation: none;
+  }
 }

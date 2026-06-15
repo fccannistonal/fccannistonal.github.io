@@ -155,6 +155,8 @@ export function ContactPage() {
           </Paper>
 
           <DeferredEmbed
+            providerId="google-maps"
+            preview="map"
             provider="Google Maps"
             title={content.contact.mapTitle}
             description={siteConfig.addressLines.join(', ')}
