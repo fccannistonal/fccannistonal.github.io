@@ -23,6 +23,12 @@
   outline-offset: 3px;
 }
 
+.card h2 {
+  font-size: clamp(1.55rem, 2.4vw, 2.15rem);
+  line-height: 1.08;
+  overflow-wrap: anywhere;
+}
+
 .cardCta {
   margin-top: auto;
   padding-top: var(--mantine-spacing-lg);
