@@ -1,15 +1,150 @@
+.hero,
+.pageStack {
+  --ministry-accent: #de8136;
+  --ministry-accent-soft: rgb(222 129 54 / 12%);
+  --ministry-accent-ring: rgb(222 129 54 / 24%);
+  --ministry-ink: #2a1e15;
+}
+
+.hero[data-ministry='wonderAndWorship'],
+.pageStack[data-ministry='wonderAndWorship'] {
+  --ministry-accent: #638b49;
+  --ministry-accent-soft: rgb(99 139 73 / 13%);
+  --ministry-accent-ring: rgb(99 139 73 / 24%);
+}
+
+.hero[data-ministry='hispanicMinistry'],
+.pageStack[data-ministry='hispanicMinistry'] {
+  --ministry-accent: #8c633d;
+  --ministry-accent-soft: rgb(140 99 61 / 13%);
+  --ministry-accent-ring: rgb(140 99 61 / 24%);
+}
+
+.hero[data-ministry='serviceAndOutreach'],
+.pageStack[data-ministry='serviceAndOutreach'] {
+  --ministry-accent: #4f7442;
+  --ministry-accent-soft: rgb(79 116 66 / 13%);
+  --ministry-accent-ring: rgb(79 116 66 / 24%);
+}
+
 .hero {
   position: relative;
-  min-height: clamp(560px, calc(86svh - var(--site-header-height)), 780px);
-  display: flex;
-  align-items: flex-end;
   overflow: hidden;
-  background: #241711;
+  background:
+    radial-gradient(circle at 8% 16%, var(--ministry-accent-soft), transparent 34rem),
+    radial-gradient(circle at 92% 8%, rgb(83 59 39 / 10%), transparent 30rem),
+    linear-gradient(180deg, #fff8f0 0%, #fbf2e7 100%);
+}
+
+.heroInner {
+  position: relative;
+  z-index: 1;
+  padding-top: clamp(2rem, 5vw, 4.5rem);
+  padding-bottom: clamp(2rem, 5vw, 4.5rem);
+}
+
+.heroCard {
+  overflow: hidden;
+  border-color: rgb(83 59 39 / 12%);
+  border-radius: calc(var(--mantine-radius-xl) + 16px);
+  background:
+    linear-gradient(135deg, rgb(255 253 249 / 98%), rgb(250 243 232 / 94%)),
+    #fffaf4;
+  box-shadow: 0 30px 80px rgb(61 44 30 / 13%);
+}
+
+.heroGrid {
+  min-height: clamp(620px, calc(88svh - var(--site-header-height)), 760px);
+  align-items: stretch;
+}
+
+.heroContent {
+  justify-content: center;
+  padding: clamp(1.5rem, 5vw, 4.5rem);
+}
+
+.heroTitle {
+  max-width: 720px;
+  color: var(--ministry-ink);
+  font-size: clamp(3.4rem, 7.5vw, 6.8rem);
+  line-height: 0.9;
+  letter-spacing: -0.055em;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+
+.heroDescription {
+  max-width: 650px;
+  margin-top: 1.25rem;
+  color: rgb(42 30 21 / 74%);
+  line-height: 1.55;
+  text-wrap: balance;
+}
+
+.heroActionPanel {
+  max-width: 680px;
+  padding: clamp(1rem, 2.4vw, 1.5rem);
+  border-color: var(--ministry-accent-ring);
+  background: rgb(255 253 249 / 78%);
+  box-shadow: 0 16px 40px rgb(61 44 30 / 8%);
+}
+
+.heroActionTitle {
+  color: var(--ministry-ink);
+  font-size: clamp(1.05rem, 1.6vw, 1.2rem);
+}
+
+.heroContent :global(.mantine-Badge-root) {
+  max-width: 100%;
+  height: auto;
+  min-height: 1.75rem;
+  white-space: normal;
+}
+
+.heroContent :global(.mantine-Badge-label) {
+  overflow: visible;
+  line-height: 1.2;
+  text-overflow: clip;
+  white-space: normal;
+}
+
+.heroActions :global(.mantine-Button-root) {
+  min-height: 3rem;
+}
+
+.heroActions :global(.mantine-Button-inner) {
+  min-width: 0;
+}
+
+.heroActions :global(.mantine-Button-label) {
+  overflow: visible;
+  line-height: 1.2;
+  text-align: center;
+  text-overflow: clip;
+  white-space: normal;
+}
+
+.heroFigure {
+  position: relative;
+  min-height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: #eadbc9;
+}
+
+.heroFigure::after {
+  position: absolute;
+  inset: auto 0 0;
+  height: 42%;
+  background: linear-gradient(0deg, rgb(24 13 10 / 62%), transparent);
+  content: '';
+  pointer-events: none;
 }
 
 .heroImage {
   position: absolute;
   inset: 0;
+  display: block;
   width: 100%;
   height: 100%;
 }
@@ -18,168 +153,310 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  filter: saturate(0.92) contrast(1.04);
+  filter: saturate(0.95) contrast(1.03);
 }
 
-.heroOverlay {
+.heroCaption {
   position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(90deg, rgb(24 13 10 / 92%) 0%, rgb(24 13 10 / 72%) 44%, rgb(24 13 10 / 18%) 78%),
-    linear-gradient(0deg, rgb(24 13 10 / 82%) 0%, transparent 62%);
-}
-
-.heroInner {
-  position: relative;
+  right: 1.25rem;
+  bottom: 1.25rem;
+  left: 1.25rem;
   z-index: 1;
-  width: 100%;
-  padding-top: 5rem;
-  padding-bottom: clamp(3.5rem, 8vw, 6rem);
-}
-
-.heroContent {
-  max-width: 760px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: fit-content;
+  max-width: calc(100% - 2.5rem);
+  padding: 0.7rem 0.9rem;
   color: white;
-}
-
-.heroTitle {
-  max-width: 760px;
-  margin-top: 1rem;
-  color: white;
-  font-size: clamp(3.5rem, 8vw, 7rem);
-  line-height: 0.92;
-  letter-spacing: -0.05em;
-  text-wrap: balance;
-  text-shadow: 0 8px 34px rgb(0 0 0 / 28%);
-}
-
-.heroDescription {
-  max-width: 680px;
-  margin-top: 1.5rem;
-  color: rgb(255 255 255 / 86%);
-  line-height: 1.55;
-  text-wrap: balance;
-}
-
-.heroFact {
-  color: white;
-  border-color: rgb(255 255 255 / 42%);
-  background: rgb(25 15 11 / 44%);
-  backdrop-filter: blur(8px);
+  font-size: var(--mantine-font-size-sm);
+  font-weight: 800;
+  line-height: 1.25;
+  background: rgb(25 15 11 / 58%);
+  border: 1px solid rgb(255 255 255 / 22%);
+  border-radius: var(--mantine-radius-xl);
+  box-shadow: 0 18px 34px rgb(0 0 0 / 18%);
+  backdrop-filter: blur(10px);
 }
 
 .pageStack {
-  --stack-gap: 4rem;
+  --stack-gap: 4.5rem;
 }
 
 .eyebrow {
-  color: #8c633d;
+  color: var(--ministry-accent);
   font-size: var(--mantine-font-size-sm);
-  font-weight: 800;
+  font-weight: 850;
   letter-spacing: 0.17em;
   text-transform: uppercase;
 }
 
-.highlightCard {
-  min-height: 100%;
-  background:
-    radial-gradient(circle at 100% 0%, rgb(99 139 73 / 13%), transparent 38%),
-    rgb(255 252 247 / 94%);
-  border-color: rgb(83 59 39 / 11%);
-  box-shadow: 0 18px 42px rgb(61 44 30 / 7%);
+.introSection,
+.highlightsSection,
+.featureSection,
+.relatedSection {
+  scroll-margin-top: calc(var(--site-header-height) + 1.5rem);
+}
+
+.prose {
+  max-width: 740px;
+}
+
+.prose p {
+  line-height: 1.75;
 }
 
 .sectionHeading {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(280px, 0.65fr);
+  gap: clamp(1.5rem, 5vw, 4rem);
   align-items: end;
-  justify-content: space-between;
-  gap: 2rem;
-  margin-bottom: 1.75rem;
+  margin-bottom: clamp(1.5rem, 4vw, 2.5rem);
 }
 
-.featureCard {
+.sectionHeading h2,
+.introSection h2,
+.relatedSection h2 {
+  color: var(--ministry-ink);
+  font-size: clamp(2.35rem, 4vw, 4rem);
+  line-height: 0.98;
+  letter-spacing: -0.04em;
+  text-wrap: balance;
+}
+
+.highlightList {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.highlightRow {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: clamp(1rem, 2.4vw, 1.5rem);
+  align-items: start;
+  min-height: 100%;
+  padding: clamp(1.1rem, 2.6vw, 1.65rem);
+  color: var(--ministry-ink);
+  background:
+    radial-gradient(circle at 100% 0%, var(--ministry-accent-soft), transparent 42%),
+    rgb(255 253 249 / 94%);
+  border-color: rgb(83 59 39 / 10%);
+  box-shadow: 0 16px 34px rgb(61 44 30 / 6%);
+}
+
+.highlightRow:first-child {
+  grid-column: 1 / -1;
+  align-items: center;
+  background:
+    radial-gradient(circle at 100% 0%, var(--ministry-accent-ring), transparent 38%),
+    linear-gradient(135deg, rgb(255 253 249 / 98%), rgb(249 241 229 / 94%));
+}
+
+.highlightRow:first-child h3 {
+  max-width: 760px;
+  font-size: clamp(1.65rem, 2.4vw, 2.35rem);
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+}
+
+.highlightMarker {
   display: flex;
   flex-direction: column;
-  min-height: 100%;
-  overflow: hidden;
-  background:
-    radial-gradient(circle at 100% 0%, rgb(222 129 54 / 11%), transparent 34%),
-    rgb(255 252 247 / 96%);
-  border-color: rgb(83 59 39 / 11%);
-  box-shadow: 0 22px 48px rgb(61 44 30 / 9%);
+  align-items: center;
+  gap: 0.7rem;
+  min-width: 3.6rem;
 }
 
-.featureImage {
+.highlightNumber,
+.programNumber {
+  color: rgb(42 30 21 / 34%);
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+}
+
+.featureSection {
+  position: relative;
+}
+
+.worshipFeatureLayout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.18fr) minmax(320px, 0.82fr);
+  gap: 1.25rem;
+}
+
+.practiceCard,
+.leaderCard,
+.storyFeature,
+.programCard {
+  overflow: hidden;
+  color: var(--ministry-ink);
+  background:
+    radial-gradient(circle at 100% 0%, var(--ministry-accent-soft), transparent 38%),
+    rgb(255 252 247 / 96%);
+  border-color: rgb(83 59 39 / 10%);
+  box-shadow: 0 22px 52px rgb(61 44 30 / 9%);
+}
+
+.practiceCard {
+  display: grid;
+  grid-template-rows: minmax(360px, 1fr) auto;
+}
+
+.practiceImage,
+.storyFeatureImage,
+.programImage {
   display: block;
   width: 100%;
-  height: clamp(280px, 32vw, 430px);
   background: #eadbc9;
 }
 
-.featureImage img {
+.practiceImage {
+  min-height: clamp(360px, 44vw, 560px);
+}
+
+.practiceImage img,
+.storyFeatureImage img,
+.programImage img,
+.leaderImage img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.featureContent {
-  flex: 1;
+.practiceContent,
+.storyFeatureContent,
+.programContent {
   padding: clamp(1.25rem, 3vw, 2rem);
 }
 
-.featureContent .eyebrow {
-  margin-bottom: -0.35rem;
+.featureTitle {
+  margin-top: 0.95rem;
+  font-size: clamp(1.7rem, 2.6vw, 2.45rem);
+  line-height: 1.04;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
 }
 
-.ctaCard {
-  position: relative;
-  overflow: hidden;
-  border: 1px solid rgb(255 255 255 / 10%);
-  background:
-    linear-gradient(135deg, rgb(64 32 24 / 98%), rgb(38 24 20 / 98%)),
-    #321d17;
-  box-shadow: 0 28px 64px rgb(50 28 18 / 20%);
+.leaderStack {
+  min-width: 0;
 }
 
-.ctaGlow {
-  position: absolute;
-  top: -8rem;
-  right: -4rem;
-  width: 24rem;
-  height: 24rem;
-  border-radius: 50%;
-  background: rgb(222 129 54 / 22%);
-  filter: blur(10px);
+.leaderCard {
+  display: grid;
+  grid-template-columns: minmax(132px, 0.36fr) minmax(0, 1fr);
+  align-items: stretch;
+  min-height: 18rem;
 }
 
-.ctaContent {
-  position: relative;
-  z-index: 1;
+.leaderImage {
+  display: block;
+  min-height: 100%;
+  background: #eadbc9;
 }
 
-.ctaCopy {
-  max-width: 620px;
-  color: rgb(255 255 255 / 72%);
+.leaderContent {
+  justify-content: center;
+  padding: clamp(1.1rem, 2.4vw, 1.5rem);
+}
+
+.leaderCard .featureTitle {
+  font-size: clamp(1.45rem, 2vw, 1.9rem);
+}
+
+.storyFeatureLayout {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.storyFeature {
+  display: grid;
+  grid-template-columns: minmax(300px, 0.86fr) minmax(0, 1fr);
+  align-items: stretch;
+}
+
+.storyFeature[data-reversed='true'] {
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 0.86fr);
+}
+
+.storyFeature[data-reversed='true'] .storyFeatureImage {
+  order: 2;
+}
+
+.storyFeatureContent {
+  justify-content: center;
+}
+
+.storyFeatureImage {
+  min-height: clamp(360px, 38vw, 540px);
+}
+
+.programCard {
+  display: flex;
+  min-height: 20rem;
+}
+
+.programCard[data-with-image='true'] {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: minmax(320px, 0.82fr) minmax(0, 1fr);
+}
+
+.programImage {
+  min-height: 24rem;
+}
+
+.programContent {
+  flex: 1;
+  justify-content: space-between;
+}
+
+.programNumber {
+  font-size: clamp(2.6rem, 5vw, 4.5rem);
+  line-height: 0.82;
+  letter-spacing: -0.08em;
+}
+
+.relatedSection {
+  padding-top: clamp(2rem, 5vw, 3.5rem);
+  border-top: 1px solid rgb(83 59 39 / 10%);
+}
+
+.relatedList {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+  margin-top: 1.5rem;
 }
 
 .relatedCard {
-  display: flex;
-  flex-direction: column;
-  min-height: 15rem;
-  color: #2a1e15;
-  background:
-    radial-gradient(circle at 100% 0%, rgb(222 129 54 / 11%), transparent 38%),
-    rgb(255 253 249 / 92%);
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 1rem;
+  align-items: center;
+  min-height: 100%;
+  padding: 1rem;
+  color: var(--ministry-ink);
+  background: rgb(255 253 249 / 76%);
   border-color: rgb(83 59 39 / 10%);
-  box-shadow: 0 16px 36px rgb(61 44 30 / 7%);
+  box-shadow: none;
   transition:
-    transform 180ms ease,
-    box-shadow 180ms ease;
+    background-color 180ms ease,
+    border-color 180ms ease,
+    transform 180ms ease;
+}
+
+.relatedCard h3 {
+  font-size: clamp(1.05rem, 1.5vw, 1.25rem);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
 }
 
 .relatedCard:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 22px 44px rgb(61 44 30 / 12%);
+  background: rgb(255 253 249 / 98%);
+  border-color: var(--ministry-accent-ring);
+  transform: translateY(-2px);
 }
 
 .relatedCard:focus-visible {
@@ -187,15 +464,13 @@
   outline-offset: 3px;
 }
 
-.relatedCta {
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-  margin-top: auto;
-  padding-top: var(--mantine-spacing-lg);
-  color: var(--mantine-color-brand-7);
-  font-size: var(--mantine-font-size-sm);
-  font-weight: 800;
+.relatedCopy {
+  min-width: 0;
+}
+
+.relatedArrow {
+  color: var(--ministry-accent);
+  opacity: 0.72;
 }
 
 @media (min-width: 48em) {
@@ -205,30 +480,66 @@
 }
 
 @media (max-width: 62em) {
-  .heroOverlay {
-    background:
-      linear-gradient(90deg, rgb(24 13 10 / 88%) 0%, rgb(24 13 10 / 52%) 72%, rgb(24 13 10 / 20%) 100%),
-      linear-gradient(0deg, rgb(24 13 10 / 88%) 0%, transparent 68%);
+  .heroGrid {
+    min-height: 0;
+  }
+
+  .heroFigure {
+    min-height: 460px;
+  }
+
+  .worshipFeatureLayout,
+  .storyFeature,
+  .storyFeature[data-reversed='true'],
+  .programCard[data-with-image='true'] {
+    grid-template-columns: 1fr;
+  }
+
+  .storyFeature[data-reversed='true'] .storyFeatureImage {
+    order: 0;
+  }
+
+  .practiceCard {
+    grid-template-rows: auto;
   }
 }
 
 @media (max-width: 48em) {
-  .hero {
-    min-height: 640px;
-  }
-
-  .heroOverlay {
-    background:
-      linear-gradient(0deg, rgb(24 13 10 / 96%) 0%, rgb(24 13 10 / 72%) 58%, rgb(24 13 10 / 20%) 100%),
-      linear-gradient(90deg, rgb(24 13 10 / 48%), transparent);
-  }
-
   .heroInner {
-    padding-bottom: 3rem;
+    padding-top: 1rem;
+    padding-bottom: 2rem;
+  }
+
+  .heroCard {
+    border-radius: calc(var(--mantine-radius-xl) + 8px);
+  }
+
+  .heroContent {
+    padding: 1.25rem;
   }
 
   .heroTitle {
-    font-size: clamp(3.2rem, 17vw, 5.4rem);
+    font-size: clamp(3rem, 15vw, 4.6rem);
+  }
+
+  .heroFigure {
+    min-height: 420px;
+  }
+
+  .heroCaption {
+    right: 1rem;
+    bottom: 1rem;
+    left: 1rem;
+    max-width: calc(100% - 2rem);
+  }
+
+  .heroActions {
+    align-items: stretch;
+    width: 100%;
+  }
+
+  .heroActions :global(.mantine-Button-root) {
+    flex: 1 1 100%;
   }
 
   .sectionHeading {
@@ -239,8 +550,55 @@
     margin-top: 1rem;
   }
 
-  .featureImage {
-    height: 320px;
+  .highlightList,
+  .relatedList {
+    grid-template-columns: 1fr;
+  }
+
+  .highlightRow:first-child {
+    grid-column: auto;
+  }
+
+  .leaderCard {
+    grid-template-columns: minmax(96px, 0.34fr) minmax(0, 1fr);
+    min-height: 15rem;
+  }
+
+  .storyFeatureImage,
+  .programImage,
+  .practiceImage {
+    min-height: 320px;
+  }
+}
+
+@media (max-width: 36em) {
+  .heroFigure {
+    min-height: 360px;
+  }
+
+  .highlightRow {
+    grid-template-columns: 1fr;
+  }
+
+  .highlightMarker {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+
+  .leaderCard {
+    grid-template-columns: 1fr;
+  }
+
+  .leaderImage {
+    min-height: 300px;
+  }
+
+  .relatedCard {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .relatedArrow {
+    display: none;
   }
 }
 

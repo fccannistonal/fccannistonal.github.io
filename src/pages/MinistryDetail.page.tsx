@@ -41,6 +41,7 @@ import { getContent } from '../content/localizedContent';
 import type {
   LocalizedMinistryAction,
   LocalizedMinistryFeature,
+  LocalizedMinistryPage,
 } from '../content/localizedMinistryContent';
 import {
   trackContactIntent,
@@ -52,6 +53,7 @@ import { getLocalizedPath, type RouteId } from '../lib/routing';
 import classes from './MinistryDetail.page.module.css';
 
 type IconComponent = ComponentType<{ size?: number; stroke?: number }>;
+type FeatureLayout = 'worship' | 'story' | 'programs';
 
 const ITEM_ICONS: Record<string, IconComponent> = {
   prayer: IconPray,
@@ -85,6 +87,17 @@ const RELATED_ICONS: Record<string, IconComponent> = {
   outreach: IconHeartHandshake,
   updates: IconCalendarEvent,
 };
+
+const MINISTRY_PRESENTATION: Record<MinistryPageId, { featureLayout: FeatureLayout }> = {
+  worshipAndMusic: { featureLayout: 'worship' },
+  wonderAndWorship: { featureLayout: 'story' },
+  hispanicMinistry: { featureLayout: 'story' },
+  serviceAndOutreach: { featureLayout: 'programs' },
+};
+
+function getItemIcon(id: string) {
+  return ITEM_ICONS[id] ?? IconSparkles;
+}
 
 function MinistryImage({
   image,
@@ -181,36 +194,238 @@ function MinistryActionButton({
   );
 }
 
-function FeatureCard({
-  feature,
-  image,
-}: {
-  feature: LocalizedMinistryFeature;
-  image?: PhotoAsset;
-}) {
-  const Icon = ITEM_ICONS[feature.id] ?? IconSparkles;
+function FeatureHeading({ feature }: { feature: LocalizedMinistryFeature }) {
+  const Icon = getItemIcon(feature.id);
 
   return (
-    <Paper withBorder className={classes.featureCard}>
-      {image && feature.imageAlt ? (
-        <MinistryImage
-          image={image}
-          alt={feature.imageAlt}
-          className={classes.featureImage}
-          sizes="(max-width: 48em) 100vw, 42vw"
-        />
-      ) : null}
-      <Stack gap="sm" className={classes.featureContent}>
-        <ThemeIcon size={44} radius="xl" variant="light" color="brand">
-          <Icon size={22} stroke={1.7} />
+    <>
+      <Group gap="sm" align="center">
+        <ThemeIcon size={42} radius="xl" variant="light" color="brand">
+          <Icon size={21} stroke={1.7} />
         </ThemeIcon>
         <Text className={classes.eyebrow}>{feature.eyebrow}</Text>
-        <Title order={3}>{feature.title}</Title>
-        <Text c="dimmed" size="lg">
-          {feature.description}
-        </Text>
+      </Group>
+      <Title order={3} className={classes.featureTitle}>
+        {feature.title}
+      </Title>
+    </>
+  );
+}
+
+function HighlightList({ highlights }: { highlights: LocalizedMinistryPage['highlights'] }) {
+  return (
+    <div className={classes.highlightList}>
+      {highlights.map((highlight, index) => {
+        const Icon = getItemIcon(highlight.id);
+        const itemNumber = String(index + 1).padStart(2, '0');
+
+        return (
+          <Paper key={highlight.id} component="article" withBorder className={classes.highlightRow}>
+            <div className={classes.highlightMarker}>
+              <Text component="span" className={classes.highlightNumber}>
+                {itemNumber}
+              </Text>
+              <ThemeIcon size={44} radius="xl" variant="light" color="moss">
+                <Icon size={22} stroke={1.7} />
+              </ThemeIcon>
+            </div>
+            <div>
+              <Title order={3}>{highlight.title}</Title>
+              <Text c="dimmed" mt="xs">
+                {highlight.description}
+              </Text>
+            </div>
+          </Paper>
+        );
+      })}
+    </div>
+  );
+}
+
+function WorshipFeatureLayout({
+  features,
+  assets,
+}: {
+  features: LocalizedMinistryFeature[];
+  assets: Record<string, PhotoAsset>;
+}) {
+  const [practice, ...leaders] = features;
+
+  return (
+    <div className={classes.worshipFeatureLayout}>
+      {practice ? (
+        <Paper withBorder className={classes.practiceCard}>
+          {assets[practice.id] && practice.imageAlt ? (
+            <MinistryImage
+              image={assets[practice.id]}
+              alt={practice.imageAlt}
+              className={classes.practiceImage}
+              sizes="(max-width: 62em) 100vw, 48vw"
+            />
+          ) : null}
+          <Stack gap="md" className={classes.practiceContent}>
+            <FeatureHeading feature={practice} />
+            <Text c="dimmed" size="lg">
+              {practice.description}
+            </Text>
+          </Stack>
+        </Paper>
+      ) : null}
+
+      <Stack gap="lg" className={classes.leaderStack}>
+        {leaders.map((leader) => (
+          <Paper key={leader.id} withBorder className={classes.leaderCard}>
+            {assets[leader.id] && leader.imageAlt ? (
+              <MinistryImage
+                image={assets[leader.id]}
+                alt={leader.imageAlt}
+                className={classes.leaderImage}
+                sizes="(max-width: 48em) 34vw, 14vw"
+              />
+            ) : null}
+            <Stack gap="sm" className={classes.leaderContent}>
+              <FeatureHeading feature={leader} />
+              <Text c="dimmed">{leader.description}</Text>
+            </Stack>
+          </Paper>
+        ))}
       </Stack>
-    </Paper>
+    </div>
+  );
+}
+
+function StoryFeatureLayout({
+  features,
+  assets,
+}: {
+  features: LocalizedMinistryFeature[];
+  assets: Record<string, PhotoAsset>;
+}) {
+  return (
+    <div className={classes.storyFeatureLayout}>
+      {features.map((feature, index) => (
+        <Paper
+          key={feature.id}
+          component="article"
+          withBorder
+          className={classes.storyFeature}
+          data-reversed={index % 2 === 1 ? 'true' : undefined}
+        >
+          {assets[feature.id] && feature.imageAlt ? (
+            <MinistryImage
+              image={assets[feature.id]}
+              alt={feature.imageAlt}
+              className={classes.storyFeatureImage}
+              sizes="(max-width: 62em) 100vw, 38vw"
+            />
+          ) : null}
+          <Stack gap="md" className={classes.storyFeatureContent}>
+            <FeatureHeading feature={feature} />
+            <Text c="dimmed" size="lg">
+              {feature.description}
+            </Text>
+          </Stack>
+        </Paper>
+      ))}
+    </div>
+  );
+}
+
+function ProgramFeatureLayout({
+  features,
+  assets,
+}: {
+  features: LocalizedMinistryFeature[];
+  assets: Record<string, PhotoAsset>;
+}) {
+  return (
+    <SimpleGrid cols={{ base: 1, md: 2 }} spacing="lg">
+      {features.map((feature, index) => {
+        const Icon = getItemIcon(feature.id);
+        const featureImage = assets[feature.id];
+        const itemNumber = String(index + 1).padStart(2, '0');
+
+        return (
+          <Paper
+            key={feature.id}
+            component="article"
+            withBorder
+            className={classes.programCard}
+            data-with-image={featureImage ? 'true' : undefined}
+          >
+            {featureImage && feature.imageAlt ? (
+              <MinistryImage
+                image={featureImage}
+                alt={feature.imageAlt}
+                className={classes.programImage}
+                sizes="(max-width: 62em) 100vw, 36vw"
+              />
+            ) : null}
+            <Stack gap="md" className={classes.programContent}>
+              <Group justify="space-between" align="flex-start">
+                <Text component="span" className={classes.programNumber}>
+                  {itemNumber}
+                </Text>
+                <ThemeIcon size={46} radius="xl" variant="light" color="brand">
+                  <Icon size={23} stroke={1.7} />
+                </ThemeIcon>
+              </Group>
+              <div>
+                <Text className={classes.eyebrow}>{feature.eyebrow}</Text>
+                <Title order={3} mt="xs">
+                  {feature.title}
+                </Title>
+                <Text c="dimmed" mt="sm">
+                  {feature.description}
+                </Text>
+              </div>
+            </Stack>
+          </Paper>
+        );
+      })}
+    </SimpleGrid>
+  );
+}
+
+function MinistryFeatures({
+  ministry,
+  ministryId,
+  assets,
+}: {
+  ministry: LocalizedMinistryPage;
+  ministryId: MinistryPageId;
+  assets: Record<string, PhotoAsset>;
+}) {
+  const layout = MINISTRY_PRESENTATION[ministryId].featureLayout;
+
+  return (
+    <section
+      aria-labelledby={`${ministryId}-features-title`}
+      className={classes.featureSection}
+      data-layout={layout}
+    >
+      <div className={classes.sectionHeading}>
+        <div>
+          <Text className={classes.eyebrow}>{ministry.featureEyebrow}</Text>
+          <Title id={`${ministryId}-features-title`} order={2} mt="xs">
+            {ministry.featureTitle}
+          </Title>
+        </div>
+        <Text c="dimmed" size="lg" maw={560}>
+          {ministry.featureCopy}
+        </Text>
+      </div>
+
+      {layout === 'worship' ? (
+        <WorshipFeatureLayout features={ministry.features} assets={assets} />
+      ) : null}
+      {layout === 'story' ? (
+        <StoryFeatureLayout features={ministry.features} assets={assets} />
+      ) : null}
+      {layout === 'programs' ? (
+        <ProgramFeatureLayout features={ministry.features} assets={assets} />
+      ) : null}
+    </section>
   );
 }
 
@@ -223,52 +438,75 @@ export function MinistryDetailPage({ ministryId }: { ministryId: MinistryPageId 
 
   return (
     <>
-      <section className={classes.hero} aria-labelledby={`${ministryId}-title`}>
-        <MinistryImage
-          image={assets.hero}
-          alt={ministry.heroAlt}
-          className={classes.heroImage}
-          eager
-          sizes="100vw"
-        />
-        <div className={classes.heroOverlay} />
+      <section
+        className={classes.hero}
+        data-ministry={ministryId}
+        aria-labelledby={`${ministryId}-title`}
+      >
         <Container size="xl" className={classes.heroInner}>
-          <div className={classes.heroContent}>
-            <Badge variant="filled" color="brand" size="lg">
-              {ministry.eyebrow}
-            </Badge>
-            <Title id={`${ministryId}-title`} order={1} className={classes.heroTitle}>
-              {ministry.title}
-            </Title>
-            <Text size="xl" className={classes.heroDescription}>
-              {ministry.description}
-            </Text>
-            <Group gap="sm" mt="xl">
-              <Badge
-                size="lg"
-                variant="outline"
-                color="gray"
-                leftSection={<IconSparkles size={15} />}
-                className={classes.heroFact}
-              >
-                {ministry.heroLabel}
-              </Badge>
-            </Group>
-          </div>
+          <Paper withBorder className={classes.heroCard}>
+            <SimpleGrid cols={{ base: 1, lg: 2 }} spacing={0} className={classes.heroGrid}>
+              <Stack gap="lg" className={classes.heroContent}>
+                <Badge variant="light" color="brand" size="lg" w="fit-content">
+                  {ministry.eyebrow}
+                </Badge>
+                <div>
+                  <Title id={`${ministryId}-title`} order={1} className={classes.heroTitle}>
+                    {ministry.title}
+                  </Title>
+                  <Text size="xl" className={classes.heroDescription}>
+                    {ministry.description}
+                  </Text>
+                </div>
+
+                <Paper withBorder className={classes.heroActionPanel}>
+                  <Text fw={800} className={classes.heroActionTitle}>
+                    {ministry.ctaTitle}
+                  </Text>
+                  <Text c="dimmed" mt="xs">
+                    {ministry.ctaCopy}
+                  </Text>
+                  <Group gap="sm" mt="lg" className={classes.heroActions}>
+                    {ministry.actions.map((action) => (
+                      <MinistryActionButton
+                        key={action.id}
+                        action={action}
+                        ministryId={ministryId}
+                      />
+                    ))}
+                  </Group>
+                </Paper>
+              </Stack>
+
+              <figure className={classes.heroFigure}>
+                <MinistryImage
+                  image={assets.hero}
+                  alt={ministry.heroAlt}
+                  className={classes.heroImage}
+                  eager
+                  sizes="(max-width: 62em) 100vw, 46vw"
+                />
+                <figcaption className={classes.heroCaption}>
+                  <IconSparkles size={16} aria-hidden="true" />
+                  {ministry.heroLabel}
+                </figcaption>
+              </figure>
+            </SimpleGrid>
+          </Paper>
         </Container>
       </section>
 
       <Container size="xl" py={{ base: '3rem', md: '6rem' }}>
-        <Stack className={classes.pageStack}>
-          <section aria-labelledby={`${ministryId}-intro-title`}>
+        <Stack className={classes.pageStack} data-ministry={ministryId}>
+          <section aria-labelledby={`${ministryId}-intro-title`} className={classes.introSection}>
             <SimpleGrid cols={{ base: 1, md: 2 }} spacing={{ base: 'xl', md: '4rem' }}>
               <div>
                 <Text className={classes.eyebrow}>{ministry.introEyebrow}</Text>
-                <Title id={`${ministryId}-intro-title`} order={2} mt="sm">
+                <Title id={`${ministryId}-intro-title`} order={2} mt="sm" maw={680}>
                   {ministry.introTitle}
                 </Title>
               </div>
-              <Stack gap="md">
+              <Stack gap="md" className={classes.prose}>
                 {ministry.introduction.map((paragraph) => (
                   <Text key={paragraph} c="dimmed" size="lg">
                     {paragraph}
@@ -278,76 +516,27 @@ export function MinistryDetailPage({ ministryId }: { ministryId: MinistryPageId 
             </SimpleGrid>
           </section>
 
-          <section aria-labelledby={`${ministryId}-highlights-title`}>
-            <Title id={`${ministryId}-highlights-title`} order={2}>
-              {ministry.highlightsTitle}
-            </Title>
-            <SimpleGrid cols={{ base: 1, sm: 2, lg: 4 }} spacing="lg" mt="xl">
-              {ministry.highlights.map((highlight) => {
-                const Icon = ITEM_ICONS[highlight.id] ?? IconSparkles;
-
-                return (
-                  <Paper key={highlight.id} withBorder p="lg" className={classes.highlightCard}>
-                    <ThemeIcon size={46} radius="xl" variant="light" color="moss">
-                      <Icon size={23} stroke={1.7} />
-                    </ThemeIcon>
-                    <Title order={3} mt="md">
-                      {highlight.title}
-                    </Title>
-                    <Text c="dimmed" mt="xs">
-                      {highlight.description}
-                    </Text>
-                  </Paper>
-                );
-              })}
-            </SimpleGrid>
-          </section>
-
-          <section aria-labelledby={`${ministryId}-features-title`}>
+          <section
+            aria-labelledby={`${ministryId}-highlights-title`}
+            className={classes.highlightsSection}
+          >
             <div className={classes.sectionHeading}>
-              <div>
-                <Text className={classes.eyebrow}>{ministry.featureEyebrow}</Text>
-                <Title id={`${ministryId}-features-title`} order={2} mt="xs">
-                  {ministry.featureTitle}
-                </Title>
-              </div>
-              <Text c="dimmed" size="lg" maw={560}>
-                {ministry.featureCopy}
+              <Title id={`${ministryId}-highlights-title`} order={2}>
+                {ministry.highlightsTitle}
+              </Title>
+              <Text c="dimmed" size="lg" maw={520}>
+                {ministry.description}
               </Text>
             </div>
-            <SimpleGrid cols={{ base: 1, md: 2 }} spacing="xl">
-              {ministry.features.map((feature) => (
-                <FeatureCard
-                  key={feature.id}
-                  feature={feature}
-                  image={assets.features[feature.id]}
-                />
-              ))}
-            </SimpleGrid>
+            <HighlightList highlights={ministry.highlights} />
           </section>
 
-          <section aria-labelledby={`${ministryId}-cta-title`}>
-            <Paper p={{ base: 'xl', md: '3rem' }} className={classes.ctaCard}>
-              <div className={classes.ctaGlow} aria-hidden="true" />
-              <SimpleGrid cols={{ base: 1, md: 2 }} spacing="xl" className={classes.ctaContent}>
-                <div>
-                  <Title id={`${ministryId}-cta-title`} order={2} c="white">
-                    {ministry.ctaTitle}
-                  </Title>
-                  <Text mt="md" size="lg" className={classes.ctaCopy}>
-                    {ministry.ctaCopy}
-                  </Text>
-                </div>
-                <Group gap="sm" align="center">
-                  {ministry.actions.map((action) => (
-                    <MinistryActionButton key={action.id} action={action} ministryId={ministryId} />
-                  ))}
-                </Group>
-              </SimpleGrid>
-            </Paper>
-          </section>
+          <MinistryFeatures ministry={ministry} ministryId={ministryId} assets={assets.features} />
 
-          <section aria-labelledby={`${ministryId}-related-title`}>
+          <section
+            aria-labelledby={`${ministryId}-related-title`}
+            className={classes.relatedSection}
+          >
             <Text className={classes.eyebrow}>{content.ministries.relatedEyebrow}</Text>
             <Title id={`${ministryId}-related-title`} order={2} mt="xs">
               {content.ministries.relatedTitle}
@@ -355,7 +544,7 @@ export function MinistryDetailPage({ ministryId }: { ministryId: MinistryPageId 
             <Text c="dimmed" size="lg" mt="sm" maw={680}>
               {content.ministries.relatedCopy}
             </Text>
-            <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="lg" mt="xl">
+            <div className={classes.relatedList}>
               {relatedCards.map((card) => {
                 const Icon = RELATED_ICONS[card.id] ?? IconSparkles;
                 const href = card.routeId
@@ -368,25 +557,22 @@ export function MinistryDetailPage({ ministryId }: { ministryId: MinistryPageId 
                     component={Link}
                     to={href}
                     withBorder
-                    p="lg"
                     className={classes.relatedCard}
                   >
-                    <ThemeIcon size={42} radius="xl" variant="light" color="brand">
-                      <Icon size={21} stroke={1.7} />
+                    <ThemeIcon size={38} radius="xl" variant="light" color="brand">
+                      <Icon size={19} stroke={1.7} />
                     </ThemeIcon>
-                    <Title order={3} mt="md">
-                      {card.title}
-                    </Title>
-                    <Text c="dimmed" mt="xs">
-                      {card.description}
-                    </Text>
-                    <Text className={classes.relatedCta}>
-                      {content.common.learnMore} <IconArrowRight size={16} aria-hidden="true" />
-                    </Text>
+                    <div className={classes.relatedCopy}>
+                      <Title order={3}>{card.title}</Title>
+                      <Text c="dimmed" mt={4}>
+                        {card.description}
+                      </Text>
+                    </div>
+                    <IconArrowRight size={18} className={classes.relatedArrow} aria-hidden="true" />
                   </Paper>
                 );
               })}
-            </SimpleGrid>
+            </div>
           </section>
         </Stack>
       </Container>
