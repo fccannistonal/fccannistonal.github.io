@@ -95,194 +95,6 @@ const MINISTRY_PRESENTATION: Record<MinistryPageId, { featureLayout: FeatureLayo
   serviceAndOutreach: { featureLayout: 'programs' },
 };
 
-type MinistryLanguage = 'en' | 'es';
-
-type QuickFact = {
-  label: string;
-  value: string;
-  icon: IconComponent;
-};
-
-const MINISTRY_UI_COPY: Record<
-  MinistryLanguage,
-  {
-    glanceEyebrow: string;
-    glanceTitle: string;
-    expectEyebrow: string;
-    finalCtaEyebrow: string;
-  }
-> = {
-  en: {
-    glanceEyebrow: 'At a glance',
-    glanceTitle: 'What to know before you visit',
-    expectEyebrow: 'What to expect',
-    finalCtaEyebrow: 'Next step',
-  },
-  es: {
-    glanceEyebrow: 'De un vistazo',
-    glanceTitle: 'Qué saber antes de visitar',
-    expectEyebrow: 'Qué esperar',
-    finalCtaEyebrow: 'Próximo paso',
-  },
-};
-
-const MINISTRY_QUICK_FACTS: Record<MinistryPageId, Record<MinistryLanguage, QuickFact[]>> = {
-  worshipAndMusic: {
-    en: [
-      {
-        label: 'Best for',
-        value:
-          'Visitors and members who want worship shaped by song, prayer, Scripture, communion, and shared leadership.',
-        icon: IconUsersGroup,
-      },
-      {
-        label: 'When',
-        value: 'During Sunday worship.',
-        icon: IconCalendarEvent,
-      },
-      {
-        label: 'Next step',
-        value: 'Attend worship, listen to a sermon, or ask about participating in music.',
-        icon: IconMusic,
-      },
-    ],
-    es: [
-      {
-        label: 'Ideal para',
-        value:
-          'Visitantes y miembros que quieren adorar con canto, oración, Escritura, comunión y liderazgo compartido.',
-        icon: IconUsersGroup,
-      },
-      {
-        label: 'Cuándo',
-        value: 'Durante el culto dominical.',
-        icon: IconCalendarEvent,
-      },
-      {
-        label: 'Próximo paso',
-        value: 'Asistir al culto, escuchar un sermón o preguntar cómo participar en la música.',
-        icon: IconMusic,
-      },
-    ],
-  },
-  wonderAndWorship: {
-    en: [
-      {
-        label: 'Best for',
-        value: 'Children and families who need a worship space designed for young participants.',
-        icon: IconSparkles,
-      },
-      {
-        label: 'When',
-        value: 'During the worship service.',
-        icon: IconCalendarEvent,
-      },
-      {
-        label: 'Next step',
-        value: 'Visit on Sunday and ask where children gather before worship begins.',
-        icon: IconUsersGroup,
-      },
-    ],
-    es: [
-      {
-        label: 'Ideal para',
-        value: 'Niños y familias que necesitan un espacio de adoración pensado para participantes pequeños.',
-        icon: IconSparkles,
-      },
-      {
-        label: 'Cuándo',
-        value: 'Durante el culto.',
-        icon: IconCalendarEvent,
-      },
-      {
-        label: 'Próximo paso',
-        value: 'Visitar un domingo y preguntar dónde se reúnen los niños.',
-        icon: IconUsersGroup,
-      },
-    ],
-  },
-  hispanicMinistry: {
-    en: [
-      {
-        label: 'Best for',
-        value:
-          'Spanish-speaking neighbors, bilingual families, and anyone seeking cross-cultural Christian community.',
-        icon: IconLanguage,
-      },
-      {
-        label: 'Focus',
-        value: 'Pastoral care, language, belonging, and shared congregational life.',
-        icon: IconHeartHandshake,
-      },
-      {
-        label: 'Next step',
-        value: 'Contact the church to connect with the ministry team.',
-        icon: IconMessage,
-      },
-    ],
-    es: [
-      {
-        label: 'Ideal para',
-        value:
-          'Vecinos de habla hispana, familias bilingües y personas que buscan comunidad cristiana intercultural.',
-        icon: IconLanguage,
-      },
-      {
-        label: 'Enfoque',
-        value: 'Cuidado pastoral, idioma, pertenencia y vida congregacional compartida.',
-        icon: IconHeartHandshake,
-      },
-      {
-        label: 'Próximo paso',
-        value: 'Contactar a la iglesia para conectarse con el equipo del ministerio.',
-        icon: IconMessage,
-      },
-    ],
-  },
-  serviceAndOutreach: {
-    en: [
-      {
-        label: 'Best for',
-        value: 'People who want to serve neighbors through outreach, events, partnerships, and practical care.',
-        icon: IconHeartHandshake,
-      },
-      {
-        label: 'Opportunities',
-        value: 'Community events, chaplaincy, older adult care, and shared use of church space.',
-        icon: IconBuildingCommunity,
-      },
-      {
-        label: 'Next step',
-        value: 'Ask where current help is needed.',
-        icon: IconMessage,
-      },
-    ],
-    es: [
-      {
-        label: 'Ideal para',
-        value:
-          'Personas que quieren servir a sus vecinos mediante proyectos, eventos, alianzas y cuidado práctico.',
-        icon: IconHeartHandshake,
-      },
-      {
-        label: 'Oportunidades',
-        value:
-          'Eventos comunitarios, capellanía, cuidado de adultos mayores y uso compartido del espacio de la iglesia.',
-        icon: IconBuildingCommunity,
-      },
-      {
-        label: 'Próximo paso',
-        value: 'Preguntar dónde se necesita ayuda ahora.',
-        icon: IconMessage,
-      },
-    ],
-  },
-};
-
-function getMinistryLanguage(locale: ReturnType<typeof useLocale>): MinistryLanguage {
-  return String(locale).startsWith('es') ? 'es' : 'en';
-}
-
 function getItemIcon(id: string) {
   return ITEM_ICONS[id] ?? IconSparkles;
 }
@@ -400,64 +212,23 @@ function FeatureHeading({ feature }: { feature: LocalizedMinistryFeature }) {
   );
 }
 
-function AtAGlance({
-  ministryId,
-  locale,
-}: {
-  ministryId: MinistryPageId;
-  locale: ReturnType<typeof useLocale>;
-}) {
-  const language = getMinistryLanguage(locale);
-  const copy = MINISTRY_UI_COPY[language];
-  const facts = MINISTRY_QUICK_FACTS[ministryId][language];
-
+function HighlightList({ highlights }: { highlights: LocalizedMinistryPage['highlights'] }) {
   return (
-    <section aria-labelledby={`${ministryId}-glance-title`} className={classes.glanceSection}>
-      <Paper withBorder className={classes.glancePanel}>
-        <div className={classes.glanceHeading}>
-          <div>
-            <Text className={classes.eyebrow}>{copy.glanceEyebrow}</Text>
-            <Title id={`${ministryId}-glance-title`} order={2} mt="xs">
-              {copy.glanceTitle}
-            </Title>
-          </div>
-        </div>
-
-        <div className={classes.glanceList}>
-          {facts.map((fact) => {
-            const Icon = fact.icon;
-
-            return (
-              <Paper key={fact.label} withBorder className={classes.glanceItem}>
-                <ThemeIcon size={42} radius="xl" variant="light" color="brand">
-                  <Icon size={21} stroke={1.7} />
-                </ThemeIcon>
-                <div>
-                  <Title order={3}>{fact.label}</Title>
-                  <Text c="dimmed" mt={4}>
-                    {fact.value}
-                  </Text>
-                </div>
-              </Paper>
-            );
-          })}
-        </div>
-      </Paper>
-    </section>
-  );
-}
-
-function WhatToExpectList({ highlights }: { highlights: LocalizedMinistryPage['highlights'] }) {
-  return (
-    <div className={classes.expectationList}>
-      {highlights.map((highlight) => {
+    <div className={classes.highlightList}>
+      {highlights.map((highlight, index) => {
         const Icon = getItemIcon(highlight.id);
+        const itemNumber = String(index + 1).padStart(2, '0');
 
         return (
-          <Paper key={highlight.id} component="article" withBorder className={classes.expectationCard}>
-            <ThemeIcon size={42} radius="xl" variant="light" color="moss">
-              <Icon size={21} stroke={1.7} />
-            </ThemeIcon>
+          <Paper key={highlight.id} component="article" withBorder className={classes.highlightRow}>
+            <div className={classes.highlightMarker}>
+              <Text component="span" className={classes.highlightNumber}>
+                {itemNumber}
+              </Text>
+              <ThemeIcon size={44} radius="xl" variant="light" color="moss">
+                <Icon size={22} stroke={1.7} />
+              </ThemeIcon>
+            </div>
             <div>
               <Title order={3}>{highlight.title}</Title>
               <Text c="dimmed" mt="xs">
@@ -468,43 +239,6 @@ function WhatToExpectList({ highlights }: { highlights: LocalizedMinistryPage['h
         );
       })}
     </div>
-  );
-}
-
-function MinistryFinalCta({
-  ministry,
-  ministryId,
-  locale,
-}: {
-  ministry: LocalizedMinistryPage;
-  ministryId: MinistryPageId;
-  locale: ReturnType<typeof useLocale>;
-}) {
-  const language = getMinistryLanguage(locale);
-  const copy = MINISTRY_UI_COPY[language];
-
-  return (
-    <section aria-labelledby={`${ministryId}-cta-title`} className={classes.finalCtaSection}>
-      <Paper withBorder className={classes.finalCtaCard}>
-        <Stack gap="lg">
-          <div>
-            <Text className={classes.eyebrow}>{copy.finalCtaEyebrow}</Text>
-            <Title id={`${ministryId}-cta-title`} order={2} mt="xs">
-              {ministry.ctaTitle}
-            </Title>
-            <Text c="dimmed" size="lg" mt="sm" maw={720}>
-              {ministry.ctaCopy}
-            </Text>
-          </div>
-
-          <Group gap="sm" className={classes.finalCtaActions}>
-            {ministry.actions.map((action) => (
-              <MinistryActionButton key={action.id} action={action} ministryId={ministryId} />
-            ))}
-          </Group>
-        </Stack>
-      </Paper>
-    </section>
   );
 }
 
@@ -697,13 +431,10 @@ function MinistryFeatures({
 
 export function MinistryDetailPage({ ministryId }: { ministryId: MinistryPageId }) {
   const locale = useLocale();
-  const language = getMinistryLanguage(locale);
-  const copy = MINISTRY_UI_COPY[language];
   const content = getContent(locale);
   const ministry = content.ministries.pages[ministryId];
   const assets = ministryPageAssets[ministryId];
   const relatedCards = content.community.cards.filter((card) => card.routeId !== ministryId);
-  const heroActions = ministry.actions.slice(0, 2);
 
   return (
     <>
@@ -719,7 +450,6 @@ export function MinistryDetailPage({ ministryId }: { ministryId: MinistryPageId 
                 <Badge variant="light" color="brand" size="lg" w="fit-content">
                   {ministry.eyebrow}
                 </Badge>
-
                 <div>
                   <Title id={`${ministryId}-title`} order={1} className={classes.heroTitle}>
                     {ministry.title}
@@ -727,19 +457,25 @@ export function MinistryDetailPage({ ministryId }: { ministryId: MinistryPageId 
                   <Text size="xl" className={classes.heroDescription}>
                     {ministry.description}
                   </Text>
-
-                  {heroActions.length > 0 ? (
-                    <Group gap="sm" mt="xl" className={classes.heroActions}>
-                      {heroActions.map((action) => (
-                        <MinistryActionButton
-                          key={action.id}
-                          action={action}
-                          ministryId={ministryId}
-                        />
-                      ))}
-                    </Group>
-                  ) : null}
                 </div>
+
+                <Paper withBorder className={classes.heroActionPanel}>
+                  <Text fw={800} className={classes.heroActionTitle}>
+                    {ministry.ctaTitle}
+                  </Text>
+                  <Text c="dimmed" mt="xs">
+                    {ministry.ctaCopy}
+                  </Text>
+                  <Group gap="sm" mt="lg" className={classes.heroActions}>
+                    {ministry.actions.map((action) => (
+                      <MinistryActionButton
+                        key={action.id}
+                        action={action}
+                        ministryId={ministryId}
+                      />
+                    ))}
+                  </Group>
+                </Paper>
               </Stack>
 
               <figure className={classes.heroFigure}>
@@ -760,10 +496,8 @@ export function MinistryDetailPage({ ministryId }: { ministryId: MinistryPageId 
         </Container>
       </section>
 
-      <Container size="xl" py={{ base: '3rem', md: '5rem' }}>
+      <Container size="xl" py={{ base: '3rem', md: '6rem' }}>
         <Stack className={classes.pageStack} data-ministry={ministryId}>
-          <AtAGlance ministryId={ministryId} locale={locale} />
-
           <section aria-labelledby={`${ministryId}-intro-title`} className={classes.introSection}>
             <SimpleGrid cols={{ base: 1, md: 2 }} spacing={{ base: 'xl', md: '4rem' }}>
               <div>
@@ -783,27 +517,21 @@ export function MinistryDetailPage({ ministryId }: { ministryId: MinistryPageId 
           </section>
 
           <section
-            aria-labelledby={`${ministryId}-expect-title`}
+            aria-labelledby={`${ministryId}-highlights-title`}
             className={classes.highlightsSection}
           >
             <div className={classes.sectionHeading}>
-              <div>
-                <Text className={classes.eyebrow}>{copy.expectEyebrow}</Text>
-                <Title id={`${ministryId}-expect-title`} order={2} mt="xs">
-                  {ministry.highlightsTitle}
-                </Title>
-              </div>
+              <Title id={`${ministryId}-highlights-title`} order={2}>
+                {ministry.highlightsTitle}
+              </Title>
               <Text c="dimmed" size="lg" maw={520}>
                 {ministry.description}
               </Text>
             </div>
-
-            <WhatToExpectList highlights={ministry.highlights} />
+            <HighlightList highlights={ministry.highlights} />
           </section>
 
           <MinistryFeatures ministry={ministry} ministryId={ministryId} assets={assets.features} />
-
-          <MinistryFinalCta ministry={ministry} ministryId={ministryId} locale={locale} />
 
           <section
             aria-labelledby={`${ministryId}-related-title`}
