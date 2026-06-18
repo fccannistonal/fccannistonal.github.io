@@ -36,6 +36,17 @@ type LocalizedStaffConnection = {
   href: string;
 };
 
+type AboutLinkCard = {
+  title: string;
+  description: string;
+  routeId: RouteId;
+};
+
+type ReadingCategory = {
+  title: string;
+  books: Array<{ title: string; author: string }>;
+};
+
 type LocalizedContent = {
   common: {
     denomination: string;
@@ -133,15 +144,40 @@ type LocalizedContent = {
     eyebrow: string;
     title: string;
     description: string;
-    identityTitle: string;
-    identityParagraphs: string[];
-    valuesTitle: string;
-    values: Array<{ title: string; description: string }>;
-    historyTitle: string;
-    historyParagraphs: string[];
+    greeting: string;
+    welcomeTitle: string;
+    welcomeParagraphs: string[];
+    missionTitle: string;
+    missionStatements: string[];
+    denominationalTitle: string;
+    denominationalParagraphs: string[];
+    disciplesTitle: string;
+    disciplesIntro: string;
+    disciplesPractices: Array<{ title: string; description: string }>;
+    nextStepsTitle: string;
+    nextSteps: AboutLinkCard[];
     ctaTitle: string;
     ctaCopy: string;
     cta: string;
+  };
+  membership: {
+    eyebrow: string;
+    title: string;
+    description: string;
+    introTitle: string;
+    introParagraphs: string[];
+    sections: Array<{ title: string; paragraphs: string[] }>;
+    ctaTitle: string;
+    ctaCopy: string;
+    cta: string;
+  };
+  reading: {
+    eyebrow: string;
+    title: string;
+    description: string;
+    byLabel: string;
+    categories: ReadingCategory[];
+    closingNote: string;
   };
   community: {
     eyebrow: string;
@@ -294,6 +330,8 @@ const en: LocalizedContent = {
       home: 'Home',
       visit: 'Visit',
       about: 'About',
+      membership: 'Membership and Baptism',
+      recommendedReading: 'Recommended Reading',
       staff: 'Staff',
       community: 'Church Life',
       worshipAndMusic: 'Sunday Worship',
@@ -511,46 +549,169 @@ const en: LocalizedContent = {
   },
   about: {
     eyebrow: 'Who we are',
-    title: 'A church shaped by Christ’s welcome',
+    title: 'Welcome to First Christian Church, Anniston',
     description:
-      'First Christian Church Anniston is a Disciples of Christ congregation committed to worship, thoughtful faith, compassionate service, and room for every person.',
-    identityTitle: 'Our Disciples of Christ identity',
-    identityParagraphs: [
-      'We belong to the Christian Church (Disciples of Christ), a movement centered on Jesus Christ, the shared table, Christian unity, and faithful service.',
-      'Questions and thoughtful engagement are welcome here. We seek to grow in faith together rather than requiring everyone to arrive with identical experiences or answers.',
+      'An Open and Affirming Disciples of Christ congregation where people can worship, serve, grow, ask honest questions, and come to Christ’s table together.',
+    greeting: 'Bienvenido a First Christian Church, Anniston.',
+    welcomeTitle: 'You are welcome here',
+    welcomeParagraphs: [
+      'First Christian Church, Anniston is an Open and Affirming congregation rooted in the Christian Church (Disciples of Christ). We seek to be a welcoming, spiritually vibrant church where people can worship, serve, grow, ask honest questions, and come to Christ’s table together.',
+      'As part of the Disciples tradition, we believe in unity without requiring uniformity. People come to this church from different backgrounds, cultures, life experiences, and points of view. We do not expect everyone to think exactly alike. Instead, we try to practice the kind of Christian community where people can belong, disagree with grace, serve together, and continue growing in faith.',
+      'We are committed to reconciliation, anti-racism, inclusion, and the work of God’s love in the world. We believe faith should shape how we treat one another, how we welcome our neighbors, and how we respond to the needs of our community.',
+      'More than anything, we want you to know that you are welcome here. You do not have to have everything figured out before you walk through the door. You are welcome in your joy, your questions, your doubts, your gifts, your struggles, your faith, and your whole humanity.',
     ],
-    valuesTitle: 'What guides our life together',
-    values: [
+    missionTitle: 'Our mission',
+    missionStatements: [
+      'We, the members of First Christian Church, commit to being a welcoming, open, affirming, and spiritually vibrant congregation.',
+      'We seek to deepen our relationship with Christ and with one another through worship, prayer, study, stewardship, and fellowship.',
+      'We seek to serve all of God’s people in Jesus’ name.',
+      'We seek out all who may be transformed by the joy of life in Christ.',
+    ],
+    denominationalTitle: 'Our denominational home',
+    denominationalParagraphs: [
+      'First Christian Church is part of the Christian Church (Disciples of Christ), a movement that describes itself as “a movement for wholeness in a fragmented world.”',
+      'The Disciples tradition grew out of a desire for Christian unity. In the early 1800s, leaders such as Barton W. Stone, Thomas Campbell, and Alexander Campbell challenged the divisions that kept Christians separated from one another, especially at the Lord’s Table. Their movements eventually came together in 1832 and helped form what became the Christian Church (Disciples of Christ).',
+      'That history still shapes us today. We believe Christ’s table is larger than any one denomination, background, or human boundary. We seek to be a church where unity is practiced through welcome, shared worship, honest study, and service to the world.',
+    ],
+    disciplesTitle: 'What it means to be Disciples of Christ',
+    disciplesIntro:
+      'As Disciples of Christ, we welcome all to the Lord’s Table as God has welcomed us.',
+    disciplesPractices: [
       {
-        title: 'An open table',
+        title: 'We gather around the Lord’s Table.',
         description:
-          'Communion stands at the heart of our worship as a sign of grace, remembrance, and belonging.',
+          'Communion is central to our worship. We celebrate the Lord’s Supper every Sunday because we understand it as a sign of Christ’s welcome, grace, and unity.',
       },
       {
-        title: 'Open and affirming welcome',
+        title: 'We practice unity without requiring uniformity.',
         description:
-          'We affirm LGBTQ people and seek to be a church where every person is received with dignity and love.',
+          'We do not believe everyone has to agree on every question in order to worship, serve, or belong together. We seek to remain in covenant with one another even when we see some things differently.',
       },
       {
-        title: 'Faith in action',
+        title: 'We study scripture thoughtfully.',
         description:
-          'We understand Christian faith as compassionate care, reconciliation, community involvement, and service.',
+          'We encourage people to read, question, study, and listen for God through scripture. Rather than relying on rigid tests of faith, we seek to understand scripture with care, humility, historical context, and openness to the Spirit.',
       },
       {
-        title: 'Room for questions',
+        title: 'We honor the priesthood of all believers.',
         description:
-          'We value learning, honest conversation, and a faith strong enough to engage difficult questions.',
+          'Every person has gifts to offer. Ministry does not belong only to clergy or church leaders. Each person is called to participate in the life and work of the church.',
+      },
+      {
+        title: 'We work with others for healing and justice.',
+        description:
+          'The Disciples tradition has a strong commitment to cooperation with other Christians and people of faith. We seek to join in God’s work of wholeness through service, compassion, reconciliation, and justice.',
       },
     ],
-    historyTitle: 'Our story in Anniston',
-    historyParagraphs: [
-      'First Christian Church has served Anniston as a Disciples of Christ congregation through worship, pastoral care, music, education, and community partnerships.',
-      'Today that story continues through an open and affirming welcome, Hispanic ministry, children’s ministry, local outreach, and the Diversity Theater Company.',
+    nextStepsTitle: 'Explore faith and belonging',
+    nextSteps: [
+      {
+        title: 'Membership and baptism',
+        description:
+          'Learn what membership means, how baptism is practiced, and how to participate more fully in the life of the church.',
+        routeId: 'membership',
+      },
+      {
+        title: 'Recommended reading',
+        description:
+          'Find books for reflection, spiritual growth, justice, pastoral care, and the Christian Church (Disciples of Christ).',
+        routeId: 'recommendedReading',
+      },
     ],
     ctaTitle: 'The best way to understand us is to visit',
     ctaCopy:
       'Join us for worship, share communion, meet the people of the congregation, and bring your questions.',
     cta: 'Plan your visit',
+  },
+  membership: {
+    eyebrow: 'Belonging and next steps',
+    title: 'Membership and Baptism',
+    description:
+      'Membership is a way of saying, “This is my church community, and I want to share in its life, worship, service, and care.”',
+    introTitle: 'Becoming part of the congregation',
+    introParagraphs: [
+      'Membership at First Christian Church, Anniston is a way of saying, “This is my church community, and I want to share in its life, worship, service, and care.”',
+      'As part of the Christian Church (Disciples of Christ), we welcome people into membership through a confession of faith in Jesus Christ. For some, that may be a first public confession of faith. For others, it may be a reaffirmation of faith or a transfer of membership from another congregation.',
+      'If you are interested in becoming a member, you are welcome to speak with the pastor. Some people choose to come forward during worship, while others prefer a quieter conversation first. We are glad to help you take the next step in a way that feels clear and meaningful.',
+    ],
+    sections: [
+      {
+        title: 'Baptism',
+        paragraphs: [
+          'In the Disciples tradition, baptism is an important sign of faith, belonging, and new life in Christ. First Christian Church practices baptism by immersion, while also honoring the baptisms of other Christian traditions.',
+          'If you have already been baptized in another church or denomination, you do not need to be baptized again in order to become part of this congregation.',
+          'If you have questions about baptism, membership, or what it means to follow Christ, we welcome those conversations.',
+        ],
+      },
+      {
+        title: 'Participating in the life of the church',
+        paragraphs: [
+          'The Christian journey is not meant to be traveled alone. Members are encouraged to worship regularly, grow spiritually, support the ministry of the congregation, serve others, and share in the care of the church community.',
+          'Membership also allows a person to vote in congregational meetings and serve in leadership roles within the church.',
+          'For students, seasonal residents, or others who remain connected to another home congregation, associate membership may also be available. This allows someone to participate fully in the life of First Christian Church while keeping membership in another church.',
+        ],
+      },
+    ],
+    ctaTitle: 'Ask about membership, baptism, or getting involved',
+    ctaCopy:
+      'To learn more about membership, baptism, or becoming more involved, please contact the church.',
+    cta: 'Contact the church',
+  },
+  reading: {
+    eyebrow: 'Study and reflection',
+    title: 'Recommended Reading',
+    description:
+      'Books that may help people explore Christian faith, spiritual growth, justice, pastoral care, and the Christian Church (Disciples of Christ).',
+    byLabel: 'by',
+    categories: [
+      {
+        title: 'Spiritual Growth',
+        books: [
+          { title: 'An Altar in the World', author: 'Barbara Brown Taylor' },
+          {
+            title:
+              'Half Truths: God Helps Those Who Help Themselves and Other Things the Bible Doesn’t Say',
+            author: 'Adam Hamilton',
+          },
+          { title: 'The Sin of Certainty', author: 'Peter Enns' },
+          { title: 'Sabbath as Resistance', author: 'Walter Brueggemann' },
+          { title: 'Amazing Grace: A Vocabulary of Faith', author: 'Kathleen Norris' },
+        ],
+      },
+      {
+        title: 'Faith, Welcome, and Inclusion',
+        books: [
+          {
+            title: 'Torn: Rescuing the Gospel from the Gays-vs.-Christians Debate',
+            author: 'Justin Lee',
+          },
+          {
+            title: 'What the Bible Really Says About Homosexuality',
+            author: 'Daniel A. Helminiak',
+          },
+          { title: 'Transitions of the Heart', author: 'Rachel Pepper' },
+        ],
+      },
+      {
+        title: 'Justice and Social Awareness',
+        books: [
+          { title: 'Fear of the Other', author: 'William H. Willimon' },
+          { title: 'The Black Friend', author: 'Frederick Joseph' },
+          { title: 'Post Traumatic Slave Syndrome', author: 'Joy DeGruy' },
+          { title: 'Love Over Fear', author: 'Dan White Jr.' },
+        ],
+      },
+      {
+        title: 'The Christian Church (Disciples of Christ)',
+        books: [
+          { title: 'The Stone-Campbell Movement', author: 'Leroy Garrett' },
+          { title: 'The Disciples: A Struggle for Reformation', author: 'D. Duane Cummins' },
+          { title: 'Freedom in Covenant', author: 'Robert D. Cornwall' },
+        ],
+      },
+    ],
+    closingNote:
+      'This list is not a required reading list or a formal statement of belief. It is offered as a starting place for reflection, learning, and conversation.',
   },
   community: {
     eyebrow: 'Church life',
@@ -942,6 +1103,8 @@ const es: LocalizedContent = {
       home: 'Inicio',
       visit: 'Visita',
       about: 'Acerca',
+      membership: 'Membresía y bautismo',
+      recommendedReading: 'Lecturas recomendadas',
       staff: 'Personal',
       community: 'Vida de la iglesia',
       worshipAndMusic: 'Adoración dominical',
@@ -1161,46 +1324,169 @@ const es: LocalizedContent = {
   },
   about: {
     eyebrow: 'Quiénes somos',
-    title: 'Una iglesia formada por la bienvenida de Cristo',
+    title: 'Bienvenido a First Christian Church, Anniston',
     description:
-      'La Primera Iglesia Cristiana de Anniston es una congregación de los Discípulos de Cristo comprometida con la adoración, una fe reflexiva, el servicio compasivo y un lugar para cada persona.',
-    identityTitle: 'Nuestra identidad como Discípulos de Cristo',
-    identityParagraphs: [
-      'Pertenecemos a la Iglesia Cristiana (Discípulos de Cristo), un movimiento centrado en Jesucristo, la mesa compartida, la unidad cristiana y el servicio fiel.',
-      'Aquí son bienvenidas las preguntas y la reflexión. Buscamos crecer juntos en la fe sin exigir que todas las personas lleguen con las mismas experiencias o respuestas.',
+      'Una congregación abierta y afirmativa de los Discípulos de Cristo donde las personas pueden adorar, servir, crecer, hacer preguntas honestas y reunirse en la mesa de Cristo.',
+    greeting: 'Bienvenido a First Christian Church, Anniston.',
+    welcomeTitle: 'Usted es bienvenido aquí',
+    welcomeParagraphs: [
+      'First Christian Church, Anniston es una congregación abierta y afirmativa arraigada en la Iglesia Cristiana (Discípulos de Cristo). Buscamos ser una iglesia acogedora y espiritualmente vibrante donde las personas puedan adorar, servir, crecer, hacer preguntas honestas y reunirse en la mesa de Cristo.',
+      'Como parte de la tradición de los Discípulos, creemos en la unidad sin exigir uniformidad. Las personas llegan a esta iglesia desde diferentes trasfondos, culturas, experiencias de vida y puntos de vista. No esperamos que todos piensen exactamente igual. Más bien, tratamos de practicar una comunidad cristiana donde las personas puedan pertenecer, disentir con gracia, servir juntas y seguir creciendo en la fe.',
+      'Estamos comprometidos con la reconciliación, el antirracismo, la inclusión y la obra del amor de Dios en el mundo. Creemos que la fe debe formar la manera en que nos tratamos, cómo recibimos a nuestros vecinos y cómo respondemos a las necesidades de nuestra comunidad.',
+      'Más que nada, queremos que sepa que usted es bienvenido aquí. No tiene que tener todo resuelto antes de entrar por la puerta. Es bienvenido en su alegría, sus preguntas, sus dudas, sus dones, sus luchas, su fe y toda su humanidad.',
     ],
-    valuesTitle: 'Lo que guía nuestra vida juntos',
-    values: [
+    missionTitle: 'Nuestra misión',
+    missionStatements: [
+      'Nosotros, los miembros de First Christian Church, nos comprometemos a ser una congregación acogedora, abierta, afirmativa y espiritualmente vibrante.',
+      'Buscamos profundizar nuestra relación con Cristo y entre nosotros mediante la adoración, la oración, el estudio, la mayordomía y la comunión fraternal.',
+      'Buscamos servir a todo el pueblo de Dios en el nombre de Jesús.',
+      'Buscamos a todas las personas que puedan ser transformadas por el gozo de la vida en Cristo.',
+    ],
+    denominationalTitle: 'Nuestro hogar denominacional',
+    denominationalParagraphs: [
+      'First Christian Church forma parte de la Iglesia Cristiana (Discípulos de Cristo), un movimiento que se describe como “un movimiento por la plenitud en un mundo fragmentado”.',
+      'La tradición de los Discípulos nació de un deseo de unidad cristiana. A comienzos del siglo XIX, líderes como Barton W. Stone, Thomas Campbell y Alexander Campbell desafiaron las divisiones que separaban a los cristianos, especialmente en la Mesa del Señor. Sus movimientos se unieron finalmente en 1832 y ayudaron a formar lo que llegó a ser la Iglesia Cristiana (Discípulos de Cristo).',
+      'Esa historia todavía nos forma hoy. Creemos que la mesa de Cristo es más amplia que cualquier denominación, trasfondo o frontera humana. Buscamos ser una iglesia donde la unidad se practica mediante la bienvenida, la adoración compartida, el estudio honesto y el servicio al mundo.',
+    ],
+    disciplesTitle: 'Qué significa ser Discípulos de Cristo',
+    disciplesIntro:
+      'Como Discípulos de Cristo, recibimos a todas las personas en la Mesa del Señor como Dios nos ha recibido.',
+    disciplesPractices: [
       {
-        title: 'Una mesa abierta',
+        title: 'Nos reunimos alrededor de la Mesa del Señor.',
         description:
-          'La comunión está en el centro de nuestra adoración como señal de gracia, memoria y pertenencia.',
+          'La comunión es central en nuestra adoración. Celebramos la Cena del Señor todos los domingos porque la entendemos como señal de la bienvenida, la gracia y la unidad de Cristo.',
       },
       {
-        title: 'Bienvenida abierta y afirmativa',
+        title: 'Practicamos la unidad sin exigir uniformidad.',
         description:
-          'Afirmamos a las personas LGBTQ y buscamos ser una iglesia donde cada persona sea recibida con dignidad y amor.',
+          'No creemos que todos tengan que estar de acuerdo en cada pregunta para adorar, servir o pertenecer juntos. Buscamos permanecer en pacto unos con otros aun cuando vemos algunas cosas de manera diferente.',
       },
       {
-        title: 'La fe en acción',
+        title: 'Estudiamos la Escritura con atención.',
         description:
-          'Entendemos la fe cristiana como cuidado compasivo, reconciliación, participación comunitaria y servicio.',
+          'Animamos a las personas a leer, preguntar, estudiar y escuchar a Dios por medio de la Escritura. En lugar de depender de pruebas rígidas de fe, buscamos entender la Escritura con cuidado, humildad, contexto histórico y apertura al Espíritu.',
       },
       {
-        title: 'Espacio para preguntas',
+        title: 'Honramos el sacerdocio de todos los creyentes.',
         description:
-          'Valoramos el aprendizaje, la conversación honesta y una fe capaz de abordar preguntas difíciles.',
+          'Cada persona tiene dones que ofrecer. El ministerio no pertenece solo al clero o a los líderes de la iglesia. Cada persona está llamada a participar en la vida y la obra de la iglesia.',
+      },
+      {
+        title: 'Trabajamos con otros por sanidad y justicia.',
+        description:
+          'La tradición de los Discípulos tiene un fuerte compromiso de cooperación con otros cristianos y personas de fe. Buscamos unirnos a la obra de plenitud de Dios mediante el servicio, la compasión, la reconciliación y la justicia.',
       },
     ],
-    historyTitle: 'Nuestra historia en Anniston',
-    historyParagraphs: [
-      'La Primera Iglesia Cristiana ha servido a Anniston como congregación de los Discípulos de Cristo mediante la adoración, el cuidado pastoral, la música, la educación y las alianzas comunitarias.',
-      'Hoy esa historia continúa con una bienvenida abierta y afirmativa, el ministerio hispano, el ministerio infantil, el servicio local y la Compañía de Teatro Diversidad.',
+    nextStepsTitle: 'Explore la fe y la pertenencia',
+    nextSteps: [
+      {
+        title: 'Membresía y bautismo',
+        description:
+          'Conozca qué significa la membresía, cómo se practica el bautismo y cómo participar más plenamente en la vida de la iglesia.',
+        routeId: 'membership',
+      },
+      {
+        title: 'Lecturas recomendadas',
+        description:
+          'Encuentre libros para la reflexión, el crecimiento espiritual, la justicia, el cuidado pastoral y la Iglesia Cristiana (Discípulos de Cristo).',
+        routeId: 'recommendedReading',
+      },
     ],
     ctaTitle: 'La mejor manera de conocernos es visitarnos',
     ctaCopy:
       'Acompáñenos en la adoración, comparta la comunión, conozca a la congregación y traiga sus preguntas.',
     cta: 'Planifique su visita',
+  },
+  membership: {
+    eyebrow: 'Pertenencia y próximos pasos',
+    title: 'Membresía y bautismo',
+    description:
+      'La membresía es una manera de decir: “Esta es mi comunidad de iglesia, y quiero compartir su vida, adoración, servicio y cuidado.”',
+    introTitle: 'Llegar a formar parte de la congregación',
+    introParagraphs: [
+      'La membresía en First Christian Church, Anniston es una manera de decir: “Esta es mi comunidad de iglesia, y quiero compartir su vida, adoración, servicio y cuidado.”',
+      'Como parte de la Iglesia Cristiana (Discípulos de Cristo), recibimos a las personas en la membresía mediante una confesión de fe en Jesucristo. Para algunas personas, esa puede ser una primera confesión pública de fe. Para otras, puede ser una reafirmación de fe o una transferencia de membresía desde otra congregación.',
+      'Si está interesado en hacerse miembro, puede hablar con la pastora. Algunas personas eligen pasar al frente durante la adoración, mientras que otras prefieren primero una conversación más tranquila. Con gusto le ayudaremos a dar el siguiente paso de una manera clara y significativa.',
+    ],
+    sections: [
+      {
+        title: 'Bautismo',
+        paragraphs: [
+          'En la tradición de los Discípulos, el bautismo es una señal importante de fe, pertenencia y nueva vida en Cristo. First Christian Church practica el bautismo por inmersión, y también honra los bautismos de otras tradiciones cristianas.',
+          'Si usted ya fue bautizado en otra iglesia o denominación, no necesita bautizarse de nuevo para formar parte de esta congregación.',
+          'Si tiene preguntas sobre el bautismo, la membresía o lo que significa seguir a Cristo, esas conversaciones son bienvenidas.',
+        ],
+      },
+      {
+        title: 'Participar en la vida de la iglesia',
+        paragraphs: [
+          'El camino cristiano no está hecho para recorrerse a solas. Se anima a los miembros a adorar con regularidad, crecer espiritualmente, apoyar el ministerio de la congregación, servir a otros y compartir el cuidado de la comunidad de la iglesia.',
+          'La membresía también permite votar en reuniones congregacionales y servir en roles de liderazgo dentro de la iglesia.',
+          'Para estudiantes, residentes de temporada u otras personas que permanecen conectadas con otra congregación de origen, también puede estar disponible la membresía asociada. Esto permite participar plenamente en la vida de First Christian Church mientras se mantiene la membresía en otra iglesia.',
+        ],
+      },
+    ],
+    ctaTitle: 'Pregunte sobre membresía, bautismo o participación',
+    ctaCopy:
+      'Para saber más sobre membresía, bautismo o cómo involucrarse más, comuníquese con la iglesia.',
+    cta: 'Contactar a la iglesia',
+  },
+  reading: {
+    eyebrow: 'Estudio y reflexión',
+    title: 'Lecturas recomendadas',
+    description:
+      'Libros que pueden ayudar a explorar la fe cristiana, el crecimiento espiritual, la justicia, el cuidado pastoral y la Iglesia Cristiana (Discípulos de Cristo).',
+    byLabel: 'por',
+    categories: [
+      {
+        title: 'Crecimiento espiritual',
+        books: [
+          { title: 'An Altar in the World', author: 'Barbara Brown Taylor' },
+          {
+            title:
+              'Half Truths: God Helps Those Who Help Themselves and Other Things the Bible Doesn’t Say',
+            author: 'Adam Hamilton',
+          },
+          { title: 'The Sin of Certainty', author: 'Peter Enns' },
+          { title: 'Sabbath as Resistance', author: 'Walter Brueggemann' },
+          { title: 'Amazing Grace: A Vocabulary of Faith', author: 'Kathleen Norris' },
+        ],
+      },
+      {
+        title: 'Fe, bienvenida e inclusión',
+        books: [
+          {
+            title: 'Torn: Rescuing the Gospel from the Gays-vs.-Christians Debate',
+            author: 'Justin Lee',
+          },
+          {
+            title: 'What the Bible Really Says About Homosexuality',
+            author: 'Daniel A. Helminiak',
+          },
+          { title: 'Transitions of the Heart', author: 'Rachel Pepper' },
+        ],
+      },
+      {
+        title: 'Justicia y conciencia social',
+        books: [
+          { title: 'Fear of the Other', author: 'William H. Willimon' },
+          { title: 'The Black Friend', author: 'Frederick Joseph' },
+          { title: 'Post Traumatic Slave Syndrome', author: 'Joy DeGruy' },
+          { title: 'Love Over Fear', author: 'Dan White Jr.' },
+        ],
+      },
+      {
+        title: 'La Iglesia Cristiana (Discípulos de Cristo)',
+        books: [
+          { title: 'The Stone-Campbell Movement', author: 'Leroy Garrett' },
+          { title: 'The Disciples: A Struggle for Reformation', author: 'D. Duane Cummins' },
+          { title: 'Freedom in Covenant', author: 'Robert D. Cornwall' },
+        ],
+      },
+    ],
+    closingNote:
+      'Esta lista no es una lectura obligatoria ni una declaración formal de creencias. Se ofrece como punto de partida para la reflexión, el aprendizaje y la conversación.',
   },
   community: {
     eyebrow: 'Vida de la iglesia',

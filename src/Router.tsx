@@ -23,6 +23,14 @@ const VisitPage = lazy(() =>
 const AboutPage = lazy(() =>
   import('./pages/About.page').then((module) => ({ default: module.AboutPage }))
 );
+const MembershipPage = lazy(() =>
+  import('./pages/Membership.page').then((module) => ({ default: module.MembershipPage }))
+);
+const RecommendedReadingPage = lazy(() =>
+  import('./pages/RecommendedReading.page').then((module) => ({
+    default: module.RecommendedReadingPage,
+  }))
+);
 const StaffPage = lazy(() =>
   import('./pages/Staff.page').then((module) => ({ default: module.StaffPage }))
 );
@@ -166,6 +174,11 @@ export const routes: RouteObject[] = [
       { index: true, element: withSuspense(<HomePage />) },
       { path: 'visit', element: withSuspense(<VisitPage />) },
       { path: 'about', element: withSuspense(<AboutPage />) },
+      { path: 'about/membership-and-baptism', element: withSuspense(<MembershipPage />) },
+      {
+        path: 'about/recommended-reading',
+        element: withSuspense(<RecommendedReadingPage />),
+      },
       { path: 'staff', element: withSuspense(<StaffPage />) },
       { path: 'community', element: withSuspense(<CommunityPage />) },
       {
@@ -210,6 +223,11 @@ export const routes: RouteObject[] = [
       { path: 'es', element: withSuspense(<HomePage />) },
       { path: 'es/visita', element: withSuspense(<VisitPage />) },
       { path: 'es/acerca', element: withSuspense(<AboutPage />) },
+      { path: 'es/acerca/membresia-y-bautismo', element: withSuspense(<MembershipPage />) },
+      {
+        path: 'es/acerca/lecturas-recomendadas',
+        element: withSuspense(<RecommendedReadingPage />),
+      },
       { path: 'es/personal', element: withSuspense(<StaffPage />) },
       { path: 'es/comunidad', element: withSuspense(<CommunityPage />) },
       {

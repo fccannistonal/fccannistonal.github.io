@@ -12,6 +12,8 @@ import classes from './FooterSimple.module.css';
 const FOOTER_ROUTES: RouteId[] = [
   'visit',
   'about',
+  'membership',
+  'recommendedReading',
   'community',
   'staff',
   'updates',

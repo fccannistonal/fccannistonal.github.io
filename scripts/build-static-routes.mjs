@@ -19,6 +19,8 @@ const routeModuleById = {
   home: 'src/pages/Home.page.tsx',
   visit: 'src/pages/Visit.page.tsx',
   about: 'src/pages/About.page.tsx',
+  membership: 'src/pages/Membership.page.tsx',
+  recommendedReading: 'src/pages/RecommendedReading.page.tsx',
   staff: 'src/pages/Staff.page.tsx',
   community: 'src/pages/Community.page.tsx',
   worshipAndMusic: 'src/pages/MinistryDetail.page.tsx',
@@ -131,8 +133,7 @@ const churchStructuredData = {
   ],
 };
 
-const getRouteSocialImage = (route) =>
-  absoluteUrl(route.socialImage ?? manifest.socialImage);
+const getRouteSocialImage = (route) => absoluteUrl(route.socialImage ?? manifest.socialImage);
 
 function createStructuredData(route) {
   const blocks = [churchStructuredData];

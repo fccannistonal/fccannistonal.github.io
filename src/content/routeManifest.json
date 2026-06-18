@@ -79,7 +79,7 @@
       "path": "/about",
       "alternatePath": "/es/acerca",
       "title": "About Us | First Christian Church Anniston",
-      "description": "Learn about First Christian Church Anniston, our Disciples of Christ identity, open and affirming welcome, communion, values, and life together.",
+      "description": "Learn about First Christian Church Anniston, our Open and Affirming welcome, mission, Disciples of Christ identity, Lord’s Table, unity, and life together.",
       "socialImage": "/images/social/about.jpg"
     },
     {
@@ -88,7 +88,43 @@
       "path": "/es/acerca",
       "alternatePath": "/about",
       "title": "Acerca de nosotros | Primera Iglesia Cristiana de Anniston",
-      "description": "Conozca la identidad de los Discípulos de Cristo, la bienvenida abierta y afirmativa, la comunión, los valores y la vida de la iglesia.",
+      "description": "Conozca la bienvenida abierta y afirmativa, la misión, la identidad de los Discípulos de Cristo, la Mesa del Señor, la unidad y la vida de la iglesia.",
+      "socialImage": "/images/social/about.jpg"
+    },
+    {
+      "id": "membership",
+      "locale": "en",
+      "path": "/about/membership-and-baptism",
+      "alternatePath": "/es/acerca/membresia-y-bautismo",
+      "title": "Membership and Baptism | First Christian Church Anniston",
+      "description": "Learn about membership, baptism, confession of faith, associate membership, and participating in the life of First Christian Church Anniston.",
+      "socialImage": "/images/social/about.jpg"
+    },
+    {
+      "id": "membership",
+      "locale": "es",
+      "path": "/es/acerca/membresia-y-bautismo",
+      "alternatePath": "/about/membership-and-baptism",
+      "title": "Membresía y bautismo | Primera Iglesia Cristiana de Anniston",
+      "description": "Conozca la membresía, el bautismo, la confesión de fe, la membresía asociada y la participación en la vida de la iglesia.",
+      "socialImage": "/images/social/about.jpg"
+    },
+    {
+      "id": "recommendedReading",
+      "locale": "en",
+      "path": "/about/recommended-reading",
+      "alternatePath": "/es/acerca/lecturas-recomendadas",
+      "title": "Recommended Reading | First Christian Church Anniston",
+      "description": "Explore recommended books for Christian faith, spiritual growth, inclusion, justice, pastoral care, and the Christian Church (Disciples of Christ).",
+      "socialImage": "/images/social/about.jpg"
+    },
+    {
+      "id": "recommendedReading",
+      "locale": "es",
+      "path": "/es/acerca/lecturas-recomendadas",
+      "alternatePath": "/about/recommended-reading",
+      "title": "Lecturas recomendadas | Primera Iglesia Cristiana de Anniston",
+      "description": "Explore libros recomendados sobre fe cristiana, crecimiento espiritual, inclusión, justicia, cuidado pastoral y los Discípulos de Cristo.",
       "socialImage": "/images/social/about.jpg"
     },
     {

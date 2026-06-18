@@ -10,6 +10,8 @@ describe('localized routing', () => {
   it('maps stable route identifiers to localized paths', () => {
     expect(getLocalizedPath('visit', 'en')).toBe('/visit');
     expect(getLocalizedPath('visit', 'es')).toBe('/es/visita');
+    expect(getLocalizedPath('membership', 'en')).toBe('/about/membership-and-baptism');
+    expect(getLocalizedPath('recommendedReading', 'es')).toBe('/es/acerca/lecturas-recomendadas');
     expect(getLocalizedPath('worshipAndMusic', 'en')).toBe('/community/sunday-worship');
     expect(getLocalizedPath('wonderAndWorship', 'es')).toBe('/es/comunidad/ministerio-infantil');
     expect(getLocalizedPath('serviceAndOutreach', 'es')).toBe('/es/comunidad/servicio-comunitario');

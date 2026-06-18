@@ -5,6 +5,8 @@ export type RouteId =
   | 'home'
   | 'visit'
   | 'about'
+  | 'membership'
+  | 'recommendedReading'
   | 'staff'
   | 'community'
   | 'worshipAndMusic'
