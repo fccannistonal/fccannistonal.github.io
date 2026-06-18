@@ -8,14 +8,27 @@ export const ANALYTICS_CONSENT_EVENT = 'fccanniston:analytics-consent';
 
 export type AnalyticsConsent = 'granted' | 'denied';
 type AnalyticsParameters = Record<string, string | number | boolean>;
-type GtagArguments = [command: string, ...args: unknown[]];
+type GtagArguments = IArguments | [command: string, ...args: unknown[]];
+type GtagFunction = (command: string, ...args: unknown[]) => void;
 type AnalyticsWindow = Window &
   typeof globalThis & {
     dataLayer?: GtagArguments[];
-    gtag?: (...args: GtagArguments) => void;
+    gtag?: GtagFunction;
   };
 
 let isInitialized = false;
+
+const DENIED_CONSENT = {
+  ad_personalization: 'denied',
+  ad_storage: 'denied',
+  ad_user_data: 'denied',
+  analytics_storage: 'denied',
+} as const;
+
+const GRANTED_ANALYTICS_CONSENT = {
+  ...DENIED_CONSENT,
+  analytics_storage: 'granted',
+} as const;
 
 export function getAnalyticsConsent(): AnalyticsConsent | null {
   if (typeof window === 'undefined') {
@@ -37,10 +50,12 @@ export function setAnalyticsConsent(value: AnalyticsConsent) {
     // The current page still respects the choice when storage is unavailable.
   }
 
-  if (value === 'denied' && typeof window !== 'undefined') {
-    (window as AnalyticsWindow).gtag?.('consent', 'update', {
-      analytics_storage: 'denied',
-    });
+  if (typeof window !== 'undefined') {
+    (window as AnalyticsWindow).gtag?.(
+      'consent',
+      'update',
+      value === 'granted' ? GRANTED_ANALYTICS_CONSENT : DENIED_CONSENT
+    );
   }
 
   window.dispatchEvent(new CustomEvent(ANALYTICS_CONSENT_EVENT, { detail: value }));
@@ -69,9 +84,10 @@ export function initializeGoogleAnalytics() {
   analyticsWindow.dataLayer = analyticsWindow.dataLayer ?? [];
   analyticsWindow.gtag =
     analyticsWindow.gtag ??
-    ((...args: GtagArguments) => {
-      analyticsWindow.dataLayer?.push(args);
-    });
+    (function gtag() {
+      // eslint-disable-next-line prefer-rest-params -- Google tag expects the Arguments object.
+      analyticsWindow.dataLayer?.push(arguments);
+    } as GtagFunction);
 
   if (!document.getElementById(GOOGLE_TAG_SCRIPT_ID)) {
     const script = document.createElement('script');
@@ -81,10 +97,10 @@ export function initializeGoogleAnalytics() {
     document.head.appendChild(script);
   }
 
-  analyticsWindow.gtag('js', new Date());
   analyticsWindow.gtag('consent', 'default', {
-    analytics_storage: 'granted',
+    ...GRANTED_ANALYTICS_CONSENT,
   });
+  analyticsWindow.gtag('js', new Date());
   analyticsWindow.gtag('config', GOOGLE_ANALYTICS_ID, {
     allow_ad_personalization_signals: false,
     allow_google_signals: false,

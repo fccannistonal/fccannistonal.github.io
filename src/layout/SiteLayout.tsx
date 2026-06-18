@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { AnalyticsRouteTracker } from '../components/church/AnalyticsRouteTracker';
 import { DeferredConsentBanner } from '../components/church/DeferredConsentBanner';
 import { FooterSimple } from '../components/FooterSimple/FooterSimple';
 import { HeaderSimple } from '../components/HeaderSimple/HeaderSimple';
@@ -20,6 +21,7 @@ export function SiteLayout({ children }: Props) {
         {content.common.skipToContent}
       </a>
       <HeaderSimple />
+      <AnalyticsRouteTracker />
       {content.common.serviceAlert.enabled && (
         <div className={classes.alertContainer}>
           <div className={classes.serviceAlert} role="status">

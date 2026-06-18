@@ -1,14 +1,12 @@
 import { useEffect, useState } from 'react';
 import { IconShieldCheck } from '@tabler/icons-react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Button, Group, Paper, Text, ThemeIcon, Title } from '@mantine/core';
 import { getShellContent } from '../../content/localizedShellContent';
 import {
   ANALYTICS_CONSENT_EVENT,
   getAnalyticsConsent,
-  initializeGoogleAnalytics,
   setAnalyticsConsent,
-  trackPageView,
   type AnalyticsConsent,
 } from '../../lib/googleAnalytics';
 import { useLocale } from '../../lib/i18n';
@@ -16,7 +14,6 @@ import { getLocalizedPath } from '../../lib/routing';
 import classes from './ConsentBanner.module.css';
 
 export function ConsentBanner() {
-  const location = useLocation();
   const locale = useLocale();
   const content = getShellContent(locale);
   const [isMounted, setIsMounted] = useState(false);
@@ -34,13 +31,6 @@ export function ConsentBanner() {
     window.addEventListener(ANALYTICS_CONSENT_EVENT, handleConsentChange);
     return () => window.removeEventListener(ANALYTICS_CONSENT_EVENT, handleConsentChange);
   }, []);
-
-  useEffect(() => {
-    if (consent === 'granted') {
-      initializeGoogleAnalytics();
-      trackPageView(`${location.pathname}${location.search}`, locale);
-    }
-  }, [consent, locale, location.pathname, location.search]);
 
   if (!isMounted || consent) {
     return null;
