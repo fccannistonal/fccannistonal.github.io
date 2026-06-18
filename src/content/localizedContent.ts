@@ -296,8 +296,8 @@ const en: LocalizedContent = {
       about: 'About',
       staff: 'Staff',
       community: 'Church Life',
-      worshipAndMusic: 'Worship and Music',
-      wonderAndWorship: 'Wonder and Worship',
+      worshipAndMusic: 'Sunday Worship',
+      wonderAndWorship: 'Children’s Ministry',
       hispanicMinistry: 'Hispanic Ministry',
       serviceAndOutreach: 'Service and Outreach',
       diversityTheater: 'Diversity Theater',
@@ -379,7 +379,7 @@ const en: LocalizedContent = {
     welcomeTitle: 'All are welcome',
     welcomeParagraphs: [
       'Whether you are exploring faith, returning to church, or looking for a community where you can belong, you are welcome here.',
-      'Our worship makes room for celebration, reflection, questions, communion, and connection. Children are invited to participate in Wonder and Worship during the service.',
+      'Our worship makes room for celebration, reflection, questions, communion, and connection. Children are welcomed as part of the worshiping community.',
     ],
     welcomeCta: 'What to expect on Sunday',
     churchImageAlt:
@@ -450,7 +450,7 @@ const en: LocalizedContent = {
     visitNotes: [
       'Sunday School begins at 10:30 AM.',
       'Worship begins at 11:30 AM.',
-      'Children are invited to Wonder and Worship during the service.',
+      'Children are welcome in worship, and nursery care may be available for infants and young children.',
     ],
     mapTitle: 'Map showing First Christian Church Anniston',
     loadMap: 'Load Google Map',
@@ -499,7 +499,7 @@ const en: LocalizedContent = {
         id: 'children',
         title: 'Children and families',
         description:
-          'Families are welcome. Children can participate in Wonder and Worship during the Worship Service.',
+          'Families are welcome. Children may remain in worship, and families with infants and young children may use the nursery when available.',
       },
     ],
     welcomeTitle: 'Would a personal welcome help?',
@@ -545,7 +545,7 @@ const en: LocalizedContent = {
     historyTitle: 'Our story in Anniston',
     historyParagraphs: [
       'First Christian Church has served Anniston as a Disciples of Christ congregation through worship, pastoral care, music, education, and community partnerships.',
-      'Today that story continues through an open and affirming welcome, Hispanic ministry, Wonder and Worship for children, local outreach, and the Diversity Theater Company.',
+      'Today that story continues through an open and affirming welcome, Hispanic ministry, children’s ministry, local outreach, and the Diversity Theater Company.',
     ],
     ctaTitle: 'The best way to understand us is to visit',
     ctaCopy:
@@ -560,16 +560,16 @@ const en: LocalizedContent = {
     cards: [
       {
         id: 'worship',
-        title: 'Worship and music',
+        title: 'Sunday worship',
         description:
-          'Gather for prayer, scripture, preaching, communion, and music shaped by a gifted team of worship leaders.',
+          'Gather for liturgy, prayer, scripture, preaching, communion, music, and a regular Spanish presence in worship.',
         routeId: 'worshipAndMusic',
       },
       {
         id: 'children',
-        title: 'Wonder and Worship',
+        title: 'Children’s ministry',
         description:
-          'Children are invited into age-appropriate stories and activities during the Worship Service.',
+          'Children are welcomed as full members of the worshiping community, with flexibility and care for each family’s needs.',
         routeId: 'wonderAndWorship',
       },
       {
@@ -814,7 +814,7 @@ const en: LocalizedContent = {
     visitTitle: 'Come worship with us',
     visitCopy:
       'You do not need to dress a certain way or know every detail in advance. Come as you are and know that you are welcome at the table.',
-    childrenNote: 'Children are invited to Wonder and Worship during the service.',
+    childrenNote: 'Children are welcome in worship, and nursery care may be available.',
     mapTitle: 'Map showing First Christian Church at 1327 Leighton Avenue in Anniston',
     loadMap: 'Load Google Map',
     form: {
@@ -944,8 +944,8 @@ const es: LocalizedContent = {
       about: 'Acerca',
       staff: 'Personal',
       community: 'Vida de la iglesia',
-      worshipAndMusic: 'Adoración y música',
-      wonderAndWorship: 'Wonder and Worship',
+      worshipAndMusic: 'Adoración dominical',
+      wonderAndWorship: 'Ministerio infantil',
       hispanicMinistry: 'Ministerio hispano',
       serviceAndOutreach: 'Servicio comunitario',
       diversityTheater: 'Teatro Diversidad',
@@ -1027,7 +1027,7 @@ const es: LocalizedContent = {
     welcomeTitle: 'Todas las personas son bienvenidas',
     welcomeParagraphs: [
       'Ya sea que esté explorando la fe, regresando a la iglesia o buscando una comunidad donde pertenecer, aquí es bienvenido.',
-      'Nuestra adoración incluye celebración, reflexión, preguntas, comunión y conexión. Los niños están invitados a participar en Wonder and Worship durante el servicio.',
+      'Nuestra adoración incluye celebración, reflexión, preguntas, comunión y conexión. Los niños son bienvenidos como parte de la comunidad de adoración.',
     ],
     welcomeCta: 'Qué esperar el domingo',
     churchImageAlt:
@@ -1100,7 +1100,7 @@ const es: LocalizedContent = {
     visitNotes: [
       'La escuela dominical comienza a las 10:30 AM.',
       'La adoración comienza a las 11:30 AM.',
-      'Los niños están invitados a Wonder and Worship durante el servicio.',
+      'Los niños son bienvenidos en la adoración, y puede haber guardería para bebés y niños pequeños.',
     ],
     mapTitle: 'Mapa de la Primera Iglesia Cristiana de Anniston',
     loadMap: 'Cargar Google Maps',
@@ -1149,7 +1149,7 @@ const es: LocalizedContent = {
         id: 'children',
         title: 'Niños y familias',
         description:
-          'Las familias son bienvenidas. Los niños pueden participar en Wonder and Worship durante el servicio de adoración.',
+          'Las familias son bienvenidas. Los niños pueden permanecer en la adoración, y las familias con bebés y niños pequeños pueden usar la guardería cuando esté disponible.',
       },
     ],
     welcomeTitle: '¿Le ayudaría una bienvenida personal?',
@@ -1195,7 +1195,7 @@ const es: LocalizedContent = {
     historyTitle: 'Nuestra historia en Anniston',
     historyParagraphs: [
       'La Primera Iglesia Cristiana ha servido a Anniston como congregación de los Discípulos de Cristo mediante la adoración, el cuidado pastoral, la música, la educación y las alianzas comunitarias.',
-      'Hoy esa historia continúa con una bienvenida abierta y afirmativa, el ministerio hispano, Wonder and Worship para niños, el servicio local y la Compañía de Teatro Diversidad.',
+      'Hoy esa historia continúa con una bienvenida abierta y afirmativa, el ministerio hispano, el ministerio infantil, el servicio local y la Compañía de Teatro Diversidad.',
     ],
     ctaTitle: 'La mejor manera de conocernos es visitarnos',
     ctaCopy:
@@ -1210,16 +1210,16 @@ const es: LocalizedContent = {
     cards: [
       {
         id: 'worship',
-        title: 'Adoración y música',
+        title: 'Adoración dominical',
         description:
-          'Reúnase para la oración, la Escritura, la predicación, la comunión y la música guiada por un talentoso equipo.',
+          'Reúnase para liturgia, oración, Escritura, predicación, comunión, música y una presencia regular del español en la adoración.',
         routeId: 'worshipAndMusic',
       },
       {
         id: 'children',
-        title: 'Wonder and Worship',
+        title: 'Ministerio infantil',
         description:
-          'Los niños participan en historias y actividades apropiadas para su edad durante el servicio.',
+          'Los niños son recibidos como miembros plenos de la comunidad de adoración, con flexibilidad y cuidado para las necesidades de cada familia.',
         routeId: 'wonderAndWorship',
       },
       {
@@ -1464,7 +1464,7 @@ const es: LocalizedContent = {
     visitTitle: 'Acompáñenos en la adoración',
     visitCopy:
       'No necesita vestirse de cierta manera ni conocer todos los detalles. Venga tal como es y sepa que es bienvenido a la mesa.',
-    childrenNote: 'Los niños están invitados a Wonder and Worship durante el servicio.',
+    childrenNote: 'Los niños son bienvenidos en la adoración, y puede haber guardería.',
     mapTitle: 'Mapa de la Primera Iglesia Cristiana en 1327 Leighton Avenue en Anniston',
     loadMap: 'Cargar Google Maps',
     form: {

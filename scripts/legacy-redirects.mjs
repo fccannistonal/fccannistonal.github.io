@@ -12,6 +12,18 @@ export const legacyRedirects = [
     title: 'Diversity Theater Company',
   },
   {
+    sourcePath: '/community/worship-and-music',
+    destinationPath: '/community/sunday-worship',
+    locale: 'en',
+    title: 'Sunday Worship',
+  },
+  {
+    sourcePath: '/community/wonder-and-worship',
+    destinationPath: '/community/childrens-ministry',
+    locale: 'en',
+    title: 'Children’s Ministry',
+  },
+  {
     sourcePath: '/es/outreach',
     destinationPath: '/es/comunidad/servicio-comunitario',
     locale: 'es',
@@ -22,6 +34,18 @@ export const legacyRedirects = [
     destinationPath: '/es/comunidad/teatro-diversidad',
     locale: 'es',
     title: 'Compañía de Teatro Diversidad',
+  },
+  {
+    sourcePath: '/es/comunidad/adoracion-y-musica',
+    destinationPath: '/es/comunidad/adoracion-dominical',
+    locale: 'es',
+    title: 'Adoración dominical',
+  },
+  {
+    sourcePath: '/es/comunidad/wonder-and-worship',
+    destinationPath: '/es/comunidad/ministerio-infantil',
+    locale: 'es',
+    title: 'Ministerio infantil',
   },
 ];
 

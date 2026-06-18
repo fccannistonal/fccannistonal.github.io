@@ -84,8 +84,12 @@ test('legacy static redirect pages reach canonical destinations', async ({ page 
   const redirects = [
     ['/outreach', '/community/service-and-outreach'],
     ['/diversity-theater', '/community/diversity-theater'],
+    ['/community/worship-and-music', '/community/sunday-worship'],
+    ['/community/wonder-and-worship', '/community/childrens-ministry'],
     ['/es/outreach', '/es/comunidad/servicio-comunitario'],
     ['/es/teatro-diversidad', '/es/comunidad/teatro-diversidad'],
+    ['/es/comunidad/adoracion-y-musica', '/es/comunidad/adoracion-dominical'],
+    ['/es/comunidad/wonder-and-worship', '/es/comunidad/ministerio-infantil'],
   ] as const;
 
   for (const [sourcePath, destinationPath] of redirects) {
@@ -116,8 +120,12 @@ test('all localized routes have healthy images and valid links', async ({ page }
     ...routeManifest.routes.map((route) => route.path),
     '/outreach',
     '/diversity-theater',
+    '/community/worship-and-music',
+    '/community/wonder-and-worship',
     '/es/outreach',
     '/es/teatro-diversidad',
+    '/es/comunidad/adoracion-y-musica',
+    '/es/comunidad/wonder-and-worship',
   ]);
 
   for (const route of routeManifest.routes) {

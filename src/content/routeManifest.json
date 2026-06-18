@@ -38,7 +38,7 @@
         },
         {
           "question": "Are children welcome?",
-          "answer": "Families are welcome. Children can participate in Wonder and Worship during the Worship Service."
+          "answer": "Families are welcome. Children may remain in worship, and families with infants and young children may use the nursery when available."
         },
         {
           "question": "Who can take communion?",
@@ -65,7 +65,7 @@
         },
         {
           "question": "¿Son bienvenidos los niños?",
-          "answer": "Las familias son bienvenidas. Los niños pueden participar en Wonder and Worship durante el servicio de adoración."
+          "answer": "Las familias son bienvenidas. Los niños pueden permanecer en la adoración, y las familias con bebés y niños pequeños pueden usar la guardería cuando esté disponible."
         },
         {
           "question": "¿Quién puede participar en la comunión?",
@@ -130,37 +130,37 @@
     {
       "id": "worshipAndMusic",
       "locale": "en",
-      "path": "/community/worship-and-music",
-      "alternatePath": "/es/comunidad/adoracion-y-musica",
-      "title": "Worship and Music | First Christian Church Anniston",
-      "description": "Explore Sunday worship, weekly communion, preaching, prayer, choir, organ, piano, and musical leadership at First Christian Church Anniston.",
+      "path": "/community/sunday-worship",
+      "alternatePath": "/es/comunidad/adoracion-dominical",
+      "title": "Sunday Worship | First Christian Church Anniston",
+      "description": "Explore Sunday worship at 11:30 a.m., weekly communion, preaching, prayer, music, and regular Spanish-language inclusion at First Christian Church Anniston.",
       "socialImage": "/images/social/worship.jpg"
     },
     {
       "id": "worshipAndMusic",
       "locale": "es",
-      "path": "/es/comunidad/adoracion-y-musica",
-      "alternatePath": "/community/worship-and-music",
-      "title": "Adoración y música | Primera Iglesia Cristiana de Anniston",
-      "description": "Conozca la adoración dominical, la comunión semanal, la predicación, la oración, el coro, el órgano, el piano y el liderazgo musical.",
+      "path": "/es/comunidad/adoracion-dominical",
+      "alternatePath": "/community/sunday-worship",
+      "title": "Adoración dominical | Primera Iglesia Cristiana de Anniston",
+      "description": "Conozca la adoración dominical a las 11:30 a.m., la comunión semanal, la predicación, la oración, la música y la inclusión regular del español.",
       "socialImage": "/images/social/worship.jpg"
     },
     {
       "id": "wonderAndWorship",
       "locale": "en",
-      "path": "/community/wonder-and-worship",
-      "alternatePath": "/es/comunidad/wonder-and-worship",
-      "title": "Wonder and Worship | First Christian Church Anniston",
-      "description": "Learn how children are welcomed into worship through stories, questions, participation, and Wonder and Worship at First Christian Church Anniston.",
+      "path": "/community/childrens-ministry",
+      "alternatePath": "/es/comunidad/ministerio-infantil",
+      "title": "Children’s Ministry | First Christian Church Anniston",
+      "description": "Learn how children are welcomed as full members of the worshiping community with nursery care when available, family flexibility, and accommodations.",
       "socialImage": "/images/social/church-life.jpg"
     },
     {
       "id": "wonderAndWorship",
       "locale": "es",
-      "path": "/es/comunidad/wonder-and-worship",
-      "alternatePath": "/community/wonder-and-worship",
-      "title": "Wonder and Worship | Primera Iglesia Cristiana de Anniston",
-      "description": "Conozca cómo los niños participan en la adoración mediante historias, preguntas, actividades y Wonder and Worship.",
+      "path": "/es/comunidad/ministerio-infantil",
+      "alternatePath": "/community/childrens-ministry",
+      "title": "Ministerio infantil | Primera Iglesia Cristiana de Anniston",
+      "description": "Conozca cómo los niños son recibidos como miembros plenos de la comunidad de adoración, con guardería cuando esté disponible, flexibilidad y adaptaciones.",
       "socialImage": "/images/social/church-life.jpg"
     },
     {

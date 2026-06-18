@@ -15,9 +15,10 @@ describe('MinistryDetailPage', () => {
       </MemoryRouter>
     );
 
-    expect(
-      screen.getByRole('heading', { level: 1, name: /worship and music/i })
-    ).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: /sunday worship/i })).toBeInTheDocument();
+    expect(screen.getByText(/primarily in English/i)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /a multilingual welcome/i })).toBeInTheDocument();
+    expect(screen.getByText(/All are welcome at Christ’s table/i)).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Gerald Roberts' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Jason Wright' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /plan your visit/i })).toHaveAttribute(
@@ -30,7 +31,7 @@ describe('MinistryDetailPage', () => {
     );
   });
 
-  it('renders Wonder and Worship without unsupported age or check-in details', () => {
+  it('renders children’s ministry without unsupported age or check-in details', () => {
     render(
       <MemoryRouter>
         <WonderAndWorshipPage />
@@ -38,11 +39,29 @@ describe('MinistryDetailPage', () => {
     );
 
     expect(
-      screen.getByRole('heading', { level: 1, name: /wonder and worship/i })
+      screen.getByRole('heading', { level: 1, name: /children’s ministry/i })
     ).toBeInTheDocument();
-    expect(screen.getByText(/stories that invite wonder/i)).toBeInTheDocument();
+    expect(screen.getByText(/having a very normal hard morning/i)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /we adapt to the needs/i })).toBeInTheDocument();
+    expect(screen.getByText(/sensory needs, accessibility needs/i)).toBeInTheDocument();
     expect(screen.queryByText(/check-in/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/ages? \d/i)).not.toBeInTheDocument();
+  });
+
+  it('renders Spanish worship detail', () => {
+    render(
+      <MemoryRouter initialEntries={['/es/comunidad/adoracion-dominical']}>
+        <WorshipAndMusicPage />
+      </MemoryRouter>
+    );
+
+    expect(
+      screen.getByRole('heading', { level: 1, name: /adoración dominical/i })
+    ).toBeInTheDocument();
+    expect(screen.getAllByText(/incluimos español con regularidad/i).length).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText(/Todas las personas son bienvenidas a la mesa/i).length
+    ).toBeGreaterThan(0);
   });
 
   it('renders Hispanic ministry leadership and Spanish-route content', () => {

@@ -66,9 +66,9 @@ describe('HeaderSimple', () => {
       'href',
       '/community'
     );
-    expect(screen.getByRole('link', { name: /worship and music/i })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: /sunday worship/i })).toHaveAttribute(
       'href',
-      '/community/worship-and-music'
+      '/community/sunday-worship'
     );
   });
 

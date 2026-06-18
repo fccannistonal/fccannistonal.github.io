@@ -6,8 +6,12 @@ describe('legacy redirects', () => {
     expect(legacyRedirects.map((redirect) => redirect.sourcePath)).toEqual([
       '/outreach',
       '/diversity-theater',
+      '/community/worship-and-music',
+      '/community/wonder-and-worship',
       '/es/outreach',
       '/es/teatro-diversidad',
+      '/es/comunidad/adoracion-y-musica',
+      '/es/comunidad/wonder-and-worship',
     ]);
   });
 
@@ -17,6 +21,12 @@ describe('legacy redirects', () => {
     );
     expect(findLegacyRedirect('/es/teatro-diversidad/')?.destinationPath).toBe(
       '/es/comunidad/teatro-diversidad'
+    );
+    expect(findLegacyRedirect('/community/worship-and-music/')?.destinationPath).toBe(
+      '/community/sunday-worship'
+    );
+    expect(findLegacyRedirect('/es/comunidad/wonder-and-worship/')?.destinationPath).toBe(
+      '/es/comunidad/ministerio-infantil'
     );
   });
 });

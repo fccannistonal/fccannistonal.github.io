@@ -18,13 +18,13 @@ describe('Community pages', () => {
       'href',
       '/community/diversity-theater'
     );
-    expect(screen.getByRole('link', { name: /worship and music/i })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: /sunday worship/i })).toHaveAttribute(
       'href',
-      '/community/worship-and-music'
+      '/community/sunday-worship'
     );
-    expect(screen.getByRole('link', { name: /wonder and worship/i })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: /children’s ministry/i })).toHaveAttribute(
       'href',
-      '/community/wonder-and-worship'
+      '/community/childrens-ministry'
     );
     expect(screen.getByRole('link', { name: /hispanic ministry/i })).toHaveAttribute(
       'href',

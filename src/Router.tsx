@@ -169,11 +169,11 @@ export const routes: RouteObject[] = [
       { path: 'staff', element: withSuspense(<StaffPage />) },
       { path: 'community', element: withSuspense(<CommunityPage />) },
       {
-        path: 'community/worship-and-music',
+        path: 'community/sunday-worship',
         element: withSuspense(<WorshipAndMusicPage />),
       },
       {
-        path: 'community/wonder-and-worship',
+        path: 'community/childrens-ministry',
         element: withSuspense(<WonderAndWorshipPage />),
       },
       {
@@ -199,17 +199,25 @@ export const routes: RouteObject[] = [
         path: 'diversity-theater',
         element: <Navigate to={getLocalizedPath('diversityTheater', 'en')} replace />,
       },
+      {
+        path: 'community/worship-and-music',
+        element: <Navigate to={getLocalizedPath('worshipAndMusic', 'en')} replace />,
+      },
+      {
+        path: 'community/wonder-and-worship',
+        element: <Navigate to={getLocalizedPath('wonderAndWorship', 'en')} replace />,
+      },
       { path: 'es', element: withSuspense(<HomePage />) },
       { path: 'es/visita', element: withSuspense(<VisitPage />) },
       { path: 'es/acerca', element: withSuspense(<AboutPage />) },
       { path: 'es/personal', element: withSuspense(<StaffPage />) },
       { path: 'es/comunidad', element: withSuspense(<CommunityPage />) },
       {
-        path: 'es/comunidad/adoracion-y-musica',
+        path: 'es/comunidad/adoracion-dominical',
         element: withSuspense(<WorshipAndMusicPage />),
       },
       {
-        path: 'es/comunidad/wonder-and-worship',
+        path: 'es/comunidad/ministerio-infantil',
         element: withSuspense(<WonderAndWorshipPage />),
       },
       {
@@ -234,6 +242,14 @@ export const routes: RouteObject[] = [
       {
         path: 'es/teatro-diversidad',
         element: <Navigate to={getLocalizedPath('diversityTheater', 'es')} replace />,
+      },
+      {
+        path: 'es/comunidad/adoracion-y-musica',
+        element: <Navigate to={getLocalizedPath('worshipAndMusic', 'es')} replace />,
+      },
+      {
+        path: 'es/comunidad/wonder-and-worship',
+        element: <Navigate to={getLocalizedPath('wonderAndWorship', 'es')} replace />,
       },
       { path: '*', element: withSuspense(<NotFoundPage />) },
     ],

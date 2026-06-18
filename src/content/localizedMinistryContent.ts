@@ -53,57 +53,59 @@ export const localizedMinistryContent: Record<Locale, LocalizedMinistryContent> 
     pages: {
       worshipAndMusic: {
         eyebrow: 'Gathered around word and table',
-        title: 'Worship and music',
+        title: 'Sunday Worship',
         description:
-          'Prayer, scripture, preaching, communion, and music bring the congregation together each Sunday at 11:30 AM.',
+          'Worship begins at 11:30 a.m. with liturgy, prayer, scripture, music, preaching, and communion.',
         heroAlt:
           'The sanctuary of First Christian Church Anniston prepared for worship beneath the cross and stained glass',
-        heroLabel: 'Sunday worship at 11:30 AM',
+        heroLabel: 'Sunday worship at 11:30 a.m.',
         introEyebrow: 'A shared rhythm of faith',
-        introTitle: 'Worship makes room for celebration, reflection, and connection',
+        introTitle: 'Worship makes room for welcome, reflection, and the Spirit’s guidance',
         introduction: [
-          'Our Sunday service follows a Christian rhythm of gathering, listening, responding, sharing communion, and being sent to serve.',
-          'Music helps the congregation pray, celebrate, remember, and participate together. Organ, piano, choir, and congregational song support worship without requiring visitors to know every word or custom in advance.',
-          'Communion is central to our weekly worship and reflects Christ’s welcome at the table.',
+          'At First Christian Church, Anniston, our worship service is primarily in English, with Spanish included regularly as part of our commitment to a more welcoming and inclusive worshiping community. For example, our Words of Institution are spoken in Spanish and translated into English in the order of worship.',
+          'We believe the Kingdom of God is multicultural, multiracial, multilingual, multigenerational, and fully inclusive. We are always open to suggestions that help our worship better reflect that calling.',
+          'Our service includes liturgy, prayer, scripture, music, and preaching. The music may include traditional hymns, contemporary songs, gospel music, and other styles. We also use visual elements such as videos when they support the theme of the day. At times, we worship outside in our Prayer Garden.',
+          'Each service is shaped by the scripture for the day and by our desire to leave room for the Holy Spirit’s guidance. Above all, we want our worship to honor God and create space for each person to worship with sincerity.',
+          'We celebrate communion every Sunday. As part of the Christian Church (Disciples of Christ), we understand the Lord’s Supper as one of the most unifying moments in worship.',
         ],
         highlightsTitle: 'What shapes Sunday worship',
         highlights: [
           {
             id: 'prayer',
-            title: 'Prayer and scripture',
+            title: 'Prayer, scripture, and liturgy',
             description:
-              'Spoken prayer and scripture readings create space to listen for God and bring the concerns of the community into worship.',
+              'The service includes liturgy, prayer, scripture, preaching, and space to listen for God together.',
           },
           {
-            id: 'preaching',
-            title: 'Thoughtful preaching',
+            id: 'language',
+            title: 'A multilingual welcome',
             description:
-              'Sermons connect scripture, faith, questions, and daily life with compassion and room for reflection.',
+              'Spanish is included regularly as part of the church’s commitment to a multicultural and multilingual worshiping community.',
           },
           {
             id: 'communion',
             title: 'Weekly communion',
             description:
-              'The congregation gathers at the table each week as a sign of grace, remembrance, and belonging.',
+              'All are welcome at Christ’s table as we remember and celebrate what God has done for all people through Jesus Christ.',
           },
           {
             id: 'music',
-            title: 'Music for participation',
+            title: 'Music and visual elements',
             description:
-              'Organ, piano, choir, and worship leadership invite the whole congregation into prayer and praise.',
+              'Traditional hymns, contemporary songs, gospel music, other styles, and occasional videos support the theme of the day.',
           },
         ],
         featureEyebrow: 'At the table and in song',
         featureTitle: 'People and practices that support worship',
         featureCopy:
-          'Worship is shaped by faithful preparation, collaborative leadership, and the gifts of people who have served this congregation for many years.',
+          'Every service is shaped by scripture, careful preparation, collaborative leadership, and openness to the Holy Spirit’s guidance.',
         features: [
           {
             id: 'communion',
             eyebrow: 'An open table',
             title: 'Communion at the center',
             description:
-              'Bread and cup ground the service in the life and welcome of Christ. Visitors do not need to arrive with every question answered in order to share in the worshiping community.',
+              'The Lord’s Supper is one of the most unifying moments in worship. Everyone is welcome at Christ’s table as we remember and celebrate God’s love for all people through Jesus Christ.',
             imageAlt: 'A communion table prepared with bread, cups, candles, and serving vessels',
           },
           {
@@ -125,7 +127,7 @@ export const localizedMinistryContent: Record<Locale, LocalizedMinistryContent> 
         ],
         ctaTitle: 'Join the congregation on Sunday',
         ctaCopy:
-          'Plan your first visit or listen to recent sermons before you arrive. Worship begins Sundays at 11:30 AM.',
+          'Plan your first visit or listen to recent sermons before you arrive. Worship begins Sundays at 11:30 a.m.',
         actions: [
           { id: 'plan-worship-visit', destination: 'visit', label: 'Plan your visit' },
           { id: 'listen-to-sermons', destination: 'sermons', label: 'Listen to sermons' },
@@ -133,71 +135,71 @@ export const localizedMinistryContent: Record<Locale, LocalizedMinistryContent> 
       },
       wonderAndWorship: {
         eyebrow: 'Children are part of church life',
-        title: 'Wonder and Worship',
+        title: 'Children’s Ministry',
         description:
-          'Children are welcomed into worship through stories, questions, participation, and age-appropriate activities during the service.',
+          'Children are welcomed as full members of the worshiping community at First Christian Church, Anniston.',
         heroAlt: 'A church leader sharing a children’s moment with two children in the sanctuary',
         heroLabel: 'Children and families are welcome',
-        introEyebrow: 'Faith with imagination',
-        introTitle: 'Children can listen, wonder, ask, and participate',
+        introEyebrow: 'A child-friendly congregation',
+        introTitle: 'Children do not have to be perfectly still to belong',
         introduction: [
-          'Wonder and Worship gives children a meaningful way to engage scripture and faith during the Worship Service.',
-          'Stories and activities are designed to invite curiosity rather than require children to sit silently or already understand church language.',
-          'Children also belong in the wider worshiping community through shared moments, questions, music, prayer, and the welcome of the congregation.',
+          'First Christian Church, Anniston is a child-friendly congregation where children are welcomed as full members of the worshiping community.',
+          'We are grateful for the babies, toddlers, children, and youth who are part of our church family. Whether your child is quiet, energetic, curious, shy, disabled, neurodivergent, or simply having a very normal hard morning, they are welcome here.',
+          'Families with infants and young children are welcome to use the nursery when available, and children are also welcome to remain in worship. Parents and caregivers may step to the back of the sanctuary, walk with a child, or take a break as needed without feeling like they are disrupting the service.',
         ],
         highlightsTitle: 'A welcoming approach for children',
         highlights: [
           {
-            id: 'stories',
-            title: 'Stories that invite wonder',
+            id: 'belonging',
+            title: 'Full members of worship',
             description:
-              'Biblical stories are shared in ways that encourage imagination, conversation, and growing understanding.',
+              'Children are welcomed as participants in church life, not treated as an interruption to it.',
           },
           {
             id: 'activities',
-            title: 'Active participation',
+            title: 'Room for normal mornings',
             description:
-              'Age-appropriate activities give children another way to explore the themes of worship.',
-          },
-          {
-            id: 'belonging',
-            title: 'Part of the congregation',
-            description:
-              'Children are welcomed as participants in church life, not treated as an interruption to it.',
+              'Children do not have to be perfectly still, perfectly quiet, or perfectly predictable to belong.',
           },
           {
             id: 'families',
             title: 'Support for families',
             description:
-              'Parents and caregivers can contact the church before Sunday with questions or accommodation needs.',
+              'Parents and caregivers may use the nursery when available, remain in worship, step to the back, walk with a child, or take a break as needed.',
+          },
+          {
+            id: 'welcome',
+            title: 'Individual accommodations',
+            description:
+              'When possible, the church works with families around sensory needs, accessibility needs, dietary restrictions, and other accommodations.',
           },
         ],
         featureEyebrow: 'A place to grow',
-        featureTitle: 'Welcoming children within the whole worshiping community',
+        featureTitle: 'We adapt to the needs of our children',
         featureCopy:
-          'The goal is not a perfect first Sunday. The goal is to help children and their caregivers experience welcome, curiosity, and room to participate.',
+          'Every child and every family is different. We do our best to make room for those differences with patience, flexibility, and care.',
         features: [
           {
             id: 'participation',
             eyebrow: 'During worship',
-            title: 'Children’s moments and shared participation',
+            title: 'Children belong in the sanctuary',
             description:
-              'Children encounter stories, questions, and invitations to participate as part of the congregation’s Sunday worship.',
+              'Please do not stay away because you are worried your child’s needs may not match what people sometimes expect in church. Children, like all people, are beloved creations of God.',
             imageAlt:
               'A church leader talking with children during a children’s moment in the sanctuary',
           },
           {
             id: 'welcome',
-            eyebrow: 'Before you arrive',
-            title: 'Ask what would help your family',
+            eyebrow: 'Children and youth',
+            title: 'Growing with our families',
             description:
-              'If mobility, sensory, seating, communication, or another accommodation would make Sunday easier, contact the church so leaders can plan with you.',
+              'Our children’s and youth ministry continues to grow and adapt as the needs of our families change. Through each season, our goal remains the same: to help young people know they are loved by God, welcomed by the church, and invited to participate in the life of the congregation.',
             imageAlt: 'The church welcome area with visitor materials, artwork, and rainbow flags',
           },
         ],
         ctaTitle: 'Make your family’s first Sunday simpler',
         ctaCopy:
-          'Review the visit guide or send a question before you arrive. The church can help with practical details and accommodation needs.',
+          'Contact the church with questions about current nursery care, children’s programming, youth opportunities, or accommodations.',
         actions: [
           { id: 'plan-family-visit', destination: 'visit', label: 'Plan your visit' },
           {
@@ -374,57 +376,60 @@ export const localizedMinistryContent: Record<Locale, LocalizedMinistryContent> 
     pages: {
       worshipAndMusic: {
         eyebrow: 'Reunidos alrededor de la Palabra y la mesa',
-        title: 'Adoración y música',
+        title: 'Adoración dominical',
         description:
-          'La oración, la Escritura, la predicación, la comunión y la música reúnen a la congregación cada domingo a las 11:30 AM.',
+          'El servicio de adoración comienza a las 11:30 a.m. con liturgia, oración, lectura bíblica, música, predicación y comunión.',
         heroAlt:
           'El santuario de la Primera Iglesia Cristiana de Anniston preparado para la adoración bajo la cruz y los vitrales',
-        heroLabel: 'Adoración dominical a las 11:30 AM',
+        heroLabel: 'Adoración dominical a las 11:30 a.m.',
         introEyebrow: 'Un ritmo compartido de fe',
-        introTitle: 'La adoración crea espacio para celebrar, reflexionar y conectar',
+        introTitle:
+          'La adoración crea espacio para la bienvenida, la reflexión y la guía del Espíritu',
         introduction: [
-          'Nuestro servicio dominical sigue un ritmo cristiano de reunión, escucha, respuesta, comunión y envío al servicio.',
-          'La música ayuda a la congregación a orar, celebrar, recordar y participar. El órgano, el piano, el coro y el canto congregacional apoyan la adoración sin exigir que los visitantes conozcan de antemano cada palabra o costumbre.',
-          'La comunión es central en nuestra adoración semanal y refleja la bienvenida de Cristo a la mesa.',
+          'En First Christian Church, Anniston, nuestro servicio de adoración es principalmente en inglés, pero incluimos español con regularidad como parte de nuestro compromiso de ser una comunidad de fe más acogedora e inclusiva. Por ejemplo, nuestras Palabras de Institución se pronuncian en español y se traducen al inglés en el orden de adoración.',
+          'Creemos que el Reino de Dios es multicultural, multirracial, multilingüe, multigeneracional y plenamente inclusivo. Siempre recibimos sugerencias que nos ayuden a reflejar mejor ese llamado en nuestra adoración.',
+          'Nuestro servicio incluye liturgia, oración, lectura bíblica, música y predicación. La música puede incluir himnos tradicionales, canciones contemporáneas, música góspel y otros estilos. También usamos elementos visuales, como videos, cuando apoyan el tema del día. En algunas ocasiones, adoramos al aire libre en nuestro Jardín de Oración.',
+          'Cada servicio se forma a partir de la escritura del día y de nuestro deseo de dejar espacio para la guía del Espíritu Santo. Sobre todo, queremos que nuestra adoración honre a Dios y cree un espacio donde cada persona pueda adorar con sinceridad.',
+          'Celebramos la comunión todos los domingos. Como parte de la Iglesia Cristiana (Discípulos de Cristo), entendemos la Cena del Señor como uno de los momentos más unificadores de la adoración.',
         ],
         highlightsTitle: 'Lo que forma la adoración dominical',
         highlights: [
           {
             id: 'prayer',
-            title: 'Oración y Escritura',
+            title: 'Oración, Escritura y liturgia',
             description:
-              'La oración y las lecturas bíblicas crean espacio para escuchar a Dios y presentar las preocupaciones de la comunidad.',
+              'El servicio incluye liturgia, oración, lectura bíblica, predicación y espacio para escuchar a Dios en comunidad.',
           },
           {
-            id: 'preaching',
-            title: 'Predicación reflexiva',
+            id: 'language',
+            title: 'Una bienvenida multilingüe',
             description:
-              'Los sermones conectan la Escritura, la fe, las preguntas y la vida diaria con compasión y espacio para reflexionar.',
+              'Incluimos español con regularidad como parte del compromiso de ser una comunidad de adoración multicultural y multilingüe.',
           },
           {
             id: 'communion',
             title: 'Comunión semanal',
             description:
-              'La congregación se reúne cada semana a la mesa como señal de gracia, memoria y pertenencia.',
+              'Todas las personas son bienvenidas a la mesa de Cristo mientras recordamos y celebramos lo que Dios ha hecho por todos a través de Jesucristo.',
           },
           {
             id: 'music',
-            title: 'Música para participar',
+            title: 'Música y elementos visuales',
             description:
-              'El órgano, el piano, el coro y el liderazgo musical invitan a toda la congregación a la oración y la alabanza.',
+              'Himnos tradicionales, canciones contemporáneas, música góspel, otros estilos y videos ocasionales apoyan el tema del día.',
           },
         ],
         featureEyebrow: 'En la mesa y en el canto',
         featureTitle: 'Personas y prácticas que apoyan la adoración',
         featureCopy:
-          'La adoración se forma mediante preparación fiel, liderazgo colaborativo y los dones de personas que han servido a esta congregación durante muchos años.',
+          'Cada servicio se forma a partir de la Escritura, una preparación cuidadosa, liderazgo colaborativo y apertura a la guía del Espíritu Santo.',
         features: [
           {
             id: 'communion',
             eyebrow: 'Una mesa abierta',
             title: 'La comunión en el centro',
             description:
-              'El pan y la copa centran el servicio en la vida y la bienvenida de Cristo. Los visitantes no necesitan llegar con todas sus preguntas resueltas para participar en la comunidad de adoración.',
+              'La Cena del Señor es uno de los momentos más unificadores de la adoración. Todas las personas son bienvenidas a la mesa de Cristo mientras recordamos y celebramos el amor de Dios por todos a través de Jesucristo.',
             imageAlt: 'Mesa de comunión preparada con pan, copas, velas y utensilios',
           },
           {
@@ -446,7 +451,7 @@ export const localizedMinistryContent: Record<Locale, LocalizedMinistryContent> 
         ],
         ctaTitle: 'Acompañe a la congregación el domingo',
         ctaCopy:
-          'Planifique su primera visita o escuche sermones recientes antes de llegar. La adoración comienza los domingos a las 11:30 AM.',
+          'Planifique su primera visita o escuche sermones recientes antes de llegar. La adoración comienza los domingos a las 11:30 a.m.',
         actions: [
           { id: 'plan-worship-visit', destination: 'visit', label: 'Planifique su visita' },
           { id: 'listen-to-sermons', destination: 'sermons', label: 'Escuchar sermones' },
@@ -454,70 +459,70 @@ export const localizedMinistryContent: Record<Locale, LocalizedMinistryContent> 
       },
       wonderAndWorship: {
         eyebrow: 'Los niños son parte de la vida de la iglesia',
-        title: 'Wonder and Worship',
+        title: 'Ministerio infantil',
         description:
-          'Los niños participan en la adoración mediante historias, preguntas, participación y actividades apropiadas para su edad durante el servicio.',
+          'Los niños son recibidos como miembros plenos de la comunidad de adoración en First Christian Church, Anniston.',
         heroAlt: 'Una líder de la iglesia compartiendo un momento infantil con dos niños',
         heroLabel: 'Los niños y las familias son bienvenidos',
-        introEyebrow: 'La fe con imaginación',
-        introTitle: 'Los niños pueden escuchar, imaginar, preguntar y participar',
+        introEyebrow: 'Una congregación acogedora para los niños',
+        introTitle: 'Los niños no tienen que quedarse perfectamente quietos para pertenecer',
         introduction: [
-          'Wonder and Worship ofrece a los niños una manera significativa de relacionarse con la Escritura y la fe durante el servicio de adoración.',
-          'Las historias y actividades invitan a la curiosidad sin exigir que los niños permanezcan en silencio ni que ya comprendan el lenguaje de la iglesia.',
-          'Los niños también pertenecen a la comunidad de adoración mediante momentos compartidos, preguntas, música, oración y la bienvenida de la congregación.',
+          'First Christian Church, Anniston es una congregación acogedora para los niños, donde son recibidos como miembros plenos de la comunidad de adoración.',
+          'Damos gracias por los bebés, niños pequeños, niños y jóvenes que forman parte de nuestra familia de iglesia. Ya sea que su hijo sea tranquilo, enérgico, curioso, tímido, discapacitado, neurodivergente o simplemente esté teniendo una mañana difícil muy normal, aquí es bienvenido.',
+          'Las familias con bebés y niños pequeños pueden usar la guardería cuando esté disponible, y los niños también son bienvenidos a permanecer en la adoración. Los padres y cuidadores pueden pasar a la parte de atrás del santuario, caminar con un niño o tomar un descanso según sea necesario sin sentir que interrumpen el servicio.',
         ],
         highlightsTitle: 'Una manera acogedora de acompañar a los niños',
         highlights: [
           {
-            id: 'stories',
-            title: 'Historias que despiertan curiosidad',
+            id: 'belonging',
+            title: 'Miembros plenos de la adoración',
             description:
-              'Las historias bíblicas se comparten de maneras que fomentan la imaginación, la conversación y una comprensión creciente.',
+              'Los niños son recibidos como participantes en la vida de la iglesia, no como una interrupción.',
           },
           {
             id: 'activities',
-            title: 'Participación activa',
+            title: 'Espacio para mañanas normales',
             description:
-              'Las actividades apropiadas para la edad ofrecen otra manera de explorar los temas de la adoración.',
-          },
-          {
-            id: 'belonging',
-            title: 'Parte de la congregación',
-            description:
-              'Los niños son recibidos como participantes en la vida de la iglesia, no como una interrupción.',
+              'Los niños no tienen que estar perfectamente quietos, perfectamente callados o perfectamente predecibles para pertenecer.',
           },
           {
             id: 'families',
             title: 'Apoyo para las familias',
             description:
-              'Los padres y cuidadores pueden comunicarse con la iglesia antes del domingo si tienen preguntas o necesidades de adaptación.',
+              'Los padres y cuidadores pueden usar la guardería cuando esté disponible, permanecer en la adoración, pasar atrás, caminar con un niño o tomar un descanso cuando sea necesario.',
+          },
+          {
+            id: 'welcome',
+            title: 'Adaptaciones individuales',
+            description:
+              'Cuando sea posible, la iglesia trabaja con las familias para apoyar necesidades sensoriales, accesibilidad, restricciones alimentarias y otras adaptaciones.',
           },
         ],
         featureEyebrow: 'Un lugar para crecer',
-        featureTitle: 'Recibir a los niños dentro de toda la comunidad de adoración',
+        featureTitle: 'Nos adaptamos a las necesidades de nuestros niños',
         featureCopy:
-          'La meta no es un primer domingo perfecto. La meta es que los niños y sus cuidadores encuentren bienvenida, curiosidad y espacio para participar.',
+          'Cada niño y cada familia son diferentes. Hacemos lo posible para dar espacio a esas diferencias con paciencia, flexibilidad y cuidado.',
         features: [
           {
             id: 'participation',
             eyebrow: 'Durante la adoración',
-            title: 'Momentos infantiles y participación compartida',
+            title: 'Los niños pertenecen en el santuario',
             description:
-              'Los niños encuentran historias, preguntas e invitaciones a participar como parte de la adoración dominical.',
+              'Por favor, no deje de venir porque le preocupe que las necesidades de su hijo no coincidan con lo que a veces se espera en la iglesia. Los niños, como todas las personas, son creaciones amadas de Dios.',
             imageAlt: 'Una líder de la iglesia conversando con niños durante un momento infantil',
           },
           {
             id: 'welcome',
-            eyebrow: 'Antes de llegar',
-            title: 'Pregunte qué ayudaría a su familia',
+            eyebrow: 'Niños y jóvenes',
+            title: 'Crecemos con nuestras familias',
             description:
-              'Si una adaptación de movilidad, sensibilidad, asientos, comunicación u otro tipo facilitaría el domingo, comuníquese con la iglesia para planificar juntos.',
+              'Nuestro ministerio infantil y juvenil sigue creciendo y adaptándose conforme cambian las necesidades de nuestras familias. En cada temporada, nuestra meta es la misma: ayudar a los jóvenes a saber que Dios los ama, que la iglesia los recibe y que están invitados a participar en la vida de la congregación.',
             imageAlt: 'Área de bienvenida con materiales para visitantes, arte y banderas arcoíris',
           },
         ],
         ctaTitle: 'Facilite el primer domingo de su familia',
         ctaCopy:
-          'Consulte la guía de visita o envíe una pregunta antes de llegar. La iglesia puede ayudar con detalles prácticos y necesidades de adaptación.',
+          'Comuníquese con la iglesia si tiene preguntas sobre guardería, programación infantil, oportunidades para jóvenes o adaptaciones disponibles actualmente.',
         actions: [
           { id: 'plan-family-visit', destination: 'visit', label: 'Planifique su visita' },
           {

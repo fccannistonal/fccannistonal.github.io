@@ -11,8 +11,8 @@ describe('Router', () => {
     ['/about', /church shaped by Christ’s welcome/i],
     ['/staff', /meet the staff/i],
     ['/community', /faith takes shape in community/i],
-    ['/community/worship-and-music', /worship and music/i],
-    ['/community/wonder-and-worship', /wonder and worship/i],
+    ['/community/sunday-worship', /sunday worship/i],
+    ['/community/childrens-ministry', /children’s ministry/i],
     ['/community/hispanic-ministry', /hispanic ministry/i],
     ['/community/service-and-outreach', /service and outreach/i],
     ['/community/diversity-theater', /diversity theater company/i],
@@ -24,8 +24,8 @@ describe('Router', () => {
     ['/es/acerca', /iglesia formada por la bienvenida/i],
     ['/es/personal', /conozca al personal/i],
     ['/es/comunidad', /la fe toma forma en comunidad/i],
-    ['/es/comunidad/adoracion-y-musica', /adoración y música/i],
-    ['/es/comunidad/wonder-and-worship', /wonder and worship/i],
+    ['/es/comunidad/adoracion-dominical', /adoración dominical/i],
+    ['/es/comunidad/ministerio-infantil', /ministerio infantil/i],
     ['/es/comunidad/ministerio-hispano', /ministerio hispano/i],
     ['/es/comunidad/servicio-comunitario', /servicio comunitario/i],
     ['/es/comunidad/teatro-diversidad', /compañía de teatro diversidad/i],
@@ -44,8 +44,12 @@ describe('Router', () => {
   it.each([
     ['/outreach', '/community/service-and-outreach'],
     ['/diversity-theater', '/community/diversity-theater'],
+    ['/community/worship-and-music', '/community/sunday-worship'],
+    ['/community/wonder-and-worship', '/community/childrens-ministry'],
     ['/es/outreach', '/es/comunidad/servicio-comunitario'],
     ['/es/teatro-diversidad', '/es/comunidad/teatro-diversidad'],
+    ['/es/comunidad/adoracion-y-musica', '/es/comunidad/adoracion-dominical'],
+    ['/es/comunidad/wonder-and-worship', '/es/comunidad/ministerio-infantil'],
   ])('redirects %s to %s', async (source, destination) => {
     const router = createMemoryRouter(routes, { initialEntries: [source] });
 
