@@ -1,5 +1,12 @@
 import { useId, useState } from 'react';
-import { IconChevronDown } from '@tabler/icons-react';
+import {
+  IconArrowUpRight,
+  IconBook2,
+  IconBrandInstagram,
+  IconBrandSpotify,
+  IconChevronDown,
+  IconNews,
+} from '@tabler/icons-react';
 import {
   Badge,
   Button,
@@ -10,6 +17,7 @@ import {
   SimpleGrid,
   Stack,
   Text,
+  ThemeIcon,
   Title,
 } from '@mantine/core';
 import { ContentImage } from '../components/church/ContentImage';
@@ -18,6 +26,27 @@ import { staffAssets, staffGroupImages } from '../content/churchContent';
 import { getContent } from '../content/localizedContent';
 import { useLocale } from '../lib/i18n';
 import classes from './Staff.page.module.css';
+
+type StaffConnection = {
+  id: 'instagram' | 'book' | 'newspaper' | 'podcast';
+  label: string;
+  description: string;
+  href: string;
+};
+
+const staffConnectionIcons = {
+  instagram: IconBrandInstagram,
+  book: IconBook2,
+  newspaper: IconNews,
+  podcast: IconBrandSpotify,
+} satisfies Record<StaffConnection['id'], typeof IconBrandInstagram>;
+
+const staffConnectionColors = {
+  instagram: 'pink',
+  book: 'grape',
+  newspaper: 'brand',
+  podcast: 'green',
+} satisfies Record<StaffConnection['id'], string>;
 
 export function StaffPage() {
   const locale = useLocale();
@@ -78,6 +107,11 @@ export function StaffPage() {
                   </Badge>
                 ))}
               </Group>
+              <StaffConnections
+                connections={member.connections}
+                opensNewTabLabel={content.common.opensNewTab}
+                title={content.staff.connectionsTitle(asset.name)}
+              />
               <StaffBiography
                 biography={member.biography}
                 detailsLabel={content.staff.detailsLabel}
@@ -111,6 +145,68 @@ export function StaffPage() {
         })}
       </Stack>
     </Container>
+  );
+}
+
+function StaffConnections({
+  connections,
+  opensNewTabLabel,
+  title,
+}: {
+  connections?: StaffConnection[];
+  opensNewTabLabel: string;
+  title: string;
+}) {
+  if (!connections?.length) {
+    return null;
+  }
+
+  return (
+    <Stack className={classes.connections} gap="sm">
+      <Text className={classes.connectionsTitle} size="sm">
+        {title}
+      </Text>
+      <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="xs">
+        {connections.map((connection) => {
+          const ConnectionIcon = staffConnectionIcons[connection.id];
+
+          return (
+            <a
+              key={connection.id}
+              href={connection.href}
+              target="_blank"
+              rel="noreferrer"
+              className={classes.connectionLink}
+              aria-label={`${connection.label}: ${connection.description} (${opensNewTabLabel})`}
+            >
+              <ThemeIcon
+                className={classes.connectionIcon}
+                color={staffConnectionColors[connection.id]}
+                radius="xl"
+                size={38}
+                variant="light"
+              >
+                <ConnectionIcon aria-hidden="true" size={20} stroke={1.8} />
+              </ThemeIcon>
+              <span className={classes.connectionText}>
+                <Text component="span" fw={800} size="sm">
+                  {connection.label}
+                </Text>
+                <Text component="span" c="dimmed" size="xs">
+                  {connection.description}
+                </Text>
+              </span>
+              <IconArrowUpRight
+                aria-hidden="true"
+                className={classes.connectionArrow}
+                size={17}
+                stroke={1.8}
+              />
+            </a>
+          );
+        })}
+      </SimpleGrid>
+    </Stack>
   );
 }
 

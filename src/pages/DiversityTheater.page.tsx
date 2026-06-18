@@ -243,7 +243,6 @@ export function DiversityTheaterPage() {
 
           <section aria-labelledby="theater-updates-title">
             <Paper p={{ base: 'xl', md: '3rem' }} className={classes.updatesCard}>
-              <div className={classes.updatesGlow} aria-hidden="true" />
               <SimpleGrid cols={{ base: 1, md: 2 }} spacing="xl" className={classes.updatesContent}>
                 <div>
                   <Text className={classes.updatesEyebrow}>{theater.updatesEyebrow}</Text>

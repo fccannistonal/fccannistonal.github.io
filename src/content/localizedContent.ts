@@ -26,6 +26,14 @@ type LocalizedStaff = {
   biography: string[];
   focusAreas: string[];
   imageAlt: string;
+  connections?: LocalizedStaffConnection[];
+};
+
+type LocalizedStaffConnection = {
+  id: 'instagram' | 'book' | 'newspaper' | 'podcast';
+  label: string;
+  description: string;
+  href: string;
 };
 
 type LocalizedContent = {
@@ -195,6 +203,7 @@ type LocalizedContent = {
     description: string;
     groupImageAlts: string[];
     detailsLabel: string;
+    connectionsTitle: (name: string) => string;
     members: Record<StaffId, LocalizedStaff>;
   };
   contact: {
@@ -689,6 +698,7 @@ const en: LocalizedContent = {
       'The First Christian Church staff sharing a playful moment',
     ],
     detailsLabel: 'Read full biography',
+    connectionsTitle: (name) => `Connect with ${name}`,
     members: {
       'laura-hutchinson': {
         role: 'Senior Minister',
@@ -702,6 +712,32 @@ const en: LocalizedContent = {
         ],
         focusAreas: ['Preaching', 'Pastoral care', 'Reconciliation', 'Open and affirming ministry'],
         imageAlt: 'Portrait of Rev. Laura Hutchinson',
+        connections: [
+          {
+            id: 'instagram',
+            label: 'Instagram',
+            description: 'Follow Laura’s updates and reflections.',
+            href: 'https://www.instagram.com/hutchinsonlaura/',
+          },
+          {
+            id: 'book',
+            label: 'Finding Jesus',
+            description: 'Read Laura’s book, Finding Jesus: In a Christian Nation.',
+            href: 'https://www.amazon.com/Finding-Jesus-Rev-Laura-Hutchinson/dp/B0G64NCBBH',
+          },
+          {
+            id: 'newspaper',
+            label: 'Anniston Star column',
+            description: 'Read a recent Voices of Faith contribution.',
+            href: 'https://www.annistonstar.com/features/faith/religion_roundtable/voices-of-faith-advice-for-21-year-old-me/article_f089c79b-e298-4222-a81d-de7079bfafe1.html',
+          },
+          {
+            id: 'podcast',
+            label: 'Untangling Faith podcast',
+            description: 'Listen to Laura and Rev. Tammy Jackson on Spotify.',
+            href: 'https://open.spotify.com/show/12RFx6M0ro8dj1r0q2j2ty',
+          },
+        ],
       },
       'maria-zamarripa': {
         role: 'Associate Minister for Hispanic Ministries',
@@ -1312,6 +1348,7 @@ const es: LocalizedContent = {
       'El personal de la Primera Iglesia Cristiana compartiendo un momento divertido',
     ],
     detailsLabel: 'Leer la biografía completa',
+    connectionsTitle: (name) => `Conecte con ${name}`,
     members: {
       'laura-hutchinson': {
         role: 'Ministra principal',
@@ -1325,6 +1362,32 @@ const es: LocalizedContent = {
         ],
         focusAreas: ['Predicación', 'Cuidado pastoral', 'Reconciliación', 'Ministerio afirmativo'],
         imageAlt: 'Retrato de la Rev. Laura Hutchinson',
+        connections: [
+          {
+            id: 'instagram',
+            label: 'Instagram',
+            description: 'Siga las novedades y reflexiones de Laura.',
+            href: 'https://www.instagram.com/hutchinsonlaura/',
+          },
+          {
+            id: 'book',
+            label: 'Finding Jesus',
+            description: 'Lea el libro de Laura, Finding Jesus: In a Christian Nation.',
+            href: 'https://www.amazon.com/Finding-Jesus-Rev-Laura-Hutchinson/dp/B0G64NCBBH',
+          },
+          {
+            id: 'newspaper',
+            label: 'Columna en Anniston Star',
+            description: 'Lea una contribución reciente en Voices of Faith.',
+            href: 'https://www.annistonstar.com/features/faith/religion_roundtable/voices-of-faith-advice-for-21-year-old-me/article_f089c79b-e298-4222-a81d-de7079bfafe1.html',
+          },
+          {
+            id: 'podcast',
+            label: 'Podcast Untangling Faith',
+            description: 'Escuche a Laura y a la Rev. Tammy Jackson en Spotify.',
+            href: 'https://open.spotify.com/show/12RFx6M0ro8dj1r0q2j2ty',
+          },
+        ],
       },
       'maria-zamarripa': {
         role: 'Ministra asociada de Ministerios Hispanos',

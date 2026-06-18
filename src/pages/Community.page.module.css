@@ -1,57 +1,322 @@
-.card {
-  display: flex;
-  flex-direction: column;
-  min-height: 17rem;
-  background:
-    radial-gradient(circle at 100% 0%, rgb(222 129 54 / 12%), transparent 38%),
-    rgb(255 253 249 / 92%);
-  border-color: rgb(83 59 39 / 10%);
-  color: #2a1e15;
-  box-shadow: 0 16px 36px rgb(61 44 30 / 7%);
+.hero {
+  background: linear-gradient(180deg, #fffdf9 0%, #f5ede2 100%);
+  border-bottom: 1px solid rgb(83 59 39 / 10%);
+}
+
+.heroInner {
+  padding-block: 2.5rem;
+}
+
+.heroLayout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 2rem;
+  align-items: center;
+}
+
+.heroCopy {
+  max-width: 48rem;
+}
+
+.eyebrow,
+.captionEyebrow {
+  color: #6d4b2f;
+  font-size: var(--mantine-font-size-sm);
+  font-weight: 850;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.heroTitle {
+  max-width: 52rem;
+  margin-top: 0.75rem;
+  color: #241a12;
+  font-size: 3.1rem;
+  line-height: 1;
+  letter-spacing: 0;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+
+.heroDescription {
+  max-width: 42rem;
+  margin-top: 1rem;
+  color: rgb(36 26 18 / 76%);
+  line-height: 1.65;
+  text-wrap: balance;
+}
+
+.heroActions :global(.mantine-Button-root) {
+  min-height: 3rem;
+}
+
+.heroActions :global(.mantine-Button-label) {
+  overflow: visible;
+  line-height: 1.2;
+  white-space: normal;
+}
+
+.heroFigure {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  background: #fffdf9;
+  border: 1px solid rgb(83 59 39 / 12%);
+  border-radius: 8px;
+  box-shadow: 0 24px 58px rgb(61 44 30 / 12%);
+}
+
+.heroImage,
+.pathwayImage {
+  display: block;
+  width: 100%;
+  background: #eadbc9;
+}
+
+.heroImage {
+  aspect-ratio: 4 / 3;
+}
+
+.heroImage img,
+.pathwayImage img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.heroCaption {
+  display: grid;
+  gap: 0.2rem;
+  padding: 1rem;
+  color: #241a12;
+  border-top: 1px solid rgb(83 59 39 / 10%);
+}
+
+.heroCaption strong {
+  font-family: var(--mantine-font-family-headings);
+  font-size: 1.2rem;
+  line-height: 1.15;
+}
+
+.sectionHeading {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+  align-items: end;
+  margin-bottom: 1.5rem;
+}
+
+.sectionHeading h2,
+.invitation h2 {
+  color: #241a12;
+  font-size: 2.2rem;
+  line-height: 1.08;
+  letter-spacing: 0;
+  text-wrap: balance;
+}
+
+.sectionHeading > p {
+  max-width: 38rem;
+  line-height: 1.65;
+}
+
+.pathwayList {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+  gap: 1rem;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.pathwayList li {
+  min-width: 0;
+}
+
+.pathwayCard {
+  --card-accent: #8c633d;
+
+  display: grid;
+  grid-template-rows: auto 1fr;
+  height: 100%;
+  overflow: hidden;
+  color: #241a12;
+  background: rgb(255 253 249 / 94%);
+  border-color: rgb(83 59 39 / 12%);
+  border-radius: 8px;
+  box-shadow: 0 16px 38px rgb(61 44 30 / 7%);
   transition:
-    transform 180ms ease,
-    box-shadow 180ms ease;
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
 }
 
-.card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 22px 44px rgb(61 44 30 / 12%);
+.pathwayCard[data-community-card='children'] {
+  --card-accent: #638b49;
 }
 
-.card:focus-visible {
+.pathwayCard[data-community-card='hispanic'] {
+  --card-accent: #28606f;
+}
+
+.pathwayCard[data-community-card='theater'] {
+  --card-accent: #91516e;
+}
+
+.pathwayCard[data-community-card='outreach'] {
+  --card-accent: #4f7442;
+}
+
+.pathwayCard[data-community-card='updates'] {
+  --card-accent: #6b5b95;
+}
+
+.pathwayCard:hover {
+  border-color: color-mix(in srgb, var(--card-accent) 46%, transparent);
+  box-shadow: 0 22px 48px rgb(61 44 30 / 11%);
+  transform: translateY(-3px);
+}
+
+.pathwayCard:focus-visible {
   outline: 3px solid var(--mantine-color-brand-4);
   outline-offset: 3px;
 }
 
-.card h2 {
-  font-size: clamp(1.55rem, 2.4vw, 2.15rem);
-  line-height: 1.08;
+.pathwayImage {
+  aspect-ratio: 16 / 10;
+  border-bottom: 4px solid var(--card-accent);
+}
+
+.pathwayBody {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 1rem;
+  min-height: 18rem;
+  padding: 1.25rem;
+}
+
+.pathwayBody :global(.mantine-ThemeIcon-root) {
+  color: var(--card-accent);
+  background: color-mix(in srgb, var(--card-accent) 12%, white);
+}
+
+.pathwayText {
+  min-width: 0;
+}
+
+.pathwayText h3 {
+  font-size: 1.45rem;
+  line-height: 1.15;
+  letter-spacing: 0;
   overflow-wrap: anywhere;
 }
 
+.pathwayText p {
+  line-height: 1.6;
+}
+
 .cardCta {
-  margin-top: auto;
-  padding-top: var(--mantine-spacing-lg);
-  color: var(--mantine-color-brand-7);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  width: fit-content;
+  color: var(--card-accent);
   font-size: var(--mantine-font-size-sm);
-  font-weight: 800;
+  font-weight: 850;
 }
 
 .invitation {
-  overflow: hidden;
-  background:
-    radial-gradient(circle at 0% 100%, rgb(99 139 73 / 15%), transparent 38%),
-    linear-gradient(145deg, rgb(255 253 249 / 98%), rgb(245 238 226 / 96%));
-  border-color: rgb(83 59 39 / 12%);
-  box-shadow: 0 24px 55px rgb(61 44 30 / 9%);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.5rem;
+  align-items: center;
+  margin-top: 3.5rem;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, rgb(255 253 249 / 98%), rgb(239 245 235 / 94%));
+  border: 1px solid rgb(83 59 39 / 12%);
+  border-radius: 8px;
+  box-shadow: 0 18px 44px rgb(61 44 30 / 8%);
+}
+
+.invitationCopy {
+  display: grid;
+  gap: 0.75rem;
+  max-width: 48rem;
+}
+
+.invitationCopy p:last-child {
+  line-height: 1.65;
+}
+
+.invitationAction {
+  display: flex;
+  justify-content: flex-start;
+}
+
+@media (min-width: 48em) {
+  .heroInner {
+    padding-block: 4rem;
+  }
+
+  .heroTitle {
+    font-size: 4rem;
+  }
+
+  .sectionHeading {
+    grid-template-columns: minmax(0, 0.9fr) minmax(18rem, 0.62fr);
+    gap: 2.5rem;
+  }
+
+  .sectionHeading h2,
+  .invitation h2 {
+    font-size: 2.8rem;
+  }
+
+  .invitation {
+    grid-template-columns: minmax(0, 1fr) auto;
+    padding: 2rem;
+  }
+
+  .invitationAction {
+    justify-content: flex-end;
+  }
+}
+
+@media (min-width: 62em) {
+  .heroLayout {
+    grid-template-columns: minmax(0, 1fr) minmax(24rem, 0.72fr);
+    gap: 4rem;
+  }
+
+  .heroTitle {
+    font-size: 4.8rem;
+  }
+}
+
+@media (max-width: 36em) {
+  .heroActions {
+    align-items: stretch;
+  }
+
+  .heroActions :global(.mantine-Button-root) {
+    flex: 1 1 100%;
+  }
+
+  .pathwayBody {
+    min-height: 0;
+  }
+
+  .invitation :global(.mantine-Button-root) {
+    width: 100%;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .card {
+  .pathwayCard {
     transition: none;
   }
 
-  .card:hover {
+  .pathwayCard:hover {
     transform: none;
   }
 }

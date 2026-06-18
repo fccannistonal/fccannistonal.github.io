@@ -6,8 +6,8 @@ import {
   IconBuildingCommunity,
   IconCalendarEvent,
   IconHeartHandshake,
-  IconLanguage,
   IconMessage,
+  IconMessageCircleHeart,
   IconMicrophone2,
   IconMusic,
   IconPray,
@@ -64,7 +64,7 @@ const ITEM_ICONS: Record<string, IconComponent> = {
   activities: IconSparkles,
   belonging: IconUsers,
   families: IconUsersGroup,
-  language: IconLanguage,
+  language: IconMessageCircleHeart,
   'pastoral-care': IconHeartHandshake,
   chaplaincy: IconBuildingCommunity,
   connection: IconUsersGroup,
@@ -74,7 +74,7 @@ const ITEM_ICONS: Record<string, IconComponent> = {
   space: IconBuildingCommunity,
   participation: IconSparkles,
   welcome: IconUsersGroup,
-  maria: IconLanguage,
+  maria: IconMessageCircleHeart,
   gerald: IconMusic,
   jason: IconMicrophone2,
 };
@@ -82,7 +82,7 @@ const ITEM_ICONS: Record<string, IconComponent> = {
 const RELATED_ICONS: Record<string, IconComponent> = {
   worship: IconMusic,
   children: IconSparkles,
-  hispanic: IconLanguage,
+  hispanic: IconMessageCircleHeart,
   theater: IconTheater,
   outreach: IconHeartHandshake,
   updates: IconCalendarEvent,
@@ -140,9 +140,11 @@ function MinistryActionButton({
       ? IconHeartHandshake
       : action.destination === 'sermons'
         ? IconMicrophone2
-        : action.destination === 'contact'
-          ? IconMessage
-          : IconArrowRight;
+        : action.destination === 'visit'
+          ? IconCalendarEvent
+          : action.destination === 'contact'
+            ? IconMessage
+            : IconArrowRight;
   const Icon = icon;
 
   if (action.destination === 'give' || action.destination === 'sermons') {
@@ -215,20 +217,14 @@ function FeatureHeading({ feature }: { feature: LocalizedMinistryFeature }) {
 function HighlightList({ highlights }: { highlights: LocalizedMinistryPage['highlights'] }) {
   return (
     <div className={classes.highlightList}>
-      {highlights.map((highlight, index) => {
+      {highlights.map((highlight) => {
         const Icon = getItemIcon(highlight.id);
-        const itemNumber = String(index + 1).padStart(2, '0');
 
         return (
           <Paper key={highlight.id} component="article" withBorder className={classes.highlightRow}>
-            <div className={classes.highlightMarker}>
-              <Text component="span" className={classes.highlightNumber}>
-                {itemNumber}
-              </Text>
-              <ThemeIcon size={44} radius="xl" variant="light" color="moss">
-                <Icon size={22} stroke={1.7} />
-              </ThemeIcon>
-            </div>
+            <ThemeIcon size={44} radius="xl" variant="light" color="moss">
+              <Icon size={22} stroke={1.7} />
+            </ThemeIcon>
             <div>
               <Title order={3}>{highlight.title}</Title>
               <Text c="dimmed" mt="xs">
@@ -340,10 +336,9 @@ function ProgramFeatureLayout({
 }) {
   return (
     <SimpleGrid cols={{ base: 1, md: 2 }} spacing="lg">
-      {features.map((feature, index) => {
+      {features.map((feature) => {
         const Icon = getItemIcon(feature.id);
         const featureImage = assets[feature.id];
-        const itemNumber = String(index + 1).padStart(2, '0');
 
         return (
           <Paper
@@ -362,14 +357,9 @@ function ProgramFeatureLayout({
               />
             ) : null}
             <Stack gap="md" className={classes.programContent}>
-              <Group justify="space-between" align="flex-start">
-                <Text component="span" className={classes.programNumber}>
-                  {itemNumber}
-                </Text>
-                <ThemeIcon size={46} radius="xl" variant="light" color="brand">
-                  <Icon size={23} stroke={1.7} />
-                </ThemeIcon>
-              </Group>
+              <ThemeIcon size={46} radius="xl" variant="light" color="brand">
+                <Icon size={23} stroke={1.7} />
+              </ThemeIcon>
               <div>
                 <Text className={classes.eyebrow}>{feature.eyebrow}</Text>
                 <Title order={3} mt="xs">
@@ -444,8 +434,12 @@ export function MinistryDetailPage({ ministryId }: { ministryId: MinistryPageId 
         aria-labelledby={`${ministryId}-title`}
       >
         <Container size="xl" className={classes.heroInner}>
-          <Paper withBorder className={classes.heroCard}>
-            <SimpleGrid cols={{ base: 1, lg: 2 }} spacing={0} className={classes.heroGrid}>
+          <div className={classes.heroPanel}>
+            <SimpleGrid
+              cols={{ base: 1, lg: 2 }}
+              spacing={{ base: 'xl', lg: '4rem' }}
+              className={classes.heroGrid}
+            >
               <Stack gap="lg" className={classes.heroContent}>
                 <Badge variant="light" color="brand" size="lg" w="fit-content">
                   {ministry.eyebrow}
@@ -459,7 +453,7 @@ export function MinistryDetailPage({ ministryId }: { ministryId: MinistryPageId 
                   </Text>
                 </div>
 
-                <Paper withBorder className={classes.heroActionPanel}>
+                <div className={classes.heroActionPanel}>
                   <Text fw={800} className={classes.heroActionTitle}>
                     {ministry.ctaTitle}
                   </Text>
@@ -475,7 +469,7 @@ export function MinistryDetailPage({ ministryId }: { ministryId: MinistryPageId 
                       />
                     ))}
                   </Group>
-                </Paper>
+                </div>
               </Stack>
 
               <figure className={classes.heroFigure}>
@@ -492,17 +486,17 @@ export function MinistryDetailPage({ ministryId }: { ministryId: MinistryPageId 
                 </figcaption>
               </figure>
             </SimpleGrid>
-          </Paper>
+          </div>
         </Container>
       </section>
 
-      <Container size="xl" py={{ base: '3rem', md: '6rem' }}>
-        <Stack className={classes.pageStack} data-ministry={ministryId}>
-          <section aria-labelledby={`${ministryId}-intro-title`} className={classes.introSection}>
-            <SimpleGrid cols={{ base: 1, md: 2 }} spacing={{ base: 'xl', md: '4rem' }}>
-              <div>
+      <div className={classes.pageStack} data-ministry={ministryId}>
+        <section aria-labelledby={`${ministryId}-intro-title`} className={classes.introSection}>
+          <Container size="xl">
+            <div className={classes.introLayout}>
+              <div className={classes.introHeading}>
                 <Text className={classes.eyebrow}>{ministry.introEyebrow}</Text>
-                <Title id={`${ministryId}-intro-title`} order={2} mt="sm" maw={680}>
+                <Title id={`${ministryId}-intro-title`} order={2} mt="sm">
                   {ministry.introTitle}
                 </Title>
               </div>
@@ -513,24 +507,31 @@ export function MinistryDetailPage({ ministryId }: { ministryId: MinistryPageId 
                   </Text>
                 ))}
               </Stack>
-            </SimpleGrid>
-          </section>
+            </div>
+          </Container>
+        </section>
 
-          <section
-            aria-labelledby={`${ministryId}-highlights-title`}
-            className={classes.highlightsSection}
-          >
-            <div className={classes.sectionHeading}>
-              <Title id={`${ministryId}-highlights-title`} order={2}>
-                {ministry.highlightsTitle}
-              </Title>
-              <Text c="dimmed" size="lg" maw={520}>
+        <section
+          aria-labelledby={`${ministryId}-highlights-title`}
+          className={classes.highlightsSection}
+        >
+          <Container size="xl">
+            <div className={classes.highlightsHeader}>
+              <div>
+                <Text className={classes.eyebrow}>{ministry.featureEyebrow}</Text>
+                <Title id={`${ministryId}-highlights-title`} order={2} mt="xs">
+                  {ministry.highlightsTitle}
+                </Title>
+              </div>
+              <Text c="dimmed" size="lg">
                 {ministry.description}
               </Text>
             </div>
             <HighlightList highlights={ministry.highlights} />
-          </section>
+          </Container>
+        </section>
 
+        <Container size="xl" className={classes.lowerContent}>
           <MinistryFeatures ministry={ministry} ministryId={ministryId} assets={assets.features} />
 
           <section
@@ -574,8 +575,8 @@ export function MinistryDetailPage({ ministryId }: { ministryId: MinistryPageId 
               })}
             </div>
           </section>
-        </Stack>
-      </Container>
+        </Container>
+      </div>
     </>
   );
 }
