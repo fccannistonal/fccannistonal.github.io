@@ -16,6 +16,22 @@ const errors = [];
 const initialJavascriptPaths = new Set();
 
 const absoluteUrl = (path) => new URL(path, manifest.siteUrl).toString();
+const defaultRobots = 'index, follow, max-image-preview:large';
+
+const escapeHtml = (value) =>
+  value
+    .replaceAll('&', '&amp;')
+    .replaceAll('"', '&quot;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;');
+
+const isIndexableRoute = (route) => !(route.robots ?? defaultRobots).includes('noindex');
+const hasSchemaType = (node, schemaType) =>
+  node?.['@type'] === schemaType ||
+  (Array.isArray(node?.['@type']) && node['@type'].includes(schemaType));
+
+const flattenStructuredData = (items) =>
+  items.flatMap((item) => (Array.isArray(item?.['@graph']) ? item['@graph'] : [item]));
 
 for (const route of manifest.routes) {
   const routePath =
@@ -25,13 +41,21 @@ for (const route of manifest.routes) {
 
   try {
     const html = await readFile(routePath, 'utf8');
+    const routeSocialImage = absoluteUrl(route.socialImage ?? manifest.socialImage);
+    const routeSocialImageAlt = route.socialImageAlt ?? manifest.socialImageAlt;
     const requiredFragments = [
       `<html lang="${route.locale}"`,
       `<title>${route.title}</title>`,
+      `<meta name="robots" content="${route.robots ?? defaultRobots}"`,
       `rel="canonical"`,
       `hreflang="en"`,
       `hreflang="es"`,
+      `hreflang="x-default"`,
       `application/ld+json`,
+      `property="og:site_name"`,
+      `property="og:image:width" content="${manifest.socialImageWidth}"`,
+      `property="og:image:height" content="${manifest.socialImageHeight}"`,
+      `name="twitter:image:alt"`,
       `data-route-style="${route.id}"`,
       `<main id="main-content"`,
       `<h1`,
@@ -43,41 +67,108 @@ for (const route of manifest.routes) {
       }
     });
 
-    const structuredDataMatch = html.match(
-      /<script type="application\/ld\+json">([\s\S]*?)<\/script>/
-    );
-    if (!structuredDataMatch) {
-      errors.push(`${route.path}: structured data is not parseable`);
-    } else {
+    const structuredDataMatches = [
+      ...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g),
+    ];
+    const structuredData = [];
+
+    if (structuredDataMatches.length === 0) {
+      errors.push(`${route.path}: structured data is missing`);
+    }
+
+    for (const match of structuredDataMatches) {
       try {
-        const structuredData = JSON.parse(structuredDataMatch[1]);
-        if (
-          structuredData['@type'] !== 'Church' ||
-          !structuredData.telephone ||
-          !structuredData.address?.streetAddress ||
-          !Array.isArray(structuredData.event)
-        ) {
-          errors.push(`${route.path}: Church structured data is incomplete`);
-        }
+        structuredData.push(JSON.parse(match[1]));
       } catch {
         errors.push(`${route.path}: structured data contains invalid JSON`);
       }
+    }
+
+    const structuredDataNodes = flattenStructuredData(structuredData);
+    const churchNode = structuredDataNodes.find((node) => hasSchemaType(node, 'Church'));
+    const websiteNode = structuredDataNodes.find((node) => hasSchemaType(node, 'WebSite'));
+    const routeUrl = absoluteUrl(route.path);
+    const webPageNode = structuredDataNodes.find(
+      (node) => hasSchemaType(node, 'WebPage') && node.url === routeUrl
+    );
+    const imageNode = structuredDataNodes.find(
+      (node) => hasSchemaType(node, 'ImageObject') && node.url === routeSocialImage
+    );
+    const breadcrumbNode = structuredDataNodes.find((node) =>
+      hasSchemaType(node, 'BreadcrumbList')
+    );
+
+    if (
+      !churchNode ||
+      !churchNode.telephone ||
+      !churchNode.email ||
+      !churchNode.address?.streetAddress ||
+      !churchNode.contactPoint?.availableLanguage ||
+      !Array.isArray(churchNode.event)
+    ) {
+      errors.push(`${route.path}: Church structured data is incomplete`);
+    }
+
+    if (!websiteNode?.publisher?.['@id']) {
+      errors.push(`${route.path}: WebSite structured data is incomplete`);
+    }
+
+    if (
+      !webPageNode ||
+      webPageNode.name !== route.title ||
+      webPageNode.description !== route.description ||
+      webPageNode.inLanguage !== route.locale ||
+      !webPageNode.primaryImageOfPage?.['@id'] ||
+      !webPageNode.breadcrumb?.['@id']
+    ) {
+      errors.push(`${route.path}: WebPage structured data is incomplete`);
+    }
+
+    if (
+      !imageNode ||
+      imageNode.width !== manifest.socialImageWidth ||
+      imageNode.height !== manifest.socialImageHeight ||
+      imageNode.caption !== routeSocialImageAlt
+    ) {
+      errors.push(`${route.path}: ImageObject structured data is incomplete`);
+    }
+
+    if (
+      !breadcrumbNode ||
+      !Array.isArray(breadcrumbNode.itemListElement) ||
+      breadcrumbNode.itemListElement.length < 1
+    ) {
+      errors.push(`${route.path}: BreadcrumbList structured data is incomplete`);
     }
 
     for (const match of html.matchAll(/<script[^>]+src="([^"]+\.js)"[^>]*>/g)) {
       initialJavascriptPaths.add(match[1].replace(/^\//, ''));
     }
 
-    const routeSocialImage = absoluteUrl(route.socialImage ?? manifest.socialImage);
     if (!html.includes(`<meta property="og:image" content="${routeSocialImage}"`)) {
       errors.push(`${route.path}: missing route social image metadata`);
     }
 
+    if (
+      !html.includes(`<meta property="og:image:alt" content="${escapeHtml(routeSocialImageAlt)}"`)
+    ) {
+      errors.push(`${route.path}: missing route social image alt metadata`);
+    }
+
+    if (
+      !html.includes(`<meta name="twitter:image:alt" content="${escapeHtml(routeSocialImageAlt)}"`)
+    ) {
+      errors.push(`${route.path}: missing Twitter image alt metadata`);
+    }
+
     if (route.faq) {
-      if (!html.includes('"@type":"FAQPage"')) {
+      const faqNode = structuredDataNodes.find((node) => hasSchemaType(node, 'FAQPage'));
+      if (!faqNode) {
         errors.push(`${route.path}: FAQ structured data is missing`);
       }
-      if (route.faq.some((item) => !html.includes(item.question) || !html.includes(item.answer))) {
+      if (
+        route.faq.some((item) => !html.includes(item.question) || !html.includes(item.answer))
+      ) {
         errors.push(`${route.path}: FAQ structured data is incomplete`);
       }
     }
@@ -112,11 +203,32 @@ for (const requiredFile of [
   }
 }
 
+const pages404 = await readFile(resolve(outputDir, '404.html'), 'utf8');
+if (!pages404.includes('<meta name="robots" content="noindex, follow"')) {
+  errors.push('404.html: missing noindex, follow robots metadata');
+}
+
 const sitemap = await readFile(resolve(outputDir, 'sitemap.xml'), 'utf8');
 for (const route of manifest.routes) {
-  const routeUrl = new URL(route.path, manifest.siteUrl).toString();
-  if (!sitemap.includes(`<loc>${routeUrl}</loc>`)) {
+  const routeUrl = absoluteUrl(route.path);
+  const englishPath = route.locale === 'en' ? route.path : route.alternatePath;
+  const spanishPath = route.locale === 'es' ? route.path : route.alternatePath;
+
+  if (isIndexableRoute(route) && !sitemap.includes(`<loc>${routeUrl}</loc>`)) {
     errors.push(`${route.path}: missing from sitemap.xml`);
+  }
+
+  if (!isIndexableRoute(route) && sitemap.includes(`<loc>${routeUrl}</loc>`)) {
+    errors.push(`${route.path}: noindex route should not appear in sitemap.xml`);
+  }
+
+  if (
+    isIndexableRoute(route) &&
+    (!sitemap.includes(`hreflang="en" href="${absoluteUrl(englishPath)}"`) ||
+      !sitemap.includes(`hreflang="es" href="${absoluteUrl(spanishPath)}"`) ||
+      !sitemap.includes(`hreflang="x-default" href="${absoluteUrl(englishPath)}"`))
+  ) {
+    errors.push(`${route.path}: localized sitemap alternates are incomplete`);
   }
 }
 

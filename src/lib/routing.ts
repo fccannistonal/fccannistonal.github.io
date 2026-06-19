@@ -26,6 +26,8 @@ export type LocalizedRoute = {
   title: string;
   description: string;
   socialImage?: string;
+  socialImageAlt?: string;
+  robots?: string;
   faq?: Array<{
     question: string;
     answer: string;
@@ -36,6 +38,9 @@ type RouteManifest = {
   siteUrl: string;
   siteName: string;
   socialImage: string;
+  socialImageAlt: string;
+  socialImageWidth: number;
+  socialImageHeight: number;
   routes: LocalizedRoute[];
 };
 

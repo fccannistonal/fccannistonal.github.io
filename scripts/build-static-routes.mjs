@@ -41,6 +41,74 @@ const escapeHtml = (value) =>
     .replaceAll('>', '&gt;');
 
 const absoluteUrl = (path) => new URL(path, manifest.siteUrl).toString();
+const defaultRobots = 'index, follow, max-image-preview:large';
+const churchId = absoluteUrl('/#church');
+const websiteId = absoluteUrl('/#website');
+
+const routeSchemaTypeById = {
+  about: 'AboutPage',
+  contact: 'ContactPage',
+  community: 'CollectionPage',
+  recommendedReading: 'CollectionPage',
+  staff: 'CollectionPage',
+  updates: 'CollectionPage',
+};
+
+const isIndexableRoute = (route) => !(route.robots ?? defaultRobots).includes('noindex');
+
+const serializeStructuredData = (value) => JSON.stringify(value).replaceAll('<', '\\u003c');
+
+const getRouteSocialImage = (route) => absoluteUrl(route.socialImage ?? manifest.socialImage);
+const getRouteSocialImageAlt = (route) => route.socialImageAlt ?? manifest.socialImageAlt;
+
+const getRouteSchemaTypes = (route) => {
+  const schemaType = routeSchemaTypeById[route.id];
+  return schemaType ? ['WebPage', schemaType] : 'WebPage';
+};
+
+const getRouteById = (id, locale) =>
+  manifest.routes.find((route) => route.id === id && route.locale === locale);
+
+const getBreadcrumbName = (route) => {
+  if (route.id === 'home') {
+    return route.locale === 'es' ? 'Inicio' : 'Home';
+  }
+
+  return route.title.replace(/\s+\|\s+.*$/, '');
+};
+
+const createBreadcrumbRoutes = (route) => {
+  const homeRoute = getRouteById('home', route.locale);
+  const routes = homeRoute ? [homeRoute] : [];
+
+  if (route.id !== 'home') {
+    if (route.id === 'membership' || route.id === 'recommendedReading') {
+      const aboutRoute = getRouteById('about', route.locale);
+      if (aboutRoute) {
+        routes.push(aboutRoute);
+      }
+    }
+
+    if (
+      [
+        'worshipAndMusic',
+        'wonderAndWorship',
+        'hispanicMinistry',
+        'serviceAndOutreach',
+        'diversityTheater',
+      ].includes(route.id)
+    ) {
+      const communityRoute = getRouteById('community', route.locale);
+      if (communityRoute) {
+        routes.push(communityRoute);
+      }
+    }
+
+    routes.push(route);
+  }
+
+  return routes;
+};
 
 function collectRouteCss(manifestKey, visited = new Set()) {
   if (manifestKey === 'index.html') {
@@ -88,14 +156,29 @@ async function createRouteStyles(routeId) {
 }
 
 const churchStructuredData = {
-  '@context': 'https://schema.org',
   '@type': 'Church',
+  '@id': churchId,
   name: 'First Christian Church Anniston',
   alternateName: 'FCC Anniston',
+  description:
+    'An open and affirming Christian Church (Disciples of Christ) congregation serving Anniston, Alabama.',
   url: manifest.siteUrl,
   image: absoluteUrl(manifest.socialImage),
+  logo: {
+    '@type': 'ImageObject',
+    '@id': absoluteUrl('/images/brand/fcc-logo.png#logo'),
+    url: absoluteUrl('/images/brand/fcc-logo.png'),
+    width: 364,
+    height: 486,
+  },
   telephone: '+1-256-236-1316',
   email: 'fccannistonal@gmail.com',
+  hasMap:
+    'https://www.google.com/maps/dir/?api=1&destination=1327+Leighton+Ave%2C+Anniston%2C+AL+36207',
+  areaServed: [
+    { '@type': 'City', name: 'Anniston' },
+    { '@type': 'AdministrativeArea', name: 'Calhoun County' },
+  ],
   address: {
     '@type': 'PostalAddress',
     streetAddress: '1327 Leighton Ave.',
@@ -104,12 +187,24 @@ const churchStructuredData = {
     postalCode: '36207',
     addressCountry: 'US',
   },
+  contactPoint: {
+    '@type': 'ContactPoint',
+    contactType: 'general inquiries',
+    telephone: '+1-256-236-1316',
+    email: 'fccannistonal@gmail.com',
+    areaServed: 'Anniston, AL',
+    availableLanguage: ['English', 'Spanish'],
+  },
   sameAs: ['https://www.facebook.com/FCCAnniston', 'https://linktr.ee/fccanniston'],
   event: [
     {
       '@type': 'Event',
+      '@id': absoluteUrl('/#sunday-school'),
       name: 'Sunday School',
-      location: { '@type': 'Place', name: 'First Christian Church Anniston' },
+      eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+      eventStatus: 'https://schema.org/EventScheduled',
+      location: { '@id': churchId },
+      organizer: { '@id': churchId },
       eventSchedule: {
         '@type': 'Schedule',
         repeatFrequency: 'P1W',
@@ -120,8 +215,12 @@ const churchStructuredData = {
     },
     {
       '@type': 'Event',
+      '@id': absoluteUrl('/#worship-service'),
       name: 'Worship Service',
-      location: { '@type': 'Place', name: 'First Christian Church Anniston' },
+      eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+      eventStatus: 'https://schema.org/EventScheduled',
+      location: { '@id': churchId },
+      organizer: { '@id': churchId },
       eventSchedule: {
         '@type': 'Schedule',
         repeatFrequency: 'P1W',
@@ -133,15 +232,68 @@ const churchStructuredData = {
   ],
 };
 
-const getRouteSocialImage = (route) => absoluteUrl(route.socialImage ?? manifest.socialImage);
+const websiteStructuredData = {
+  '@type': 'WebSite',
+  '@id': websiteId,
+  url: manifest.siteUrl,
+  name: manifest.siteName,
+  alternateName: 'FCC Anniston',
+  inLanguage: ['en', 'es'],
+  publisher: { '@id': churchId },
+};
 
 function createStructuredData(route) {
-  const blocks = [churchStructuredData];
+  const canonicalUrl = absoluteUrl(route.path);
+  const imageUrl = getRouteSocialImage(route);
+  const imageId = `${imageUrl}#primaryimage`;
+  const breadcrumbId = `${canonicalUrl}#breadcrumb`;
+  const pageId = `${canonicalUrl}#webpage`;
+  const webPage = {
+    '@type': getRouteSchemaTypes(route),
+    '@id': pageId,
+    url: canonicalUrl,
+    name: route.title,
+    description: route.description,
+    inLanguage: route.locale,
+    isPartOf: { '@id': websiteId },
+    about: { '@id': churchId },
+    publisher: { '@id': churchId },
+    primaryImageOfPage: { '@id': imageId },
+    breadcrumb: { '@id': breadcrumbId },
+    isAccessibleForFree: true,
+  };
+  const graph = [
+    churchStructuredData,
+    websiteStructuredData,
+    {
+      '@type': 'ImageObject',
+      '@id': imageId,
+      url: imageUrl,
+      contentUrl: imageUrl,
+      width: manifest.socialImageWidth,
+      height: manifest.socialImageHeight,
+      caption: getRouteSocialImageAlt(route),
+      representativeOfPage: true,
+    },
+    webPage,
+    {
+      '@type': 'BreadcrumbList',
+      '@id': breadcrumbId,
+      itemListElement: createBreadcrumbRoutes(route).map((breadcrumbRoute, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        name: getBreadcrumbName(breadcrumbRoute),
+        item: absoluteUrl(breadcrumbRoute.path),
+      })),
+    },
+  ];
 
   if (route.faq) {
-    blocks.push({
-      '@context': 'https://schema.org',
+    const faqId = `${canonicalUrl}#faq`;
+    webPage.mainEntity = { '@id': faqId };
+    graph.push({
       '@type': 'FAQPage',
+      '@id': faqId,
       mainEntity: route.faq.map((item) => ({
         '@type': 'Question',
         name: item.question,
@@ -153,9 +305,10 @@ function createStructuredData(route) {
     });
   }
 
-  return blocks
-    .map((block) => `<script type="application/ld+json">${JSON.stringify(block)}</script>`)
-    .join('\n    ');
+  return `<script type="application/ld+json">${serializeStructuredData({
+    '@context': 'https://schema.org',
+    '@graph': graph,
+  })}</script>`;
 }
 
 function createMeta(route) {
@@ -163,23 +316,32 @@ function createMeta(route) {
   const englishPath = route.locale === 'en' ? route.path : route.alternatePath;
   const spanishPath = route.locale === 'es' ? route.path : route.alternatePath;
   const socialImage = getRouteSocialImage(route);
+  const socialImageAlt = getRouteSocialImageAlt(route);
+  const robots = route.robots ?? defaultRobots;
 
   return `<!-- ROUTE_META_START -->
     <meta name="description" content="${escapeHtml(route.description)}" />
+    <meta name="robots" content="${escapeHtml(robots)}" />
     <link rel="canonical" href="${canonicalUrl}" />
     <link rel="alternate" hreflang="en" href="${absoluteUrl(englishPath)}" />
     <link rel="alternate" hreflang="es" href="${absoluteUrl(spanishPath)}" />
     <link rel="alternate" hreflang="x-default" href="${absoluteUrl(englishPath)}" />
     <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="${escapeHtml(manifest.siteName)}" />
     <meta property="og:title" content="${escapeHtml(route.title)}" />
     <meta property="og:description" content="${escapeHtml(route.description)}" />
     <meta property="og:url" content="${canonicalUrl}" />
     <meta property="og:image" content="${socialImage}" />
+    <meta property="og:image:width" content="${manifest.socialImageWidth}" />
+    <meta property="og:image:height" content="${manifest.socialImageHeight}" />
+    <meta property="og:image:alt" content="${escapeHtml(socialImageAlt)}" />
     <meta property="og:locale" content="${route.locale === 'es' ? 'es_US' : 'en_US'}" />
+    <meta property="og:locale:alternate" content="${route.locale === 'es' ? 'en_US' : 'es_US'}" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="${escapeHtml(route.title)}" />
     <meta name="twitter:description" content="${escapeHtml(route.description)}" />
     <meta name="twitter:image" content="${socialImage}" />
+    <meta name="twitter:image:alt" content="${escapeHtml(socialImageAlt)}" />
     ${createStructuredData(route)}
     <!-- ROUTE_META_END -->`;
 }
@@ -202,6 +364,7 @@ for (const route of manifest.routes) {
 }
 
 const sitemapEntries = manifest.routes
+  .filter(isIndexableRoute)
   .map((route) => {
     const englishPath = route.locale === 'en' ? route.path : route.alternatePath;
     const spanishPath = route.locale === 'es' ? route.path : route.alternatePath;
@@ -209,6 +372,7 @@ const sitemapEntries = manifest.routes
     <loc>${absoluteUrl(route.path)}</loc>
     <xhtml:link rel="alternate" hreflang="en" href="${absoluteUrl(englishPath)}" />
     <xhtml:link rel="alternate" hreflang="es" href="${absoluteUrl(spanishPath)}" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="${absoluteUrl(englishPath)}" />
   </url>`;
   })
   .join('\n');

@@ -6,6 +6,8 @@ import {
   routeManifest,
 } from './routing';
 
+const defaultRobots = 'index, follow, max-image-preview:large';
+
 const upsertMeta = (selector: string, attributes: Record<string, string>) => {
   let element = document.head.querySelector<HTMLMetaElement>(selector);
 
@@ -52,6 +54,8 @@ export function updatePageMetadata(pathname: string) {
     metadata.socialImage ?? routeManifest.socialImage,
     routeManifest.siteUrl
   ).toString();
+  const socialImageAlt = metadata.socialImageAlt ?? routeManifest.socialImageAlt;
+  const robots = route?.robots ?? (route ? defaultRobots : 'noindex, follow');
 
   document.title = route ? metadata.title : getPageTitle(pathname);
   document.documentElement.lang = locale;
@@ -60,17 +64,41 @@ export function updatePageMetadata(pathname: string) {
     name: 'description',
     content: metadata.description,
   });
+  upsertMeta('meta[name="robots"]', {
+    name: 'robots',
+    content: robots,
+  });
   upsertMeta('meta[property="og:title"]', { property: 'og:title', content: document.title });
   upsertMeta('meta[property="og:description"]', {
     property: 'og:description',
     content: metadata.description,
   });
+  upsertMeta('meta[property="og:site_name"]', {
+    property: 'og:site_name',
+    content: routeManifest.siteName,
+  });
   upsertMeta('meta[property="og:type"]', { property: 'og:type', content: 'website' });
   upsertMeta('meta[property="og:url"]', { property: 'og:url', content: canonicalUrl });
   upsertMeta('meta[property="og:image"]', { property: 'og:image', content: socialImageUrl });
+  upsertMeta('meta[property="og:image:width"]', {
+    property: 'og:image:width',
+    content: String(routeManifest.socialImageWidth),
+  });
+  upsertMeta('meta[property="og:image:height"]', {
+    property: 'og:image:height',
+    content: String(routeManifest.socialImageHeight),
+  });
+  upsertMeta('meta[property="og:image:alt"]', {
+    property: 'og:image:alt',
+    content: socialImageAlt,
+  });
   upsertMeta('meta[property="og:locale"]', {
     property: 'og:locale',
     content: locale === 'es' ? 'es_US' : 'en_US',
+  });
+  upsertMeta('meta[property="og:locale:alternate"]', {
+    property: 'og:locale:alternate',
+    content: locale === 'es' ? 'en_US' : 'es_US',
   });
   upsertMeta('meta[name="twitter:card"]', {
     name: 'twitter:card',
@@ -84,6 +112,10 @@ export function updatePageMetadata(pathname: string) {
   upsertMeta('meta[name="twitter:image"]', {
     name: 'twitter:image',
     content: socialImageUrl,
+  });
+  upsertMeta('meta[name="twitter:image:alt"]', {
+    name: 'twitter:image:alt',
+    content: socialImageAlt,
   });
   upsertLink('link[rel="canonical"]', { rel: 'canonical', href: canonicalUrl });
   upsertLink('link[rel="alternate"][hreflang="en"]', {
