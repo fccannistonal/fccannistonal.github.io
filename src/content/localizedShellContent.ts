@@ -111,9 +111,9 @@ export const localizedShellContent: Record<Locale, ShellContent> = {
     consent: {
       title: 'Your privacy choices',
       description:
-        'We use optional analytics to understand which pages help visitors. Maps, Spotify, and Facebook remain blocked until you choose to load them.',
+        'We use Google Analytics consent mode to understand which pages help visitors. Analytics cookies stay off unless you allow them.',
       accept: 'Allow analytics',
-      decline: 'Necessary only',
+      decline: 'Keep analytics cookies off',
       privacyLink: 'Read the privacy notice',
     },
     sermonsLabel: 'Sermons and reflections',
@@ -180,9 +180,9 @@ export const localizedShellContent: Record<Locale, ShellContent> = {
     consent: {
       title: 'Sus opciones de privacidad',
       description:
-        'Usamos analítica opcional para saber qué páginas ayudan a los visitantes. Los mapas, Spotify y Facebook permanecen bloqueados hasta que usted decida cargarlos.',
+        'Usamos el modo de consentimiento de Google Analytics para saber qué páginas ayudan a los visitantes. Las cookies de analítica permanecen desactivadas hasta que usted las permita.',
       accept: 'Permitir analítica',
-      decline: 'Solo lo necesario',
+      decline: 'No usar cookies analíticas',
       privacyLink: 'Leer el aviso de privacidad',
     },
     sermonsLabel: 'Sermones y reflexiones',

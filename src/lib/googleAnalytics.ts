@@ -1,6 +1,6 @@
 import type { Locale } from './routing';
 
-const GOOGLE_ANALYTICS_ID = 'G-FNLZREG4BR';
+const GOOGLE_ANALYTICS_ID = 'G-V7V4QB6V95';
 const GOOGLE_TAG_SCRIPT_ID = 'google-analytics-tag';
 const LOCAL_HOSTNAMES = new Set(['localhost', '127.0.0.1', '::1']);
 export const ANALYTICS_CONSENT_KEY = 'fccanniston.analytics-consent.v1';
@@ -8,6 +8,7 @@ export const ANALYTICS_CONSENT_EVENT = 'fccanniston:analytics-consent';
 
 export type AnalyticsConsent = 'granted' | 'denied';
 type AnalyticsParameters = Record<string, string | number | boolean>;
+type GoogleConsentState = typeof DENIED_CONSENT | typeof GRANTED_ANALYTICS_CONSENT;
 type GtagArguments = IArguments | [command: string, ...args: unknown[]];
 type GtagFunction = (command: string, ...args: unknown[]) => void;
 type AnalyticsWindow = Window &
@@ -30,6 +31,10 @@ const GRANTED_ANALYTICS_CONSENT = {
   analytics_storage: 'granted',
 } as const;
 
+function getGoogleConsentState(value: AnalyticsConsent | null): GoogleConsentState {
+  return value === 'granted' ? GRANTED_ANALYTICS_CONSENT : DENIED_CONSENT;
+}
+
 export function getAnalyticsConsent(): AnalyticsConsent | null {
   if (typeof window === 'undefined') {
     return null;
@@ -44,19 +49,19 @@ export function getAnalyticsConsent(): AnalyticsConsent | null {
 }
 
 export function setAnalyticsConsent(value: AnalyticsConsent) {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  initializeGoogleAnalytics();
+
   try {
     window.localStorage.setItem(ANALYTICS_CONSENT_KEY, value);
   } catch {
     // The current page still respects the choice when storage is unavailable.
   }
 
-  if (typeof window !== 'undefined') {
-    (window as AnalyticsWindow).gtag?.(
-      'consent',
-      'update',
-      value === 'granted' ? GRANTED_ANALYTICS_CONSENT : DENIED_CONSENT
-    );
-  }
+  (window as AnalyticsWindow).gtag?.('consent', 'update', getGoogleConsentState(value));
 
   window.dispatchEvent(new CustomEvent(ANALYTICS_CONSENT_EVENT, { detail: value }));
 }
@@ -70,12 +75,8 @@ function isAnalyticsEnvironmentAvailable() {
   );
 }
 
-function isAnalyticsEnabled() {
-  return isAnalyticsEnvironmentAvailable() && getAnalyticsConsent() === 'granted';
-}
-
 export function initializeGoogleAnalytics() {
-  if (!isAnalyticsEnabled() || isInitialized) {
+  if (!isAnalyticsEnvironmentAvailable() || isInitialized) {
     return;
   }
 
@@ -98,7 +99,7 @@ export function initializeGoogleAnalytics() {
   }
 
   analyticsWindow.gtag('consent', 'default', {
-    ...GRANTED_ANALYTICS_CONSENT,
+    ...getGoogleConsentState(getAnalyticsConsent()),
   });
   analyticsWindow.gtag('js', new Date());
   analyticsWindow.gtag('config', GOOGLE_ANALYTICS_ID, {
@@ -111,7 +112,7 @@ export function initializeGoogleAnalytics() {
 }
 
 export function trackEvent(eventName: string, parameters: AnalyticsParameters = {}) {
-  if (!isAnalyticsEnabled()) {
+  if (!isAnalyticsEnvironmentAvailable()) {
     return;
   }
 

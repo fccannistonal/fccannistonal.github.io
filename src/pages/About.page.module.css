@@ -1,10 +1,59 @@
+.introSection {
+  margin-top: var(--mantine-spacing-xl);
+}
+
 .welcomeCard {
   overflow: hidden;
+  border-color: rgb(83 59 39 / 12%);
   background:
     radial-gradient(circle at 0% 100%, rgb(99 139 73 / 13%), transparent 38%),
     radial-gradient(circle at 100% 0%, rgb(222 129 54 / 14%), transparent 36%),
     rgb(255 251 246 / 96%);
   box-shadow: 0 24px 55px rgb(61 44 30 / 9%);
+}
+
+.introGrid {
+  align-items: start;
+}
+
+.introHeading {
+  min-width: 0;
+  max-width: 34rem;
+}
+
+.introKicker {
+  display: inline-block;
+  max-width: 100%;
+  padding: 0.45rem 0.75rem;
+  border: 1px solid rgb(222 129 54 / 22%);
+  border-radius: 999px;
+  background: rgb(255 246 235 / 88%);
+  color: #744415;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.panelTitle,
+.sectionTitle,
+.cardTitle,
+.ctaTitle {
+  letter-spacing: 0;
+  overflow-wrap: break-word;
+  text-wrap: balance;
+}
+
+.panelTitle {
+  max-width: 13ch;
+}
+
+.bodyText {
+  max-width: 70ch;
+  color: #5c4b3d;
+  line-height: 1.68;
+}
+
+.copyStack {
+  min-width: 0;
 }
 
 .section {
@@ -19,6 +68,33 @@
   max-width: 56rem;
 }
 
+.storyGrid {
+  display: grid;
+  grid-template-columns: minmax(14rem, 0.62fr) minmax(0, 1fr);
+  gap: 4rem;
+  align-items: start;
+}
+
+.storyCopy {
+  min-width: 0;
+  padding-left: 1.5rem;
+  border-left: 4px solid rgb(99 139 73 / 32%);
+}
+
+.missionGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--mantine-spacing-md);
+  padding: 0;
+  margin: var(--mantine-spacing-xl) 0 0;
+  list-style: none;
+}
+
+.missionItem {
+  display: flex;
+  min-width: 0;
+}
+
 .statementCard,
 .practiceCard,
 .nextStepCard {
@@ -28,9 +104,44 @@
   box-shadow: 0 14px 34px rgb(61 44 30 / 7%);
 }
 
+.statementCard {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.statementText {
+  color: #35251a;
+  line-height: 1.48;
+  overflow-wrap: break-word;
+}
+
+.practiceGrid,
+.nextStepsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--mantine-spacing-lg);
+  margin-top: var(--mantine-spacing-xl);
+}
+
+.practiceGrid .practiceCard:last-child {
+  grid-column: 1 / -1;
+}
+
+.practiceCard {
+  display: flex;
+  flex-direction: column;
+}
+
+.cardTitle {
+  font-size: 1.35rem;
+  line-height: 1.18;
+}
+
 .practiceCard h3 {
   line-height: 1.16;
   letter-spacing: 0;
+  overflow-wrap: break-word;
 }
 
 .practiceCard p {
@@ -46,12 +157,16 @@
   text-decoration: none;
   transition:
     border-color 180ms ease,
+    box-shadow 180ms ease,
     transform 180ms ease;
 }
 
-.nextStepCard:hover {
-  border-color: rgb(140 99 61 / 26%);
-  transform: translateY(-2px);
+@media (hover: hover) {
+  .nextStepCard:hover {
+    border-color: rgb(140 99 61 / 26%);
+    box-shadow: 0 18px 40px rgb(61 44 30 / 10%);
+    transform: translateY(-2px);
+  }
 }
 
 .nextStepCard:focus-visible {
@@ -66,14 +181,99 @@
 .cta {
   overflow: hidden;
   background:
-    radial-gradient(circle at 95% 10%, rgb(222 129 54 / 20%), transparent 34%),
-    linear-gradient(135deg, #44261c, #271914);
+    linear-gradient(135deg, rgb(68 38 28 / 98%), rgb(39 25 20 / 98%) 58%, rgb(36 57 23 / 94%));
   color: white;
   box-shadow: 0 26px 58px rgb(50 28 18 / 18%);
 }
 
+.aboutCta {
+  margin-top: 4rem;
+  padding: 3rem;
+  border-radius: var(--mantine-radius-xl);
+}
+
+.ctaGrid {
+  align-items: center;
+}
+
 .ctaText {
+  max-width: 58ch;
   color: rgb(255 255 255 / 76%);
+}
+
+.ctaActions {
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.ctaButton {
+  max-width: 100%;
+}
+
+@media (max-width: 75em) {
+  .missionGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 62em) {
+  .storyGrid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--mantine-spacing-xl);
+  }
+
+  .storyCopy {
+    padding-top: 1.25rem;
+    padding-left: 0;
+    border-top: 4px solid rgb(99 139 73 / 32%);
+    border-left: 0;
+  }
+}
+
+@media (max-width: 48em) {
+  .introHeading {
+    max-width: none;
+  }
+
+  .panelTitle {
+    max-width: none;
+  }
+
+  .section {
+    margin-top: 3rem;
+  }
+
+  .missionGrid,
+  .practiceGrid,
+  .nextStepsGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .practiceGrid .practiceCard:last-child {
+    grid-column: auto;
+  }
+
+  .nextStepCard {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .nextStepArrow {
+    justify-self: start;
+  }
+
+  .aboutCta {
+    margin-top: 3rem;
+    padding: var(--mantine-spacing-xl);
+  }
+
+  .ctaActions {
+    justify-content: flex-start;
+    width: 100%;
+  }
+
+  .ctaButton {
+    width: 100%;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

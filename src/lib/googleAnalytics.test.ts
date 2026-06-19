@@ -59,15 +59,55 @@ describe('analytics consent', () => {
     });
   });
 
-  it('does not create a script or queue events without granted consent', async () => {
+  it('grants only analytics storage when analytics consent is accepted', async () => {
+    const { setAnalyticsConsent } = await loadGoogleAnalytics();
+    const gtag = vi.fn();
+    Object.assign(window, { gtag });
+
+    setAnalyticsConsent('granted');
+
+    expect(gtag).toHaveBeenCalledWith('consent', 'update', {
+      ad_personalization: 'denied',
+      ad_storage: 'denied',
+      ad_user_data: 'denied',
+      analytics_storage: 'granted',
+    });
+  });
+
+  it('loads the tag with denied consent defaults before analytics consent is granted', async () => {
     vi.stubEnv('PROD', true);
     const { initializeGoogleAnalytics, trackEvent } = await loadGoogleAnalytics();
 
     initializeGoogleAnalytics();
     trackEvent('page_view', { page_path: '/' });
 
-    expect(document.getElementById('google-analytics-tag')).not.toBeInTheDocument();
-    expect((window as typeof window & { dataLayer?: unknown }).dataLayer).toBeUndefined();
+    const script = document.getElementById('google-analytics-tag') as HTMLScriptElement | null;
+    expect(script).toBeInTheDocument();
+    expect(script?.async).toBe(true);
+    expect(script?.src).toBe('https://www.googletagmanager.com/gtag/js?id=G-V7V4QB6V95');
+    expect(getQueuedCommands()).toEqual([
+      [
+        'consent',
+        'default',
+        {
+          ad_personalization: 'denied',
+          ad_storage: 'denied',
+          ad_user_data: 'denied',
+          analytics_storage: 'denied',
+        },
+      ],
+      ['js', expect.any(Date)],
+      [
+        'config',
+        'G-V7V4QB6V95',
+        {
+          allow_ad_personalization_signals: false,
+          allow_google_signals: false,
+          send_page_view: false,
+        },
+      ],
+      ['event', 'page_view', { page_path: '/' }],
+    ]);
   });
 
   it('creates the tag and queues consent before config when consent is granted', async () => {
@@ -80,7 +120,7 @@ describe('analytics consent', () => {
     const script = document.getElementById('google-analytics-tag') as HTMLScriptElement | null;
     expect(script).toBeInTheDocument();
     expect(script?.async).toBe(true);
-    expect(script?.src).toBe('https://www.googletagmanager.com/gtag/js?id=G-FNLZREG4BR');
+    expect(script?.src).toBe('https://www.googletagmanager.com/gtag/js?id=G-V7V4QB6V95');
     expect(getQueuedCommands()).toEqual([
       [
         'consent',
@@ -95,7 +135,7 @@ describe('analytics consent', () => {
       ['js', expect.any(Date)],
       [
         'config',
-        'G-FNLZREG4BR',
+        'G-V7V4QB6V95',
         {
           allow_ad_personalization_signals: false,
           allow_google_signals: false,

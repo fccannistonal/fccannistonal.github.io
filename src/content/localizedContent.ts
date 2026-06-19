@@ -1022,7 +1022,8 @@ const en: LocalizedContent = {
       {
         title: 'Analytics',
         paragraphs: [
-          'Google Analytics is disabled unless you choose to allow analytics. If enabled, it records page visits and broad interactions such as planning a visit, contacting the church, or opening the giving link.',
+          'Google Analytics runs in advanced consent mode. Until you choose to allow analytics, the Google tag loads with analytics and advertising storage denied and sends only cookieless consent-mode pings.',
+          'If you allow analytics, Google Analytics can use analytics cookies to record page visits and broad interactions such as planning a visit, contacting the church, or opening the giving link.',
           'The website does not send contact-form messages, prayer requests, names, email addresses, or phone numbers to analytics.',
         ],
       },
@@ -1054,12 +1055,12 @@ const en: LocalizedContent = {
     ],
     preferencesTitle: 'Analytics preference',
     preferencesCopy:
-      'You can change whether this browser allows Google Analytics on the church website.',
+      'You can change whether this browser allows Google Analytics cookies on the church website.',
     acceptAnalytics: 'Allow analytics',
-    declineAnalytics: 'Use necessary services only',
+    declineAnalytics: 'Keep analytics cookies off',
     currentAccepted: 'Analytics is currently allowed in this browser.',
-    currentDeclined: 'Analytics is currently disabled in this browser.',
-    currentUnset: 'No analytics choice has been saved in this browser.',
+    currentDeclined: 'Analytics cookies are currently denied in this browser.',
+    currentUnset: 'No analytics cookie choice has been saved in this browser.',
     embedPreferencesTitle: 'Saved embed choices',
     embedPreferencesCopy:
       'These choices are stored only in this browser. Clearing one blocks that provider again until you choose to load it.',
@@ -1075,9 +1076,9 @@ const en: LocalizedContent = {
   consent: {
     title: 'Your privacy choices',
     description:
-      'We use optional analytics to understand which pages help visitors. Maps, Spotify, and Facebook remain blocked until you choose to load them.',
+      'We use Google Analytics consent mode to understand which pages help visitors. Analytics cookies stay off unless you allow them.',
     accept: 'Allow analytics',
-    decline: 'Necessary only',
+    decline: 'Keep analytics cookies off',
     privacyLink: 'Read the privacy notice',
   },
   notFound: {
@@ -1796,7 +1797,8 @@ const es: LocalizedContent = {
       {
         title: 'Analítica',
         paragraphs: [
-          'Google Analytics está desactivado a menos que usted decida permitirlo. Si se activa, registra visitas a páginas e interacciones generales como planificar una visita, contactar a la iglesia o abrir el enlace de donaciones.',
+          'Google Analytics usa el modo de consentimiento avanzado. Hasta que usted decida permitir la analítica, la etiqueta de Google se carga con almacenamiento de analítica y publicidad denegado y envía solo señales de consentimiento sin cookies.',
+          'Si permite la analítica, Google Analytics puede usar cookies de analítica para registrar visitas a páginas e interacciones generales como planificar una visita, contactar a la iglesia o abrir el enlace de donaciones.',
           'El sitio no envía a la analítica mensajes del formulario, peticiones de oración, nombres, correos electrónicos ni teléfonos.',
         ],
       },
@@ -1828,12 +1830,12 @@ const es: LocalizedContent = {
     ],
     preferencesTitle: 'Preferencia de analítica',
     preferencesCopy:
-      'Puede cambiar si este navegador permite Google Analytics en el sitio de la iglesia.',
+      'Puede cambiar si este navegador permite cookies de Google Analytics en el sitio de la iglesia.',
     acceptAnalytics: 'Permitir analítica',
-    declineAnalytics: 'Usar solo servicios necesarios',
+    declineAnalytics: 'No usar cookies analíticas',
     currentAccepted: 'La analítica está permitida actualmente en este navegador.',
-    currentDeclined: 'La analítica está desactivada actualmente en este navegador.',
-    currentUnset: 'No se ha guardado una preferencia de analítica en este navegador.',
+    currentDeclined: 'Las cookies de analítica están denegadas actualmente en este navegador.',
+    currentUnset: 'No se ha guardado una preferencia de cookies de analítica en este navegador.',
     embedPreferencesTitle: 'Opciones guardadas de contenido',
     embedPreferencesCopy:
       'Estas opciones se guardan solo en este navegador. Al borrar una, ese proveedor vuelve a quedar bloqueado hasta que usted decida cargarlo.',
@@ -1849,9 +1851,9 @@ const es: LocalizedContent = {
   consent: {
     title: 'Sus opciones de privacidad',
     description:
-      'Usamos analítica opcional para saber qué páginas ayudan a los visitantes. Los mapas, Spotify y Facebook permanecen bloqueados hasta que usted decida cargarlos.',
+      'Usamos el modo de consentimiento de Google Analytics para saber qué páginas ayudan a los visitantes. Las cookies de analítica permanecen desactivadas hasta que usted las permita.',
     accept: 'Permitir analítica',
-    decline: 'Solo lo necesario',
+    decline: 'No usar cookies analíticas',
     privacyLink: 'Leer el aviso de privacidad',
   },
   notFound: {

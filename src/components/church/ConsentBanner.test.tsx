@@ -21,7 +21,7 @@ describe('ConsentBanner', () => {
     window.localStorage.clear();
   });
 
-  it('keeps analytics off until the visitor chooses and saves the decision', async () => {
+  it('keeps analytics cookies off when the visitor declines and saves the decision', async () => {
     const user = userEvent.setup();
 
     render(
@@ -33,7 +33,7 @@ describe('ConsentBanner', () => {
     expect(screen.getByRole('heading', { name: /your privacy choices/i })).toBeInTheDocument();
     expect(window.localStorage.getItem(ANALYTICS_CONSENT_KEY)).toBeNull();
 
-    await user.click(screen.getByRole('button', { name: /necessary only/i }));
+    await user.click(screen.getByRole('button', { name: /keep analytics cookies off/i }));
 
     expect(window.localStorage.getItem(ANALYTICS_CONSENT_KEY)).toBe('denied');
     expect(
@@ -41,7 +41,7 @@ describe('ConsentBanner', () => {
     ).not.toBeInTheDocument();
   });
 
-  it('tracks the current route once after the visitor allows analytics', async () => {
+  it('tracks the current route once through consent mode before the visitor chooses', async () => {
     const user = userEvent.setup();
 
     render(
@@ -51,13 +51,13 @@ describe('ConsentBanner', () => {
       </MemoryRouter>
     );
 
-    expect(trackPageViewMock).not.toHaveBeenCalled();
-
-    await user.click(screen.getByRole('button', { name: /allow analytics/i }));
-
     await waitFor(() => {
       expect(trackPageViewMock).toHaveBeenCalledTimes(1);
     });
+
+    await user.click(screen.getByRole('button', { name: /allow analytics/i }));
+
     expect(trackPageViewMock).toHaveBeenCalledWith('/visit?source=banner', 'en');
+    expect(window.localStorage.getItem(ANALYTICS_CONSENT_KEY)).toBe('granted');
   });
 });
