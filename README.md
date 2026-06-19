@@ -136,7 +136,7 @@ The `/admin` route serves Decap CMS. Before production editorial use, replace th
 
 ## Member portal
 
-The member portal keeps the public shell on GitHub Pages and puts private state in Firebase Auth and Firestore. It is disabled until all of these public Vite env vars are present:
+The member portal keeps the public shell on GitHub Pages and puts private state in Firebase Auth and Firestore. It is disabled until these public Vite env vars are present:
 
 ```bash
 VITE_FIREBASE_API_KEY=
@@ -146,6 +146,8 @@ VITE_FIREBASE_STORAGE_BUCKET=
 VITE_FIREBASE_MESSAGING_SENDER_ID=
 VITE_FIREBASE_APP_ID=
 ```
+
+`VITE_FIREBASE_MEASUREMENT_ID` may also be present for the project, but the member portal does not initialize Firebase Analytics.
 
 The first version uses passwordless email-link sign-in, approved access records in `memberAccess/{uid}`, opt-in directory profiles in `directoryProfiles/{uid}`, and audit entries in `directoryAudit/{id}`. Firestore rules deny unauthenticated reads, allow pending users to manage their own request/profile draft, allow approved members to view only approved opt-in profiles, allow admins to approve/moderate access, and explicitly deny `taxDocuments/{document=**}`.
 

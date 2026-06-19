@@ -58,12 +58,24 @@ const firebaseConfig = {
   storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 };
 
+const requiredFirebaseConfigKeys = [
+  'apiKey',
+  'authDomain',
+  'projectId',
+  'storageBucket',
+  'messagingSenderId',
+  'appId',
+] as const;
+
 export function getMissingFirebaseConfigKeys() {
-  return Object.entries(firebaseConfig)
-    .filter(([, value]) => typeof value !== 'string' || value.trim().length === 0)
-    .map(([key]) => key);
+  return requiredFirebaseConfigKeys.filter((key) => {
+    const value = firebaseConfig[key];
+
+    return typeof value !== 'string' || value.trim().length === 0;
+  });
 }
 
 export function isMemberPortalConfigured() {
