@@ -4,7 +4,7 @@ import { Button, Divider, Drawer, Group, Stack, Text } from '@mantine/core';
 import { siteConfig } from '../../content/churchContent';
 import { getShellContent } from '../../content/localizedShellContent';
 import { trackGivingIntent } from '../../lib/googleAnalytics';
-import { useLocale } from '../../lib/i18n';
+import { rememberLocalePreference, useLocale } from '../../lib/i18n';
 import { getAlternateLocalePath, getLocalizedPath } from '../../lib/routing';
 import { BrandLogo } from '../BrandLogo/BrandLogo';
 import { CHURCH_LIFE_NAVIGATION, PRIMARY_NAVIGATION } from './navigation';
@@ -20,6 +20,7 @@ export function MobileNavigationDrawer({ opened, onClose }: MobileNavigationDraw
   const locale = useLocale();
   const content = getShellContent(locale);
   const alternatePath = getAlternateLocalePath(location.pathname);
+  const alternateLocale = locale === 'en' ? 'es' : 'en';
   const churchLifeSubpages = CHURCH_LIFE_NAVIGATION.filter((routeId) => routeId !== 'community');
 
   return (
@@ -90,6 +91,7 @@ export function MobileNavigationDrawer({ opened, onClose }: MobileNavigationDraw
           color="moss"
           leftSection={<IconLanguage size={18} aria-hidden="true" />}
           aria-label={content.common.switchLanguage}
+          onClick={() => rememberLocalePreference(alternateLocale)}
         >
           {content.common.languageName}
         </Button>

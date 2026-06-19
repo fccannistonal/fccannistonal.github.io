@@ -5,7 +5,30 @@ test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => {
     window.localStorage.setItem('fccanniston.analytics-consent.v1', 'denied');
     window.localStorage.removeItem('fccanniston.embed-consent.v1');
+    window.localStorage.removeItem('fccanniston.locale');
   });
+});
+
+test('defaults the home page to the browser language when available', async ({ browser }) => {
+  const context = await browser.newContext({
+    baseURL: 'http://127.0.0.1:4173',
+    locale: 'es-MX',
+  });
+  const page = await context.newPage();
+
+  try {
+    await page.addInitScript(() => {
+      window.localStorage.setItem('fccanniston.analytics-consent.v1', 'denied');
+      window.localStorage.removeItem('fccanniston.locale');
+    });
+    await page.goto('/');
+
+    await expect(page).toHaveURL(/\/es$/);
+    await expect(page.locator('html')).toHaveAttribute('lang', 'es');
+    await expect(page.getByRole('heading', { level: 1 })).toContainText(/seguidores de Cristo/i);
+  } finally {
+    await context.close();
+  }
 });
 
 test('serves localized deep links with route metadata', async ({ page }) => {

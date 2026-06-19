@@ -5,7 +5,7 @@ import { Burger, Button, Container, Group, Popover, Text } from '@mantine/core';
 import { siteConfig } from '../../content/churchContent';
 import { getShellContent } from '../../content/localizedShellContent';
 import { trackGivingIntent } from '../../lib/googleAnalytics';
-import { useLocale } from '../../lib/i18n';
+import { rememberLocalePreference, useLocale } from '../../lib/i18n';
 import { getAlternateLocalePath, getLocalizedPath, getRouteInfo } from '../../lib/routing';
 import { BrandLogo } from '../BrandLogo/BrandLogo';
 import { CHURCH_LIFE_NAVIGATION, PRIMARY_NAVIGATION } from './navigation';
@@ -25,6 +25,7 @@ export function HeaderSimple() {
   const locale = useLocale();
   const content = getShellContent(locale);
   const alternatePath = getAlternateLocalePath(location.pathname);
+  const alternateLocale = locale === 'en' ? 'es' : 'en';
   const currentRoute = getRouteInfo(location.pathname);
   const churchLifeIsActive =
     currentRoute !== undefined && CHURCH_LIFE_NAVIGATION.includes(currentRoute.id);
@@ -152,6 +153,7 @@ export function HeaderSimple() {
               size="compact-sm"
               leftSection={<IconLanguage size={17} aria-hidden="true" />}
               aria-label={content.common.switchLanguage}
+              onClick={() => rememberLocalePreference(alternateLocale)}
             >
               {content.common.languageName}
             </Button>
