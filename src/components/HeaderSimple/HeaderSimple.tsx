@@ -28,7 +28,9 @@ export function HeaderSimple() {
   const alternateLocale = locale === 'en' ? 'es' : 'en';
   const currentRoute = getRouteInfo(location.pathname);
   const churchLifeIsActive =
-    currentRoute !== undefined && CHURCH_LIFE_NAVIGATION.includes(currentRoute.id);
+    currentRoute !== undefined &&
+    currentRoute.id !== 'post' &&
+    CHURCH_LIFE_NAVIGATION.includes(currentRoute.id);
   const churchLifeSubpages = CHURCH_LIFE_NAVIGATION.filter((routeId) => routeId !== 'community');
 
   useEffect(() => {

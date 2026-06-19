@@ -56,6 +56,7 @@ export function updatePageMetadata(pathname: string) {
   ).toString();
   const socialImageAlt = metadata.socialImageAlt ?? routeManifest.socialImageAlt;
   const robots = route?.robots ?? (route ? defaultRobots : 'noindex, follow');
+  const ogType = route?.id === 'post' ? 'article' : 'website';
 
   document.title = route ? metadata.title : getPageTitle(pathname);
   document.documentElement.lang = locale;
@@ -77,7 +78,7 @@ export function updatePageMetadata(pathname: string) {
     property: 'og:site_name',
     content: routeManifest.siteName,
   });
-  upsertMeta('meta[property="og:type"]', { property: 'og:type', content: 'website' });
+  upsertMeta('meta[property="og:type"]', { property: 'og:type', content: ogType });
   upsertMeta('meta[property="og:url"]', { property: 'og:url', content: canonicalUrl });
   upsertMeta('meta[property="og:image"]', { property: 'og:image', content: socialImageUrl });
   upsertMeta('meta[property="og:image:width"]', {

@@ -1,3 +1,4 @@
+import { getPublishedPostRoutes, type PublishedPost } from '../content/posts';
 import routeManifestData from '../content/routeManifest.json';
 
 export type Locale = 'en' | 'es';
@@ -15,11 +16,15 @@ export type RouteId =
   | 'serviceAndOutreach'
   | 'diversityTheater'
   | 'updates'
+  | 'members'
+  | 'memberDirectory'
+  | 'memberGivingStatements'
   | 'contact'
   | 'privacy';
+export type GeneratedRouteId = 'post';
 
 export type LocalizedRoute = {
-  id: RouteId;
+  id: RouteId | GeneratedRouteId;
   locale: Locale;
   path: string;
   alternatePath: string;
@@ -32,9 +37,10 @@ export type LocalizedRoute = {
     question: string;
     answer: string;
   }>;
+  post?: PublishedPost;
 };
 
-type RouteManifest = {
+export type RouteManifest = {
   siteUrl: string;
   siteName: string;
   socialImage: string;
@@ -45,7 +51,10 @@ type RouteManifest = {
 };
 
 export const routeManifest = routeManifestData as RouteManifest;
-export const localizedRoutes = routeManifest.routes;
+export const localizedRoutes: LocalizedRoute[] = [
+  ...routeManifest.routes,
+  ...getPublishedPostRoutes(routeManifest),
+];
 
 const normalizePath = (pathname: string) => {
   if (pathname === '/') {

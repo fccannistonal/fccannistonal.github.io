@@ -1,4 +1,4 @@
-import { IconBrandFacebook, IconCalendarEvent, IconPhone } from '@tabler/icons-react';
+import { IconBrandFacebook, IconCalendarEvent, IconNews, IconPhone } from '@tabler/icons-react';
 import { Link } from 'react-router-dom';
 import {
   Badge,
@@ -15,6 +15,7 @@ import { DeferredEmbed } from '../components/church/DeferredEmbed';
 import { PageHeader } from '../components/church/PageHeader';
 import { siteConfig } from '../content/churchContent';
 import { getContent } from '../content/localizedContent';
+import { getRecentPosts } from '../content/posts';
 import { useLocale } from '../lib/i18n';
 import { getLocalizedPath } from '../lib/routing';
 import classes from './Updates.page.module.css';
@@ -22,6 +23,7 @@ import classes from './Updates.page.module.css';
 export function UpdatesPage() {
   const locale = useLocale();
   const content = getContent(locale);
+  const posts = getRecentPosts(locale, 6);
   const facebookPluginUrl = `https://www.facebook.com/plugins/page.php?href=${encodeURIComponent(
     siteConfig.facebookUrl
   )}&tabs=timeline&width=500&height=760&small_header=false&adapt_container_width=true&hide_cover=false&show_facepile=true`;
@@ -54,6 +56,42 @@ export function UpdatesPage() {
             </Paper>
           ))}
         </SimpleGrid>
+      </Paper>
+
+      <Paper withBorder p={{ base: 'lg', md: 'xl' }} mt="xl" className={classes.blogCard}>
+        <Badge variant="light" color="brand" leftSection={<IconNews size={15} />}>
+          {content.common.navigation.updates}
+        </Badge>
+        <Title order={2} mt="md">
+          {content.updates.blogTitle}
+        </Title>
+        <Text c="dimmed" size="lg" mt="sm">
+          {content.updates.blogCopy}
+        </Text>
+        {posts.length > 0 ? (
+          <SimpleGrid cols={{ base: 1, md: 2 }} spacing="md" mt="xl">
+            {posts.map((post) => (
+              <Paper key={post.path} component="article" withBorder p="md">
+                <Stack gap="xs">
+                  <Text c="dimmed" size="sm" fw={700}>
+                    {post.publishedAt}
+                  </Text>
+                  <Title order={3} className={classes.postTitle}>
+                    {post.title}
+                  </Title>
+                  <Text c="dimmed">{post.description}</Text>
+                  <Button component={Link} to={post.path} variant="light" w="fit-content">
+                    {content.updates.readPost}
+                  </Button>
+                </Stack>
+              </Paper>
+            ))}
+          </SimpleGrid>
+        ) : (
+          <Text c="dimmed" mt="lg">
+            {content.updates.noPosts}
+          </Text>
+        )}
       </Paper>
 
       <Paper withBorder p={{ base: 'lg', md: 'xl' }} mt="xl" className={classes.facebookCard}>

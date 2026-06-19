@@ -17,6 +17,7 @@ const FOOTER_ROUTES: RouteId[] = [
   'community',
   'staff',
   'updates',
+  'members',
   'contact',
   'privacy',
 ];

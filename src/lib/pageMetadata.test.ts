@@ -69,4 +69,24 @@ describe('page metadata', () => {
       'noindex, follow'
     );
   });
+
+  it('writes article metadata for generated blog posts', () => {
+    updatePageMetadata('/updates/welcome-to-first-christian-news');
+
+    expect(document.title).toBe(
+      'Welcome to First Christian Church news | First Christian Church Anniston'
+    );
+    expect(document.querySelector('meta[property="og:type"]')).toHaveAttribute(
+      'content',
+      'article'
+    );
+    expect(document.querySelector('link[rel="canonical"]')).toHaveAttribute(
+      'href',
+      'https://fccanniston.com/updates/welcome-to-first-christian-news'
+    );
+    expect(document.querySelector('link[hreflang="es"]')).toHaveAttribute(
+      'href',
+      'https://fccanniston.com/es/novedades/bienvenidos-a-las-noticias-de-la-iglesia'
+    );
+  });
 });

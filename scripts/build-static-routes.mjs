@@ -2,6 +2,7 @@
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { createPostRoutes, readPublishedPosts } from './post-content.mjs';
 
 const rootDir = resolve(import.meta.dirname, '..');
 const outDir = process.env.BUILD_OUT_DIR ?? 'dist';
@@ -9,6 +10,9 @@ const outputDir = resolve(rootDir, outDir);
 const indexPath = resolve(outputDir, 'index.html');
 const manifestPath = resolve(rootDir, 'src', 'content', 'routeManifest.json');
 const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
+const publishedPosts = await readPublishedPosts(rootDir);
+const generatedPostRoutes = createPostRoutes(publishedPosts, manifest);
+const localizedRoutes = [...manifest.routes, ...generatedPostRoutes];
 const baseHtml = await readFile(indexPath, 'utf8');
 const viteManifest = JSON.parse(
   await readFile(resolve(outputDir, '.vite', 'manifest.json'), 'utf8')
@@ -29,6 +33,10 @@ const routeModuleById = {
   serviceAndOutreach: 'src/pages/MinistryDetail.page.tsx',
   diversityTheater: 'src/pages/DiversityTheater.page.tsx',
   updates: 'src/pages/Updates.page.tsx',
+  post: 'src/pages/Post.page.tsx',
+  members: 'src/pages/Members.page.tsx',
+  memberDirectory: 'src/pages/Members.page.tsx',
+  memberGivingStatements: 'src/pages/Members.page.tsx',
   contact: 'src/pages/Contact.page.tsx',
   privacy: 'src/pages/Privacy.page.tsx',
 };
@@ -49,6 +57,7 @@ const routeSchemaTypeById = {
   about: 'AboutPage',
   contact: 'ContactPage',
   community: 'CollectionPage',
+  memberDirectory: 'CollectionPage',
   recommendedReading: 'CollectionPage',
   staff: 'CollectionPage',
   updates: 'CollectionPage',
@@ -67,7 +76,7 @@ const getRouteSchemaTypes = (route) => {
 };
 
 const getRouteById = (id, locale) =>
-  manifest.routes.find((route) => route.id === id && route.locale === locale);
+  localizedRoutes.find((route) => route.id === id && route.locale === locale);
 
 const getBreadcrumbName = (route) => {
   if (route.id === 'home') {
@@ -86,6 +95,20 @@ const createBreadcrumbRoutes = (route) => {
       const aboutRoute = getRouteById('about', route.locale);
       if (aboutRoute) {
         routes.push(aboutRoute);
+      }
+    }
+
+    if (route.id === 'post') {
+      const updatesRoute = getRouteById('updates', route.locale);
+      if (updatesRoute) {
+        routes.push(updatesRoute);
+      }
+    }
+
+    if (route.id === 'memberDirectory' || route.id === 'memberGivingStatements') {
+      const membersRoute = getRouteById('members', route.locale);
+      if (membersRoute) {
+        routes.push(membersRoute);
       }
     }
 
@@ -288,6 +311,29 @@ function createStructuredData(route) {
     },
   ];
 
+  if (route.id === 'post' && route.post) {
+    const articleId = `${canonicalUrl}#blogposting`;
+    webPage.mainEntity = { '@id': articleId };
+    graph.push({
+      '@type': 'BlogPosting',
+      '@id': articleId,
+      headline: route.post.title,
+      description: route.post.description,
+      datePublished: route.post.publishedAt,
+      dateModified: route.post.publishedAt,
+      author: {
+        '@type': 'Organization',
+        name: route.post.author,
+      },
+      publisher: { '@id': churchId },
+      mainEntityOfPage: { '@id': pageId },
+      image: { '@id': imageId },
+      inLanguage: route.locale,
+      keywords: route.post.tags,
+      isAccessibleForFree: true,
+    });
+  }
+
   if (route.faq) {
     const faqId = `${canonicalUrl}#faq`;
     webPage.mainEntity = { '@id': faqId };
@@ -318,6 +364,7 @@ function createMeta(route) {
   const socialImage = getRouteSocialImage(route);
   const socialImageAlt = getRouteSocialImageAlt(route);
   const robots = route.robots ?? defaultRobots;
+  const ogType = route.id === 'post' ? 'article' : 'website';
 
   return `<!-- ROUTE_META_START -->
     <meta name="description" content="${escapeHtml(route.description)}" />
@@ -326,7 +373,7 @@ function createMeta(route) {
     <link rel="alternate" hreflang="en" href="${absoluteUrl(englishPath)}" />
     <link rel="alternate" hreflang="es" href="${absoluteUrl(spanishPath)}" />
     <link rel="alternate" hreflang="x-default" href="${absoluteUrl(englishPath)}" />
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content="${ogType}" />
     <meta property="og:site_name" content="${escapeHtml(manifest.siteName)}" />
     <meta property="og:title" content="${escapeHtml(route.title)}" />
     <meta property="og:description" content="${escapeHtml(route.description)}" />
@@ -346,7 +393,80 @@ function createMeta(route) {
     <!-- ROUTE_META_END -->`;
 }
 
-for (const route of manifest.routes) {
+const escapeXml = (value) =>
+  String(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&apos;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;');
+
+function createRssFeed(locale) {
+  const channelTitle =
+    locale === 'es'
+      ? 'Novedades de Primera Iglesia Cristiana de Anniston'
+      : 'First Christian Church Anniston Updates';
+  const channelUrl = absoluteUrl(locale === 'es' ? '/es/novedades' : '/updates');
+  const items = publishedPosts
+    .filter((post) => post.locale === locale)
+    .map(
+      (post) => `<item>
+      <title>${escapeXml(post.title)}</title>
+      <link>${absoluteUrl(post.path)}</link>
+      <guid isPermaLink="true">${absoluteUrl(post.path)}</guid>
+      <description>${escapeXml(post.description)}</description>
+      <pubDate>${new Date(`${post.publishedAt}T12:00:00-06:00`).toUTCString()}</pubDate>
+      <author>${escapeXml(post.author)}</author>
+    </item>`
+    )
+    .join('\n');
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>${escapeXml(channelTitle)}</title>
+    <link>${channelUrl}</link>
+    <description>${escapeXml(channelTitle)}</description>
+    <language>${locale}</language>
+${items}
+  </channel>
+</rss>
+`;
+}
+
+function createJsonFeed(locale) {
+  const title =
+    locale === 'es'
+      ? 'Novedades de Primera Iglesia Cristiana de Anniston'
+      : 'First Christian Church Anniston Updates';
+  const feedUrl = absoluteUrl(locale === 'es' ? '/es/feed.json' : '/feed.json');
+
+  return `${JSON.stringify(
+    {
+      version: 'https://jsonfeed.org/version/1.1',
+      title,
+      home_page_url: absoluteUrl(locale === 'es' ? '/es/novedades' : '/updates'),
+      feed_url: feedUrl,
+      language: locale,
+      items: publishedPosts
+        .filter((post) => post.locale === locale)
+        .map((post) => ({
+          id: absoluteUrl(post.path),
+          url: absoluteUrl(post.path),
+          title: post.title,
+          summary: post.description,
+          content_html: post.html,
+          date_published: new Date(`${post.publishedAt}T12:00:00-06:00`).toISOString(),
+          authors: [{ name: post.author }],
+          tags: post.tags,
+        })),
+    },
+    null,
+    2
+  )}\n`;
+}
+
+for (const route of localizedRoutes) {
   const appHtml = await render(route.path);
   const routeStyles = await createRouteStyles(route.id);
   const routeHtml = baseHtml
@@ -363,7 +483,7 @@ for (const route of manifest.routes) {
   await writeFile(routeOutputPath, routeHtml, 'utf8');
 }
 
-const sitemapEntries = manifest.routes
+const sitemapEntries = localizedRoutes
   .filter(isIndexableRoute)
   .map((route) => {
     const englishPath = route.locale === 'en' ? route.path : route.alternatePath;
@@ -385,6 +505,11 @@ ${sitemapEntries}
 `;
 
 await writeFile(resolve(outputDir, 'sitemap.xml'), sitemap, 'utf8');
+await writeFile(resolve(outputDir, 'feed.xml'), createRssFeed('en'), 'utf8');
+await writeFile(resolve(outputDir, 'feed.json'), createJsonFeed('en'), 'utf8');
+await mkdir(resolve(outputDir, 'es'), { recursive: true });
+await writeFile(resolve(outputDir, 'es', 'feed.xml'), createRssFeed('es'), 'utf8');
+await writeFile(resolve(outputDir, 'es', 'feed.json'), createJsonFeed('es'), 'utf8');
 await writeFile(
   resolve(outputDir, 'robots.txt'),
   `User-agent: *\nAllow: /\nSitemap: ${absoluteUrl('/sitemap.xml')}\n`,
@@ -392,4 +517,4 @@ await writeFile(
 );
 await rm(resolve(rootDir, '.ssr'), { recursive: true, force: true });
 
-console.log(`Generated static HTML for ${manifest.routes.length} localized routes.`);
+console.log(`Generated static HTML for ${localizedRoutes.length} localized routes.`);

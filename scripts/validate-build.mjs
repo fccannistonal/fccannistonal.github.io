@@ -4,6 +4,7 @@ import { dirname, extname, parse, relative, resolve } from 'node:path';
 import { gzipSync } from 'node:zlib';
 import { isConflictCopyArtifactPath } from './build-validation-rules.mjs';
 import { legacyRedirects } from './legacy-redirects.mjs';
+import { createPostRoutes, readPublishedPosts } from './post-content.mjs';
 
 const rootDir = resolve(import.meta.dirname, '..');
 const outDir = process.env.BUILD_OUT_DIR ?? 'dist';
@@ -12,6 +13,8 @@ const sourceImageDir = resolve(rootDir, 'source-images', 'images');
 const manifest = JSON.parse(
   await readFile(resolve(rootDir, 'src', 'content', 'routeManifest.json'), 'utf8')
 );
+const publishedPosts = await readPublishedPosts(rootDir);
+const localizedRoutes = [...manifest.routes, ...createPostRoutes(publishedPosts, manifest)];
 const errors = [];
 const initialJavascriptPaths = new Set();
 
@@ -33,7 +36,7 @@ const hasSchemaType = (node, schemaType) =>
 const flattenStructuredData = (items) =>
   items.flatMap((item) => (Array.isArray(item?.['@graph']) ? item['@graph'] : [item]));
 
-for (const route of manifest.routes) {
+for (const route of localizedRoutes) {
   const routePath =
     route.path === '/'
       ? resolve(outputDir, 'index.html')
@@ -177,8 +180,8 @@ for (const route of manifest.routes) {
   }
 }
 
-for (const route of manifest.routes) {
-  const reciprocalRoute = manifest.routes.find(
+for (const route of localizedRoutes) {
+  const reciprocalRoute = localizedRoutes.find(
     (candidate) => candidate.path === route.alternatePath
   );
   if (
@@ -194,6 +197,10 @@ for (const requiredFile of [
   '404.html',
   'robots.txt',
   'sitemap.xml',
+  'feed.xml',
+  'feed.json',
+  'es/feed.xml',
+  'es/feed.json',
   'images/social/fcc-anniston.jpg',
 ]) {
   try {
@@ -209,7 +216,7 @@ if (!pages404.includes('<meta name="robots" content="noindex, follow"')) {
 }
 
 const sitemap = await readFile(resolve(outputDir, 'sitemap.xml'), 'utf8');
-for (const route of manifest.routes) {
+for (const route of localizedRoutes) {
   const routeUrl = absoluteUrl(route.path);
   const englishPath = route.locale === 'en' ? route.path : route.alternatePath;
   const spanishPath = route.locale === 'es' ? route.path : route.alternatePath;
@@ -331,7 +338,7 @@ for (const sourceImage of sourceImages) {
 
 for (const socialImagePath of new Set([
   manifest.socialImage,
-  ...manifest.routes.flatMap((route) => (route.socialImage ? [route.socialImage] : [])),
+  ...localizedRoutes.flatMap((route) => (route.socialImage ? [route.socialImage] : [])),
 ])) {
   try {
     await access(resolve(outputDir, socialImagePath.replace(/^\//, '')));

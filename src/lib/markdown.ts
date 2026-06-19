@@ -1,0 +1,171 @@
+export type FrontmatterValue = string | string[] | boolean;
+export type FrontmatterRecord = Record<string, FrontmatterValue>;
+
+const frontmatterPattern = /^---\n([\s\S]*?)\n---\n?/;
+
+export function escapeHtml(value: string) {
+  return value
+    .replaceAll('&', '&amp;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;');
+}
+
+export function parseMarkdownDocument(source: string) {
+  const match = source.match(frontmatterPattern);
+
+  if (!match) {
+    throw new Error('Markdown document is missing frontmatter.');
+  }
+
+  return {
+    data: parseFrontmatter(match[1]),
+    body: source.slice(match[0].length).trim(),
+  };
+}
+
+function parseFrontmatter(source: string) {
+  const data: FrontmatterRecord = {};
+  const lines = source.split('\n');
+  let currentArrayKey: string | null = null;
+
+  for (const rawLine of lines) {
+    const line = rawLine.trimEnd();
+
+    if (!line.trim()) {
+      continue;
+    }
+
+    const arrayItem = line.match(/^\s*-\s+(.+)$/);
+
+    if (arrayItem && currentArrayKey) {
+      const currentValue = data[currentArrayKey];
+      data[currentArrayKey] = [
+        ...(Array.isArray(currentValue) ? currentValue : []),
+        normalizeFrontmatterString(arrayItem[1]),
+      ];
+      continue;
+    }
+
+    const field = line.match(/^([A-Za-z][A-Za-z0-9_-]*):(?:\s*(.*))?$/);
+
+    if (!field) {
+      throw new Error(`Unsupported frontmatter line: ${line}`);
+    }
+
+    const [, key, rawValue = ''] = field;
+    currentArrayKey = null;
+
+    if (!rawValue.trim()) {
+      data[key] = [];
+      currentArrayKey = key;
+    } else if (rawValue === 'true' || rawValue === 'false') {
+      data[key] = rawValue === 'true';
+    } else {
+      data[key] = normalizeFrontmatterString(rawValue);
+    }
+  }
+
+  return data;
+}
+
+function normalizeFrontmatterString(value: string) {
+  const trimmed = value.trim();
+  const quoted = trimmed.match(/^['"]([\s\S]*)['"]$/);
+
+  return quoted ? quoted[1] : trimmed;
+}
+
+function isSafeHref(href: string) {
+  if (href.startsWith('/') || href.startsWith('#')) {
+    return true;
+  }
+
+  try {
+    const url = new URL(href);
+    return ['http:', 'https:', 'mailto:', 'tel:'].includes(url.protocol);
+  } catch {
+    return false;
+  }
+}
+
+function renderBasicInline(value: string) {
+  return escapeHtml(value)
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*([^*]+)\*/g, '<em>$1</em>');
+}
+
+function renderInline(value: string) {
+  const linkPattern = /\[([^\]]+)\]\(([^)\s]+)\)/g;
+  let html = '';
+  let lastIndex = 0;
+
+  for (const match of value.matchAll(linkPattern)) {
+    const [raw, label, href] = match;
+    const index = match.index ?? 0;
+    html += renderBasicInline(value.slice(lastIndex, index));
+    html += isSafeHref(href)
+      ? `<a href="${escapeHtml(href)}">${renderBasicInline(label)}</a>`
+      : renderBasicInline(label);
+    lastIndex = index + raw.length;
+  }
+
+  html += renderBasicInline(value.slice(lastIndex));
+  return html;
+}
+
+function flushParagraph(paragraph: string[], blocks: string[]) {
+  if (paragraph.length > 0) {
+    blocks.push(`<p>${renderInline(paragraph.join(' '))}</p>`);
+    paragraph.length = 0;
+  }
+}
+
+function flushList(listItems: string[], blocks: string[]) {
+  if (listItems.length > 0) {
+    blocks.push(`<ul>${listItems.map((item) => `<li>${renderInline(item)}</li>`).join('')}</ul>`);
+    listItems.length = 0;
+  }
+}
+
+export function renderMarkdownToHtml(markdown: string) {
+  const blocks: string[] = [];
+  const paragraph: string[] = [];
+  const listItems: string[] = [];
+
+  for (const rawLine of markdown.split('\n')) {
+    const line = rawLine.trim();
+
+    if (!line) {
+      flushParagraph(paragraph, blocks);
+      flushList(listItems, blocks);
+      continue;
+    }
+
+    const heading = line.match(/^(#{2,4})\s+(.+)$/);
+    if (heading) {
+      flushParagraph(paragraph, blocks);
+      flushList(listItems, blocks);
+      const level = heading[1].length;
+      blocks.push(`<h${level}>${renderInline(heading[2])}</h${level}>`);
+      continue;
+    }
+
+    const listItem = line.match(/^[-*]\s+(.+)$/);
+    if (listItem) {
+      flushParagraph(paragraph, blocks);
+      listItems.push(listItem[1]);
+      continue;
+    }
+
+    flushList(listItems, blocks);
+    paragraph.push(line);
+  }
+
+  flushParagraph(paragraph, blocks);
+  flushList(listItems, blocks);
+
+  return blocks.join('\n');
+}

@@ -14,6 +14,10 @@ The implementation is ready for technical review. Publication approval still req
 - [ ] The Service and Outreach page does not present retired initiatives, including Makers Market, as current ministries.
 - [ ] Address, phone, email, giving URL, social profiles, FormSubmit recipient, Spotify content, and map destination are correct.
 - [ ] The privacy notice accurately reflects the church’s use of Google Analytics, FormSubmit, Google Maps, Spotify, Facebook, and Tithely.
+- [ ] Blog/news editors understand that posts are Markdown-only, bilingual post pairs should use reciprocal alternate slugs, and drafts do not publish.
+- [ ] The Decap CMS GitHub OAuth worker URL, GitHub OAuth app, and editor access model are configured before handing `/admin` to staff.
+- [ ] Member portal copy, approval workflow, directory consent language, and Firestore rules have leadership approval before Firebase configuration is enabled.
+- [ ] Giving statement instructions correctly send members to Tithely or the church office, and no tax PDFs are uploaded to Firebase, GitHub, Cloudflare, or `dist`.
 - [ ] The Facebook Page Plugin renders the intended church page and fallback links work for visitors who block embeds or do not use Facebook.
 
 ## Release check
@@ -25,10 +29,14 @@ The implementation is ready for technical review. Publication approval still req
 - [ ] Run `npm run smoke:production` after deploy.
 - [ ] Verify deep links, redirects, caching, metadata, social previews, and third-party embeds on `https://fccanniston.com`.
 - [ ] Verify legacy URLs (`/outreach`, `/diversity-theater`, `/es/outreach`, `/es/teatro-diversidad`) load redirect pages and send visitors to the canonical pages.
+- [ ] Verify `/updates/:slug`, `/es/novedades/:slug`, `/feed.xml`, `/feed.json`, `/es/feed.xml`, `/es/feed.json`, and `/admin/` after build.
+- [ ] Verify member routes are noindex and show the setup-pending state unless Firebase env vars are configured.
 
 ## Ongoing freshness
 
 - [ ] Assign a ministry owner who can request bilingual schedule alerts for cancellations or exceptions.
 - [ ] Confirm the website owner knows where to update `serviceAlert` content in `src/content/localizedContent.ts`.
+- [ ] Confirm the website owner knows how to create paired Markdown posts and publish Decap editorial workflow changes.
+- [ ] Review Firebase Auth/Firestore usage monthly if the member portal is enabled on the Spark plan.
 - [ ] Review service times, contact details, giving links, staff details, ministry descriptions, and privacy language at least quarterly.
 - [ ] Re-run `npm run smoke:production` after any deploy that changes routes, metadata, redirects, or third-party embeds.

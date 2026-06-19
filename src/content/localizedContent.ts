@@ -248,6 +248,10 @@ type LocalizedContent = {
     privacyNote: string;
     loadFacebook: string;
     openFacebook: string;
+    blogTitle: string;
+    blogCopy: string;
+    readPost: string;
+    noPosts: string;
     fallbackTitle: string;
     fallbackCopy: string;
   };
@@ -358,6 +362,9 @@ const en: LocalizedContent = {
       serviceAndOutreach: 'Service and Outreach',
       diversityTheater: 'Diversity Theater',
       updates: 'Updates',
+      members: 'Members',
+      memberDirectory: 'Member Directory',
+      memberGivingStatements: 'Giving Statements',
       contact: 'Contact',
       privacy: 'Privacy',
     },
@@ -894,6 +901,11 @@ const en: LocalizedContent = {
       'Loading the timeline connects your browser to Meta. It remains blocked until you choose to load it.',
     loadFacebook: 'Load Facebook updates',
     openFacebook: 'Open Facebook directly',
+    blogTitle: 'Latest church posts',
+    blogCopy:
+      'These first-party updates are published by the church and remain available without loading Facebook.',
+    readPost: 'Read update',
+    noPosts: 'No first-party updates have been published yet.',
     fallbackTitle: 'Prefer not to load Facebook?',
     fallbackCopy:
       'Use the direct link, call the church office, or send a message for current information.',
@@ -1096,6 +1108,13 @@ const en: LocalizedContent = {
         ],
       },
       {
+        title: 'Member portal',
+        paragraphs: [
+          'The member portal uses Firebase Authentication for email-link sign-in and Firestore for approved member access records and opt-in directory profiles.',
+          'Directory participation is optional, profile changes are subject to approval, and this website does not store tax documents or giving-statement PDFs.',
+        ],
+      },
+      {
         title: 'Questions',
         paragraphs: [
           'Contact the church office if you have a question about this notice or want help using a direct email, phone, map, or giving option.',
@@ -1163,6 +1182,9 @@ const es: LocalizedContent = {
       serviceAndOutreach: 'Servicio comunitario',
       diversityTheater: 'Teatro Diversidad',
       updates: 'Novedades',
+      members: 'Miembros',
+      memberDirectory: 'Directorio de miembros',
+      memberGivingStatements: 'Comprobantes de donaciones',
       contact: 'Contacto',
       privacy: 'Privacidad',
     },
@@ -1701,6 +1723,11 @@ const es: LocalizedContent = {
       'Cargar la cronología conecta su navegador con Meta. Permanece bloqueada hasta que usted decida cargarla.',
     loadFacebook: 'Cargar novedades de Facebook',
     openFacebook: 'Abrir Facebook directamente',
+    blogTitle: 'Últimas publicaciones de la iglesia',
+    blogCopy:
+      'Estas novedades propias son publicadas por la iglesia y permanecen disponibles sin cargar Facebook.',
+    readPost: 'Leer novedad',
+    noPosts: 'Todavía no se han publicado novedades propias.',
     fallbackTitle: '¿Prefiere no cargar Facebook?',
     fallbackCopy:
       'Use el enlace directo, llame a la oficina de la iglesia o envíe un mensaje para obtener información actual.',
@@ -1899,6 +1926,13 @@ const es: LocalizedContent = {
         title: 'Donaciones en línea',
         paragraphs: [
           'Los enlaces de donación abren Tithe.ly en una pestaña nueva. Tithe.ly procesa las donaciones según sus propias prácticas; este sitio no recibe datos de tarjetas.',
+        ],
+      },
+      {
+        title: 'Portal de miembros',
+        paragraphs: [
+          'El portal de miembros usa Firebase Authentication para iniciar sesión con enlace por correo y Firestore para registros de acceso aprobados y perfiles opcionales del directorio.',
+          'Participar en el directorio es opcional, los cambios de perfil están sujetos a aprobación y este sitio no almacena documentos fiscales ni archivos PDF de comprobantes de donaciones.',
         ],
       },
       {

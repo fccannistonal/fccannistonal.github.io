@@ -1,0 +1,10 @@
+name = "fcc-anniston-decap-oauth"
+main = "worker.js"
+compatibility_date = "2026-06-01"
+
+[vars]
+ALLOWED_ORIGIN = "https://fccanniston.com"
+GITHUB_CLIENT_ID = "replace-with-github-oauth-client-id"
+
+# Set the client secret with:
+# wrangler secret put GITHUB_CLIENT_SECRET

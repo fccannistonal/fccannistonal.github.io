@@ -66,6 +66,20 @@ const DiversityTheaterPage = lazy(() =>
 const UpdatesPage = lazy(() =>
   import('./pages/Updates.page').then((module) => ({ default: module.UpdatesPage }))
 );
+const PostPage = lazy(() =>
+  import('./pages/Post.page').then((module) => ({ default: module.PostPage }))
+);
+const MembersPage = lazy(() =>
+  import('./pages/Members.page').then((module) => ({ default: module.MembersPage }))
+);
+const MemberDirectoryPage = lazy(() =>
+  import('./pages/Members.page').then((module) => ({ default: module.MemberDirectoryPage }))
+);
+const MemberGivingStatementsPage = lazy(() =>
+  import('./pages/Members.page').then((module) => ({
+    default: module.MemberGivingStatementsPage,
+  }))
+);
 const ContactPage = lazy(() =>
   import('./pages/Contact.page').then((module) => ({ default: module.ContactPage }))
 );
@@ -216,6 +230,13 @@ export const routes: RouteObject[] = [
         element: withSuspense(<DiversityTheaterPage />),
       },
       { path: 'updates', element: withSuspense(<UpdatesPage />) },
+      { path: 'updates/:slug', element: withSuspense(<PostPage />) },
+      { path: 'members', element: withSuspense(<MembersPage />) },
+      { path: 'members/directory', element: withSuspense(<MemberDirectoryPage />) },
+      {
+        path: 'members/giving-statements',
+        element: withSuspense(<MemberGivingStatementsPage />),
+      },
       { path: 'contact', element: withSuspense(<ContactPage />) },
       { path: 'privacy', element: withSuspense(<PrivacyPage />) },
       {
@@ -265,6 +286,13 @@ export const routes: RouteObject[] = [
         element: withSuspense(<DiversityTheaterPage />),
       },
       { path: 'es/novedades', element: withSuspense(<UpdatesPage />) },
+      { path: 'es/novedades/:slug', element: withSuspense(<PostPage />) },
+      { path: 'es/miembros', element: withSuspense(<MembersPage />) },
+      { path: 'es/miembros/directorio', element: withSuspense(<MemberDirectoryPage />) },
+      {
+        path: 'es/miembros/comprobantes-de-donaciones',
+        element: withSuspense(<MemberGivingStatementsPage />),
+      },
       { path: 'es/contacto', element: withSuspense(<ContactPage />) },
       { path: 'es/privacidad', element: withSuspense(<PrivacyPage />) },
       {

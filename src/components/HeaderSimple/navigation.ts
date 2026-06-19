@@ -7,6 +7,7 @@ export const PRIMARY_NAVIGATION: RouteId[] = [
   'community',
   'staff',
   'updates',
+  'members',
   'contact',
 ];
 

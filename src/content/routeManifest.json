@@ -295,6 +295,60 @@
       "description": "Encuentre anuncios, cambios de horario, eventos, fotos y enlaces actuales de la página pública de Facebook de la iglesia."
     },
     {
+      "id": "members",
+      "locale": "en",
+      "path": "/members",
+      "alternatePath": "/es/miembros",
+      "title": "Member Portal | First Christian Church Anniston",
+      "description": "Sign in to request member access, manage an opt-in directory profile, and find giving statement guidance for First Christian Church Anniston.",
+      "robots": "noindex, follow"
+    },
+    {
+      "id": "members",
+      "locale": "es",
+      "path": "/es/miembros",
+      "alternatePath": "/members",
+      "title": "Portal de miembros | Primera Iglesia Cristiana de Anniston",
+      "description": "Inicie sesión para solicitar acceso, administrar un perfil opcional del directorio y encontrar orientación sobre comprobantes de donaciones.",
+      "robots": "noindex, follow"
+    },
+    {
+      "id": "memberDirectory",
+      "locale": "en",
+      "path": "/members/directory",
+      "alternatePath": "/es/miembros/directorio",
+      "title": "Member Directory | First Christian Church Anniston",
+      "description": "View the opt-in First Christian Church Anniston member directory after approved member sign-in.",
+      "robots": "noindex, follow"
+    },
+    {
+      "id": "memberDirectory",
+      "locale": "es",
+      "path": "/es/miembros/directorio",
+      "alternatePath": "/members/directory",
+      "title": "Directorio de miembros | Primera Iglesia Cristiana de Anniston",
+      "description": "Vea el directorio opcional de miembros después de iniciar sesión con acceso aprobado.",
+      "robots": "noindex, follow"
+    },
+    {
+      "id": "memberGivingStatements",
+      "locale": "en",
+      "path": "/members/giving-statements",
+      "alternatePath": "/es/miembros/comprobantes-de-donaciones",
+      "title": "Giving Statements | First Christian Church Anniston",
+      "description": "Find guidance for donation receipts and annual giving statements through Tithely and the First Christian Church Anniston office.",
+      "robots": "noindex, follow"
+    },
+    {
+      "id": "memberGivingStatements",
+      "locale": "es",
+      "path": "/es/miembros/comprobantes-de-donaciones",
+      "alternatePath": "/members/giving-statements",
+      "title": "Comprobantes de donaciones | Primera Iglesia Cristiana de Anniston",
+      "description": "Encuentre orientación sobre recibos y comprobantes anuales de donaciones mediante Tithely y la oficina de la iglesia.",
+      "robots": "noindex, follow"
+    },
+    {
       "id": "contact",
       "locale": "en",
       "path": "/contact",

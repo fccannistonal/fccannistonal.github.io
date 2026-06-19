@@ -1,0 +1,19 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "directoryProfiles",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "optIn",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "approved",
+          "order": "ASCENDING"
+        }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

@@ -1,0 +1,69 @@
+backend:
+  name: github
+  repo: fccannistonal/fccannistonal.github.io
+  branch: main
+  base_url: https://fcc-anniston-decap-oauth.example.workers.dev
+  auth_endpoint: auth
+
+publish_mode: editorial_workflow
+media_folder: source-images/images/uploads
+public_folder: /images/uploads
+
+site_url: https://fccanniston.com
+display_url: https://fccanniston.com
+logo_url: /images/brand/fcc-logo.png
+
+collections:
+  - name: posts
+    label: Church Posts
+    label_singular: Church Post
+    folder: src/content/posts
+    create: true
+    delete: false
+    extension: md
+    format: frontmatter
+    slug: "{{slug}}"
+    editor:
+      preview: false
+    fields:
+      - label: Slug
+        name: slug
+        widget: string
+        hint: Lowercase URL slug, such as sunday-schedule-update.
+      - label: Locale
+        name: locale
+        widget: select
+        options:
+          - { label: English, value: en }
+          - { label: Spanish, value: es }
+      - label: Alternate Slug
+        name: alternateSlug
+        widget: string
+        hint: Matching translated post slug for the paired language version.
+      - label: Title
+        name: title
+        widget: string
+      - label: Description
+        name: description
+        widget: text
+      - label: Published Date
+        name: publishedAt
+        widget: datetime
+        date_format: YYYY-MM-DD
+        time_format: false
+        format: YYYY-MM-DD
+      - label: Author
+        name: author
+        widget: string
+        default: First Christian Church Anniston
+      - label: Tags
+        name: tags
+        widget: list
+        default: ["Church News"]
+      - label: Draft
+        name: draft
+        widget: boolean
+        default: true
+      - label: Body
+        name: body
+        widget: markdown

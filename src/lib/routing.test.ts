@@ -16,6 +16,8 @@ describe('localized routing', () => {
     expect(getLocalizedPath('wonderAndWorship', 'es')).toBe('/es/comunidad/ministerio-infantil');
     expect(getLocalizedPath('serviceAndOutreach', 'es')).toBe('/es/comunidad/servicio-comunitario');
     expect(getLocalizedPath('diversityTheater', 'es')).toBe('/es/comunidad/teatro-diversidad');
+    expect(getLocalizedPath('members', 'en')).toBe('/members');
+    expect(getLocalizedPath('memberDirectory', 'es')).toBe('/es/miembros/directorio');
   });
 
   it('preserves equivalent pages across languages', () => {
@@ -24,10 +26,14 @@ describe('localized routing', () => {
     expect(getAlternateLocalePath('/community/hispanic-ministry')).toBe(
       '/es/comunidad/ministerio-hispano'
     );
+    expect(getAlternateLocalePath('/updates/welcome-to-first-christian-news')).toBe(
+      '/es/novedades/bienvenidos-a-las-noticias-de-la-iglesia'
+    );
   });
 
   it('normalizes trailing slashes and provides canonical URLs', () => {
     expect(getRouteInfo('/about/')?.id).toBe('about');
+    expect(getRouteInfo('/updates/welcome-to-first-christian-news/')?.id).toBe('post');
     expect(getLocaleFromPath('/es/acerca/')).toBe('es');
     expect(getCanonicalUrl('/updates')).toBe('https://fccanniston.com/updates');
   });

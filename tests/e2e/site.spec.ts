@@ -1,5 +1,27 @@
+import { readdirSync, readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { expect, test } from '@playwright/test';
 import routeManifest from '../../src/content/routeManifest.json' with { type: 'json' };
+
+function getPublishedPostPaths() {
+  const postsDir = resolve(process.cwd(), 'src', 'content', 'posts');
+
+  return readdirSync(postsDir)
+    .filter((file) => file.endsWith('.md'))
+    .flatMap((file) => {
+      const source = readFileSync(resolve(postsDir, file), 'utf8');
+      const frontmatter = source.match(/^---\n([\s\S]*?)\n---/)?.[1] ?? '';
+      const slug = frontmatter.match(/^slug:\s*(.+)$/m)?.[1]?.trim();
+      const locale = frontmatter.match(/^locale:\s*(.+)$/m)?.[1]?.trim();
+      const draft = frontmatter.match(/^draft:\s*true$/m);
+
+      if (!slug || (locale !== 'en' && locale !== 'es') || draft) {
+        return [];
+      }
+
+      return locale === 'es' ? [`/es/novedades/${slug}`] : [`/updates/${slug}`];
+    });
+}
 
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => {
@@ -155,6 +177,7 @@ test('all localized routes have healthy images and valid links', async ({ page }
 
   const allowedInternalPaths = new Set([
     ...routeManifest.routes.map((route) => route.path),
+    ...getPublishedPostPaths(),
     '/outreach',
     '/diversity-theater',
     '/community/worship-and-music',
@@ -202,4 +225,32 @@ test('all localized routes have healthy images and valid links', async ({ page }
       `${route.path} has unknown internal links`
     ).toEqual([]);
   }
+});
+
+test('serves first-party posts, feeds, and the CMS entry point', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name.startsWith('mobile'), 'run generated-content checks once');
+
+  await page.goto('/updates/welcome-to-first-christian-news');
+
+  await expect(page).toHaveTitle(/Welcome to First Christian Church news/);
+  await expect(page.locator('meta[property="og:type"]')).toHaveAttribute('content', 'article');
+  await expect(page.getByRole('heading', { level: 1 })).toContainText(
+    'Welcome to First Christian Church news'
+  );
+  await expect(
+    page.locator('#main-content').getByRole('link', { name: 'Updates' })
+  ).toHaveAttribute('href', '/updates');
+
+  const rssResponse = await page.goto('/feed.xml');
+  expect(rssResponse?.ok()).toBe(true);
+  await expect(page.locator('body')).toContainText('First Christian Church Anniston Updates');
+
+  const jsonFeedResponse = await page.goto('/feed.json');
+  expect(jsonFeedResponse?.ok()).toBe(true);
+  expect(await page.locator('body').innerText()).toContain(
+    'Welcome to First Christian Church news'
+  );
+
+  await page.goto('/admin/');
+  await expect(page).toHaveTitle('FCC Anniston CMS');
 });
