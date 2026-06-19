@@ -46,6 +46,20 @@ type ShellContent = {
     decline: string;
     privacyLink: string;
   };
+  routeError: {
+    label: string;
+    staleTitle: string;
+    staleDescription: string;
+    genericTitle: string;
+    genericDescription: string;
+    refreshAction: string;
+    homeAction: string;
+    contactAction: string;
+    helpTitle: string;
+    staleHelp: string;
+    genericHelp: string;
+    developerDetails: string;
+  };
   sermonsLabel: string;
 };
 
@@ -116,6 +130,24 @@ export const localizedShellContent: Record<Locale, ShellContent> = {
       decline: 'Keep analytics cookies off',
       privacyLink: 'Read the privacy notice',
     },
+    routeError: {
+      label: 'Page trouble',
+      staleTitle: 'This page needs a quick refresh',
+      staleDescription:
+        'The site was updated while your browser still had an older page open. Refreshing will load the newest version and usually fixes this right away.',
+      genericTitle: 'We could not load this page',
+      genericDescription:
+        'Something went wrong while opening this part of the site. You can refresh, return home, or contact the church office if it keeps happening.',
+      refreshAction: 'Refresh page',
+      homeAction: 'Go home',
+      contactAction: 'Email the church',
+      helpTitle: 'What happened?',
+      staleHelp:
+        'This can happen after a new site release because page files use versioned names. Your browser asked for an older file that is no longer available.',
+      genericHelp:
+        'The rest of the site may still work. If this page keeps failing after a refresh, please let us know which page you were trying to visit.',
+      developerDetails: 'Developer details',
+    },
     sermonsLabel: 'Sermons and reflections',
   },
   es: {
@@ -184,6 +216,24 @@ export const localizedShellContent: Record<Locale, ShellContent> = {
       accept: 'Permitir analítica',
       decline: 'No usar cookies analíticas',
       privacyLink: 'Leer el aviso de privacidad',
+    },
+    routeError: {
+      label: 'Problema de página',
+      staleTitle: 'Esta página necesita actualizarse',
+      staleDescription:
+        'El sitio se actualizó mientras su navegador todavía tenía abierta una versión anterior. Al actualizar, se cargará la versión más reciente y normalmente se resuelve de inmediato.',
+      genericTitle: 'No pudimos cargar esta página',
+      genericDescription:
+        'Algo salió mal al abrir esta parte del sitio. Puede actualizar, volver al inicio o escribir a la oficina de la iglesia si sigue ocurriendo.',
+      refreshAction: 'Actualizar página',
+      homeAction: 'Ir al inicio',
+      contactAction: 'Enviar correo',
+      helpTitle: '¿Qué pasó?',
+      staleHelp:
+        'Esto puede ocurrir después de una nueva publicación del sitio porque los archivos de página usan nombres con versión. Su navegador pidió un archivo anterior que ya no está disponible.',
+      genericHelp:
+        'Es posible que el resto del sitio todavía funcione. Si esta página sigue fallando después de actualizar, díganos qué página intentaba visitar.',
+      developerDetails: 'Detalles para desarrollo',
     },
     sermonsLabel: 'Sermones y reflexiones',
   },

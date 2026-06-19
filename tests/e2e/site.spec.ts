@@ -45,6 +45,20 @@ test('serves localized deep links with route metadata', async ({ page }) => {
   );
 });
 
+test('shows recovery UI when a route chunk cannot be loaded', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name.startsWith('mobile'), 'run chunk failure regression once');
+
+  await page.route(/\/assets\/Staff\.page-[^/]+\.js$/, (route) => route.abort());
+  await page.goto('/staff');
+
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'This page needs a quick refresh' })
+  ).toBeVisible();
+  await expect(page.getByText(/site was updated while your browser still had/i)).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Refresh page' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Go home' })).toHaveAttribute('href', '/');
+});
+
 test('language switching preserves the equivalent page', async ({ page }, testInfo) => {
   await page.goto('/contact');
   if (testInfo.project.name.startsWith('mobile')) {

@@ -8,6 +8,7 @@ import {
   type RouteObject,
 } from 'react-router-dom';
 import { Center, Loader, VisuallyHidden } from '@mantine/core';
+import { RouteErrorFallback } from './components/church/RouteErrorFallback';
 import { getShellContent } from './content/localizedShellContent';
 import { SiteLayout } from './layout/SiteLayout';
 import { useLocale } from './lib/i18n';
@@ -161,14 +162,27 @@ const withSuspense = (element: React.ReactNode) => (
   <Suspense fallback={<RouteLoading />}>{element}</Suspense>
 );
 
+function RootShell({ children }: { children: React.ReactNode }) {
+  return (
+    <SiteLayout>
+      <RouteEffects />
+      {children}
+    </SiteLayout>
+  );
+}
+
 export const routes: RouteObject[] = [
   {
     path: '/',
     element: (
-      <SiteLayout>
-        <RouteEffects />
+      <RootShell>
         <Outlet />
-      </SiteLayout>
+      </RootShell>
+    ),
+    errorElement: (
+      <RootShell>
+        <RouteErrorFallback />
+      </RootShell>
     ),
     children: [
       { index: true, element: withSuspense(<HomePage />) },

@@ -1,6 +1,7 @@
 import { act } from '@testing-library/react';
-import { createMemoryRouter, RouterProvider } from 'react-router-dom';
+import { createMemoryRouter, Outlet, RouterProvider } from 'react-router-dom';
 import { render, screen, waitFor } from '@/test-utils';
+import { RouteErrorFallback } from './components/church/RouteErrorFallback';
 import { getRedirectPathKey, restoreRedirectPath } from './lib/githubPages';
 import { Router, routes } from './Router';
 
@@ -116,5 +117,74 @@ describe('Router', () => {
         'https://fccanniston.com/es/contacto'
       );
     });
+  });
+
+  it('renders a recovery path when a lazy route chunk is unavailable', async () => {
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+    function BrokenRoute(): never {
+      throw new TypeError(
+        'error loading dynamically imported module: https://fccanniston.com/assets/Staff.page-CL5ehnca.js'
+      );
+    }
+
+    const router = createMemoryRouter(
+      [
+        {
+          path: '/',
+          element: <Outlet />,
+          errorElement: <RouteErrorFallback />,
+          children: [{ path: 'staff', element: <BrokenRoute /> }],
+        },
+      ],
+      { initialEntries: ['/staff'] }
+    );
+
+    try {
+      render(<RouterProvider router={router} />);
+
+      expect(
+        await screen.findByRole('heading', { name: /this page needs a quick refresh/i })
+      ).toBeInTheDocument();
+      expect(screen.getByText(/site was updated while your browser/i)).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /refresh page/i })).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: /go home/i })).toHaveAttribute('href', '/');
+      expect(screen.getByRole('link', { name: /email the church/i })).toHaveAttribute(
+        'href',
+        'mailto:fccannistonal@gmail.com'
+      );
+    } finally {
+      consoleError.mockRestore();
+    }
+  });
+
+  it('localizes the route error fallback from the current path', async () => {
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+    function BrokenRoute(): never {
+      throw new Error('Unexpected render failure');
+    }
+
+    const router = createMemoryRouter(
+      [
+        {
+          path: '/',
+          element: <Outlet />,
+          errorElement: <RouteErrorFallback />,
+          children: [{ path: 'es/personal', element: <BrokenRoute /> }],
+        },
+      ],
+      { initialEntries: ['/es/personal'] }
+    );
+
+    try {
+      render(<RouterProvider router={router} />);
+
+      expect(
+        await screen.findByRole('heading', { name: /no pudimos cargar esta página/i })
+      ).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /actualizar página/i })).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: /ir al inicio/i })).toHaveAttribute('href', '/es');
+    } finally {
+      consoleError.mockRestore();
+    }
   });
 });
