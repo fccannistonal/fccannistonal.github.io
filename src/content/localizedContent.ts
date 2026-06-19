@@ -151,6 +151,10 @@ type LocalizedContent = {
     missionStatements: string[];
     denominationalTitle: string;
     denominationalParagraphs: string[];
+    denominationalLink: {
+      label: string;
+      href: string;
+    };
     disciplesTitle: string;
     disciplesIntro: string;
     disciplesPractices: Array<{ title: string; description: string }>;
@@ -573,6 +577,10 @@ const en: LocalizedContent = {
       'The Disciples tradition grew out of a desire for Christian unity. In the early 1800s, leaders such as Barton W. Stone, Thomas Campbell, and Alexander Campbell challenged the divisions that kept Christians separated from one another, especially at the Lord’s Table. Their movements eventually came together in 1832 and helped form what became the Christian Church (Disciples of Christ).',
       'That history still shapes us today. We believe Christ’s table is larger than any one denomination, background, or human boundary. We seek to be a church where unity is practiced through welcome, shared worship, honest study, and service to the world.',
     ],
+    denominationalLink: {
+      label: 'Learn more from the Christian Church (Disciples of Christ)',
+      href: 'https://disciples.org/our-identity/',
+    },
     disciplesTitle: 'What it means to be Disciples of Christ',
     disciplesIntro:
       'As Disciples of Christ, we welcome all to the Lord’s Table as God has welcomed us.',
@@ -1349,6 +1357,10 @@ const es: LocalizedContent = {
       'La tradición de los Discípulos nació de un deseo de unidad cristiana. A comienzos del siglo XIX, líderes como Barton W. Stone, Thomas Campbell y Alexander Campbell desafiaron las divisiones que separaban a los cristianos, especialmente en la Mesa del Señor. Sus movimientos se unieron finalmente en 1832 y ayudaron a formar lo que llegó a ser la Iglesia Cristiana (Discípulos de Cristo).',
       'Esa historia todavía nos forma hoy. Creemos que la mesa de Cristo es más amplia que cualquier denominación, trasfondo o frontera humana. Buscamos ser una iglesia donde la unidad se practica mediante la bienvenida, la adoración compartida, el estudio honesto y el servicio al mundo.',
     ],
+    denominationalLink: {
+      label: 'Conozca más de la Iglesia Cristiana (Discípulos de Cristo)',
+      href: 'https://disciples.org/our-identity/',
+    },
     disciplesTitle: 'Qué significa ser Discípulos de Cristo',
     disciplesIntro:
       'Como Discípulos de Cristo, recibimos a todas las personas en la Mesa del Señor como Dios nos ha recibido.',

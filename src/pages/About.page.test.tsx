@@ -18,6 +18,9 @@ describe('About pages', () => {
     expect(screen.getAllByText(/unity without requiring uniformity/i).length).toBeGreaterThan(0);
     expect(screen.getByRole('heading', { name: /our mission/i })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: /our denominational home/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('link', { name: /learn more from the christian church/i })
+    ).toHaveAttribute('href', 'https://disciples.org/our-identity/');
     expect(screen.getByRole('link', { name: /membership and baptism/i })).toHaveAttribute(
       'href',
       '/about/membership-and-baptism'

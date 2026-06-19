@@ -2,6 +2,7 @@ import {
   IconArrowRight,
   IconBook2,
   IconCircleCheck,
+  IconExternalLink,
   IconHeartHandshake,
   IconSparkles,
   IconTable,
@@ -101,6 +102,19 @@ export function AboutPage() {
                 {paragraph}
               </Text>
             ))}
+            <Button
+              component="a"
+              href={content.about.denominationalLink.href}
+              target="_blank"
+              rel="noreferrer"
+              variant="subtle"
+              color="brand"
+              className={classes.disciplesLink}
+              rightSection={<IconExternalLink size={17} aria-hidden="true" />}
+            >
+              {content.about.denominationalLink.label}
+              <span className={classes.visuallyHidden}> {content.common.opensNewTab}</span>
+            </Button>
           </Stack>
         </div>
       </section>
