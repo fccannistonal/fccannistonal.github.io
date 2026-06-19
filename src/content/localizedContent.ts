@@ -42,6 +42,17 @@ type AboutLinkCard = {
   routeId: RouteId;
 };
 
+type AboutHeritageImage = {
+  src: string;
+  alt: string;
+  title: string;
+  caption: string;
+  width: number;
+  height: number;
+  ratio: number;
+  sizes: string;
+};
+
 type ReadingCategory = {
   title: string;
   books: Array<{ title: string; author: string }>;
@@ -155,6 +166,9 @@ type LocalizedContent = {
       label: string;
       href: string;
     };
+    heritageTitle: string;
+    heritageIntro: string;
+    heritageImages: AboutHeritageImage[];
     disciplesTitle: string;
     disciplesIntro: string;
     disciplesPractices: Array<{ title: string; description: string }>;
@@ -581,6 +595,33 @@ const en: LocalizedContent = {
       label: 'Learn more from the Christian Church (Disciples of Christ)',
       href: 'https://disciples.org/our-identity/',
     },
+    heritageTitle: 'A story carried through people',
+    heritageIntro:
+      'Our congregation’s story belongs to a larger stream of Disciples history and to the people in Anniston who gathered, worshiped, served, and passed the faith forward.',
+    heritageImages: [
+      {
+        src: '/images/about/nineteenth-century-religious-reformers.jpg',
+        alt: 'Historic print of nineteenth-century religious reformers including Thomas Campbell, Barton W. Stone, Walter Scott, and Alexander Campbell',
+        title: 'Roots in the Stone-Campbell movement',
+        caption:
+          'The Christian Church (Disciples of Christ) grew from reform movements that emphasized Christian unity, scripture, and an open Lord’s Table.',
+        width: 1560,
+        height: 1817,
+        ratio: 1560 / 1817,
+        sizes: '(min-width: 62em) 38vw, 100vw',
+      },
+      {
+        src: '/images/about/fcc-anniston-origins.jpg',
+        alt: 'Historic photograph of an early First Christian Church Anniston congregation gathered outside a stone church building',
+        title: 'An early FCC Anniston congregation',
+        caption:
+          'One of the original First Christian Church Anniston congregations gathered outside the church, a reminder that this community has always been formed by people.',
+        width: 958,
+        height: 340,
+        ratio: 958 / 340,
+        sizes: '(min-width: 62em) 54vw, 100vw',
+      },
+    ],
     disciplesTitle: 'What it means to be Disciples of Christ',
     disciplesIntro:
       'As Disciples of Christ, we welcome all to the Lord’s Table as God has welcomed us.',
@@ -1361,6 +1402,33 @@ const es: LocalizedContent = {
       label: 'Conozca más de la Iglesia Cristiana (Discípulos de Cristo)',
       href: 'https://disciples.org/our-identity/',
     },
+    heritageTitle: 'Una historia llevada por personas',
+    heritageIntro:
+      'La historia de nuestra congregación pertenece a una corriente más amplia de la historia de los Discípulos y a las personas en Anniston que se reunieron, adoraron, sirvieron y transmitieron la fe.',
+    heritageImages: [
+      {
+        src: '/images/about/nineteenth-century-religious-reformers.jpg',
+        alt: 'Impresión histórica de reformadores religiosos del siglo XIX, incluidos Thomas Campbell, Barton W. Stone, Walter Scott y Alexander Campbell',
+        title: 'Raíces en el movimiento Stone-Campbell',
+        caption:
+          'La Iglesia Cristiana (Discípulos de Cristo) creció de movimientos de reforma que enfatizaron la unidad cristiana, la Escritura y una Mesa del Señor abierta.',
+        width: 1560,
+        height: 1817,
+        ratio: 1560 / 1817,
+        sizes: '(min-width: 62em) 38vw, 100vw',
+      },
+      {
+        src: '/images/about/fcc-anniston-origins.jpg',
+        alt: 'Fotografía histórica de una congregación temprana de First Christian Church Anniston reunida afuera de un edificio de piedra',
+        title: 'Una congregación temprana de FCC Anniston',
+        caption:
+          'Una de las congregaciones originales de First Christian Church Anniston reunida afuera de la iglesia, un recordatorio de que esta comunidad siempre ha sido formada por personas.',
+        width: 958,
+        height: 340,
+        ratio: 958 / 340,
+        sizes: '(min-width: 62em) 54vw, 100vw',
+      },
+    ],
     disciplesTitle: 'Qué significa ser Discípulos de Cristo',
     disciplesIntro:
       'Como Discípulos de Cristo, recibimos a todas las personas en la Mesa del Señor como Dios nos ha recibido.',

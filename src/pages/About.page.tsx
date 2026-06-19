@@ -12,6 +12,7 @@ import { Link } from 'react-router-dom';
 import {
   Button,
   Container,
+  Grid,
   Group,
   Paper,
   SimpleGrid,
@@ -20,6 +21,7 @@ import {
   ThemeIcon,
   Title,
 } from '@mantine/core';
+import { ContentImage } from '../components/church/ContentImage';
 import { PageHeader } from '../components/church/PageHeader';
 import { getContent } from '../content/localizedContent';
 import { trackVisitPlanningIntent } from '../lib/googleAnalytics';
@@ -117,6 +119,43 @@ export function AboutPage() {
             </Button>
           </Stack>
         </div>
+      </section>
+
+      <section aria-labelledby="heritage-title" className={classes.section}>
+        <div className={classes.sectionHeading}>
+          <Title id="heritage-title" order={2} className={classes.sectionTitle}>
+            {content.about.heritageTitle}
+          </Title>
+          <Text size="lg" className={classes.bodyText}>
+            {content.about.heritageIntro}
+          </Text>
+        </div>
+        <Grid gutter={{ base: 'lg', md: 'xl' }} mt="xl" align="stretch">
+          {content.about.heritageImages.map((image, index) => (
+            <Grid.Col key={image.src} span={{ base: 12, md: index === 0 ? 5 : 7 }}>
+              <figure className={classes.heritageFigure}>
+                <ContentImage
+                  src={image.src}
+                  alt={image.alt}
+                  label={image.title}
+                  width={image.width}
+                  height={image.height}
+                  ratio={image.ratio}
+                  sizes={image.sizes}
+                  className={classes.heritageImage}
+                />
+                <figcaption className={classes.heritageCaption}>
+                  <Text component="span" fw={800} className={classes.heritageCaptionTitle}>
+                    {image.title}
+                  </Text>
+                  <Text component="span" className={classes.heritageCaptionCopy}>
+                    {image.caption}
+                  </Text>
+                </figcaption>
+              </figure>
+            </Grid.Col>
+          ))}
+        </Grid>
       </section>
 
       <section aria-labelledby="disciples-title" className={classes.section}>
