@@ -111,6 +111,10 @@
   box-shadow: 0 12px 36px rgb(60 43 28 / 5%);
 }
 
+.photoCard {
+  container-type: inline-size;
+}
+
 .profileSidebar {
   position: sticky;
   top: calc(var(--site-header-height) + 1rem);
@@ -139,8 +143,20 @@
 }
 
 .photoInput {
+  width: 100%;
   min-width: 0;
   flex: 1;
+}
+
+@container (max-width: 28rem) {
+  .photoPicker {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .profileAvatar {
+    align-self: center;
+  }
 }
 
 .resourceIcon {

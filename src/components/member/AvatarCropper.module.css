@@ -22,7 +22,24 @@
 }
 
 .trigger {
-  align-self: flex-start;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  min-height: 2.75rem;
+  height: auto;
+  align-self: stretch;
+  padding-block: 0.625rem;
+}
+
+.trigger :global(.mantine-Button-inner),
+.trigger :global(.mantine-Button-label) {
+  min-width: 0;
+}
+
+.trigger :global(.mantine-Button-label) {
+  overflow-wrap: anywhere;
+  line-height: 1.25;
+  white-space: normal;
 }
 
 @media (max-width: 30em) {

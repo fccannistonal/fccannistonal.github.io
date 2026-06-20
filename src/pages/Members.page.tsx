@@ -213,14 +213,14 @@ const copyByLocale = {
     photo: 'Profile photo',
     photoHelp:
       'Position and compress your photo in this browser before submitting it for approval.',
-    choosePhoto: 'Choose and position photo',
+    choosePhoto: 'Choose photo',
     photoFormats: 'JPG, PNG, WebP, HEIC, or HEIF up to 25 MB.',
     cropTitle: 'Position your profile photo',
     cropHelp: 'Use the controls to choose which part of the photo stays centered in your profile.',
     cropHorizontal: 'Move photo left or right',
     cropVertical: 'Move photo up or down',
     uploadPhoto: 'Submit photo for review',
-    replacePhoto: 'Replace and position photo',
+    replacePhoto: 'Replace photo',
     removePhoto: 'Remove photo',
     removePhotoTitle: 'Remove your profile photo?',
     removePhotoHelp: 'Your current photo will no longer be available in the member directory.',
@@ -400,14 +400,14 @@ const copyByLocale = {
     showPhoto: 'Mostrar mi foto aprobada',
     photo: 'Foto de perfil',
     photoHelp: 'Posicione y comprima su foto en este navegador antes de enviarla para aprobación.',
-    choosePhoto: 'Elegir y posicionar foto',
+    choosePhoto: 'Elegir foto',
     photoFormats: 'JPG, PNG, WebP, HEIC o HEIF de hasta 25 MB.',
     cropTitle: 'Posicione su foto de perfil',
     cropHelp: 'Use los controles para elegir qué parte de la foto queda centrada en su perfil.',
     cropHorizontal: 'Mover foto a la izquierda o derecha',
     cropVertical: 'Mover foto hacia arriba o abajo',
     uploadPhoto: 'Enviar foto para revisión',
-    replacePhoto: 'Reemplazar y posicionar foto',
+    replacePhoto: 'Reemplazar foto',
     removePhoto: 'Quitar foto',
     removePhotoTitle: '¿Quitar su foto de perfil?',
     removePhotoHelp: 'Su foto actual dejará de estar disponible en el directorio de miembros.',
@@ -1499,9 +1499,11 @@ function AvatarPanel({
       </Group>
       {isPhotoWorkerConfigured() ? (
         url ? (
-          <Button color="red" variant="subtle" mt="md" onClick={() => setRemoveOpened(true)}>
-            {copy.removePhoto}
-          </Button>
+          <Group justify="center" mt="md">
+            <Button color="red" variant="subtle" onClick={() => setRemoveOpened(true)}>
+              {copy.removePhoto}
+            </Button>
+          </Group>
         ) : null
       ) : (
         <Alert color="moss" mt="lg">
