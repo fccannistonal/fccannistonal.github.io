@@ -362,7 +362,7 @@ const en: LocalizedContent = {
       serviceAndOutreach: 'Service and Outreach',
       diversityTheater: 'Diversity Theater',
       updates: 'Updates',
-      members: 'Members',
+      members: 'Member Area',
       memberProfile: 'Profile',
       memberDirectory: 'Member Directory',
       memberGroups: 'Groups',
@@ -1113,9 +1113,10 @@ const en: LocalizedContent = {
         ],
       },
       {
-        title: 'Member portal',
+        title: 'Member area',
         paragraphs: [
-          'The member portal uses Firebase Authentication for email-link sign-in and Firestore for member access, private profiles, groups, events, announcements, and moderation history.',
+          'The member area uses Firebase Authentication for email-link sign-in and Firestore for access, private profiles, groups, events, announcements, and moderation history.',
+          'When someone requests member area access, their name, email, phone, congregation connection, and optional note are also sent to the church inbox through FormSubmit. The request remains available to authorized portal administrators if that email cannot be delivered.',
           'Directory participation and profile photos are optional. Directory entries contain only the contact fields each approved member chose to share.',
           'Profile photos are cropped and compressed in your browser, stored in a private Cloudflare R2 bucket, and delivered through an authenticated Cloudflare Worker after administrator review. Original full-resolution images are not uploaded.',
           'To reduce database requests, this browser keeps a short-lived cache scoped to the signed-in member. Signing out clears locally cached portal records and profile photos; members using a shared device should always sign out.',
@@ -1190,7 +1191,7 @@ const es: LocalizedContent = {
       serviceAndOutreach: 'Servicio comunitario',
       diversityTheater: 'Teatro Diversidad',
       updates: 'Novedades',
-      members: 'Miembros',
+      members: 'Área de miembros',
       memberProfile: 'Perfil',
       memberDirectory: 'Directorio de miembros',
       memberGroups: 'Grupos',
@@ -1942,9 +1943,10 @@ const es: LocalizedContent = {
         ],
       },
       {
-        title: 'Portal de miembros',
+        title: 'Área de miembros',
         paragraphs: [
-          'El portal usa Firebase Authentication para iniciar sesión y Firestore para acceso, perfiles privados, grupos, eventos, anuncios e historial de moderación.',
+          'El área de miembros usa Firebase Authentication para iniciar sesión y Firestore para acceso, perfiles privados, grupos, eventos, anuncios e historial de moderación.',
+          'Cuando alguien solicita acceso al área de miembros, su nombre, correo, teléfono, relación con la congregación y nota opcional también se envían al correo de la iglesia mediante FormSubmit. La solicitud permanece disponible para administradores autorizados si ese mensaje no se entrega.',
           'Participar en el directorio y usar una foto es opcional. El directorio contiene solamente los datos que cada miembro aprobado decidió compartir.',
           'Las fotos se recortan y comprimen en el navegador, se guardan en un depósito privado de Cloudflare R2 y se entregan mediante un Worker autenticado después de revisión. No se suben las imágenes originales.',
           'Para reducir solicitudes a la base de datos, el navegador mantiene una caché de corta duración para el miembro actual. Al cerrar sesión se borran los datos y las fotos guardados localmente; en un dispositivo compartido siempre se debe cerrar sesión.',

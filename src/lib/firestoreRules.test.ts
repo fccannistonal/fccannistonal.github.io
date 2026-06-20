@@ -6,6 +6,7 @@ const rules = readFileSync(resolve(process.cwd(), 'firestore.rules'), 'utf8');
 describe('member portal Firestore rules', () => {
   it('defines the complete member lifecycle and approved-member gate', () => {
     for (const status of [
+      'onboarding',
       'pending',
       'approved',
       'rejected',
@@ -17,6 +18,8 @@ describe('member portal Firestore rules', () => {
       expect(rules).toContain(`'${status}'`);
     }
     expect(rules).toContain("access(request.auth.uid).status == 'approved'");
+    expect(rules).toContain("resource.data.status == 'onboarding'");
+    expect(rules).toContain("request.resource.data.status == 'pending'");
   });
 
   it('separates private profiles from redacted directory projections', () => {

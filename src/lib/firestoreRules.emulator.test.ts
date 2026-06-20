@@ -109,6 +109,95 @@ async function seed() {
 }
 
 describe('member portal Firestore rules in the emulator', () => {
+  it('allows private onboarding and only the audited transition to pending', async () => {
+    await seed();
+    const db = environment
+      .authenticatedContext('new-user', { email: 'new@example.com' })
+      .firestore();
+    const create = writeBatch(db);
+    create.set(doc(db, 'auditLogs/account-created'), {
+      actorUid: 'new-user',
+      actorDisplayName: 'new@example.com',
+      action: 'member.accountCreated',
+      entityType: 'member',
+      targetId: 'new-user',
+      summary: 'Member area account created',
+    });
+    create.set(doc(db, 'memberAccess/new-user'), {
+      uid: 'new-user',
+      email: 'new@example.com',
+      displayName: '',
+      role: 'member',
+      status: 'onboarding',
+      schemaVersion: 2,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      lastAuditId: 'account-created',
+    });
+    create.set(doc(db, 'directoryProfiles/new-user'), {
+      uid: 'new-user',
+      displayName: '',
+      preferredName: '',
+      email: 'new@example.com',
+      phone: '',
+      pronouns: '',
+      household: '',
+      ministryInterests: '',
+      visibility: {
+        listed: false,
+        email: false,
+        phone: false,
+        pronouns: false,
+        household: false,
+        photo: false,
+      },
+      schemaVersion: 2,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+    await assertSucceeds(create.commit());
+
+    await assertSucceeds(getDoc(doc(db, 'directoryProfiles/new-user')));
+    await assertFails(getDoc(doc(db, 'directoryEntries/member')));
+    await assertFails(getDoc(doc(db, 'groups/group-one')));
+    await assertFails(
+      setDoc(doc(db, 'memberAccess/new-user'), { status: 'approved' }, { merge: true })
+    );
+
+    const request = writeBatch(db);
+    request.set(doc(db, 'auditLogs/access-requested'), {
+      actorUid: 'new-user',
+      actorDisplayName: 'New User',
+      action: 'member.accessRequested',
+      entityType: 'member',
+      targetId: 'new-user',
+      summary: 'Member area access requested',
+    });
+    request.update(doc(db, 'directoryProfiles/new-user'), {
+      displayName: 'New User',
+      updatedAt: new Date(),
+    });
+    request.update(doc(db, 'memberAccess/new-user'), {
+      displayName: 'New User',
+      status: 'pending',
+      connection: 'regularParticipant',
+      requestNote: '',
+      requestedAt: new Date(),
+      updatedAt: new Date(),
+      lastAuditId: 'access-requested',
+    });
+    await assertSucceeds(request.commit());
+    await assertSucceeds(getDoc(doc(db, 'directoryProfiles/new-user')));
+    await assertFails(getDoc(doc(db, 'directoryEntries/member')));
+    await assertFails(
+      setDoc(
+        doc(db, 'memberAccess/new-user'),
+        { requestNote: 'Duplicate request', updatedAt: new Date() },
+        { merge: true }
+      )
+    );
+  });
+
   it('blocks logged-out, pending, and banned users from directory data', async () => {
     await seed();
     await assertFails(
@@ -179,6 +268,45 @@ describe('member portal Firestore rules in the emulator', () => {
       lastAuditId: 'action-one',
     });
     await assertSucceeds(batch.commit());
+  });
+
+  it('requires administrators to give a requester-visible rejection reason', async () => {
+    await seed();
+    const db = environment
+      .authenticatedContext('admin', { email: 'admin@example.com' })
+      .firestore();
+    const rejected = (reason?: string) => ({
+      uid: 'pending',
+      email: 'pending@example.com',
+      displayName: 'Pending',
+      role: 'member',
+      status: 'rejected',
+      ...(reason ? { statusReason: reason } : {}),
+      lastAuditId: 'rejection',
+    });
+    const withoutReason = writeBatch(db);
+    withoutReason.set(doc(db, 'auditLogs/rejection'), {
+      actorUid: 'admin',
+      actorDisplayName: 'Admin',
+      action: 'member.rejected',
+      entityType: 'member',
+      targetId: 'pending',
+      summary: 'Rejected',
+    });
+    withoutReason.set(doc(db, 'memberAccess/pending'), rejected());
+    await assertFails(withoutReason.commit());
+
+    const withReason = writeBatch(db);
+    withReason.set(doc(db, 'auditLogs/rejection'), {
+      actorUid: 'admin',
+      actorDisplayName: 'Admin',
+      action: 'member.rejected',
+      entityType: 'member',
+      targetId: 'pending',
+      summary: 'Rejected',
+    });
+    withReason.set(doc(db, 'memberAccess/pending'), rejected('Please contact the church office.'));
+    await assertSucceeds(withReason.commit());
   });
 
   it('separates group editor permissions from calendar and membership management', async () => {

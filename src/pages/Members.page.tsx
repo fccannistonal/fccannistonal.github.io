@@ -10,6 +10,7 @@ import {
   IconLock,
   IconLogout,
   IconMessage,
+  IconRefresh,
   IconShield,
   IconTrash,
   IconUser,
@@ -44,6 +45,7 @@ import {
 } from '@mantine/core';
 import { PageHeader } from '../components/church/PageHeader';
 import { siteConfig } from '../content/churchContent';
+import { notifyMemberAccessRequest } from '../lib/formConfig';
 import { useLocale } from '../lib/i18n';
 import {
   changeMemberRole,
@@ -51,6 +53,7 @@ import {
   completeEmailLinkSignIn,
   createIcs,
   deleteCurrentAuthAccount,
+  ensureMemberOnboardingAccount,
   getMissingFirebaseConfigKeys,
   isMemberPortalConfigured,
   loadAdminGroups,
@@ -69,7 +72,7 @@ import {
   migrateLegacyDirectoryEntry,
   processDeletion,
   removeGroupMembership,
-  requestMemberAccess,
+  requestMemberAreaAccess,
   requestProfileDeletion,
   saveEvent,
   saveGroup,
@@ -89,6 +92,7 @@ import {
   type GroupRole,
   type GroupUpdate,
   type MemberAccess,
+  type MemberConnection,
   type MemberStatus,
   type PortalGroup,
 } from '../lib/memberPortalFirebase';
@@ -119,20 +123,46 @@ type PortalUser = { uid: string; email: string | null };
 const copyByLocale = {
   en: {
     eyebrow: 'Member community',
-    title: 'Member portal',
+    title: 'Member area',
     description:
-      'Profiles, groups, events, and announcements for approved members of First Christian Church Anniston.',
-    setupTitle: 'Member portal setup is pending',
+      'Private profiles and trusted community resources for approved members and participants of First Christian Church Anniston.',
+    setupTitle: 'Member area setup is pending',
     missing: 'Missing configuration:',
-    signIn: 'Sign in by email',
-    signInHelp: 'We will email you a secure sign-in link. New accounts require approval.',
+    signIn: 'Create or sign in to your account',
+    signInHelp:
+      'We will email you a secure link. First-time users can set up a private profile before requesting member area access.',
+    confirmEmail: 'Confirm your email to finish signing in',
+    confirmEmailHelp:
+      'This link was opened in a different browser or device. Enter the same email address that received the link.',
+    finishSignIn: 'Finish signing in',
+    linkProblem: 'This sign-in link is invalid or has expired. Request a new secure link below.',
+    signInComplete: 'You are signed in.',
     email: 'Email address',
     sendLink: 'Send sign-in link',
     linkSent: 'Check your email for the secure sign-in link.',
-    request: 'Request member access',
+    request: 'Request member area access',
+    requestHelp:
+      'When your private profile is ready, tell church staff how you are connected to the congregation.',
+    connection: 'Connection to the congregation',
+    connectionRequired: 'Choose the option that best describes your connection.',
+    connectionChurchMember: 'I am a church member',
+    connectionRegularParticipant: 'I regularly attend or participate',
+    connectionHousehold: 'I am part of a member or participant household',
+    connectionMinistry: 'I volunteer or participate in a ministry',
+    connectionOther: 'Something else',
+    requestNote: 'Anything else staff should know?',
+    requestNoteHelp:
+      'Optional. Do not include prayer requests or pastoral, medical, financial, or other sensitive information.',
+    requestNameHelp: 'Add your full name above before requesting access.',
     displayName: 'Full name',
     submitRequest: 'Submit request',
-    pending: 'Your request is waiting for an administrator.',
+    pending: 'Your member area access request is waiting for staff review.',
+    pendingHelp:
+      'You can continue updating your private profile. Directory, groups, calendar, updates, photos, and member resources remain locked until approval.',
+    checkStatus: 'Check access status',
+    onboarding: 'Private profile setup',
+    onboardingHelp:
+      'Only you and authorized church staff can see these details while you set up your account.',
     rejected: 'Your request was not approved. Contact the church office if this seems incorrect.',
     deactivated: 'Your portal access is deactivated.',
     banned: 'Your portal access is blocked.',
@@ -150,7 +180,7 @@ const copyByLocale = {
     saved: 'Changes saved.',
     unsaved: 'You have unsaved changes',
     error: 'Something went wrong. Please try again.',
-    loading: 'Loading member portal',
+    loading: 'Loading member area',
     empty: 'Nothing to show yet.',
     loadMore: 'Load more',
     preferredName: 'Preferred name',
@@ -163,6 +193,8 @@ const copyByLocale = {
     profileHeading: 'Your profile',
     profileIntro:
       'Keep your contact details current and choose exactly what other members can see.',
+    restrictedProfileIntro:
+      'Set up the private details church staff can use to identify and contact you.',
     personalDetails: 'Personal details',
     personalDetailsHelp: 'This information helps church staff identify and contact you.',
     privateEmailHelp: 'Your sign-in email is managed by your account and cannot be edited here.',
@@ -197,7 +229,7 @@ const copyByLocale = {
     requestDeletion: 'Request deletion',
     confirmDeletion: 'Request deletion of your member profile?',
     deletionModalHelp:
-      'This request signs you out of the member portal and blocks access while an administrator removes your profile and photo. This cannot be undone here.',
+      'This request signs you out of the member area and blocks access while an administrator removes your profile and photo. This cannot be undone here.',
     confirmationLabel: 'Type DELETE to confirm',
     confirmationHelp: 'Enter DELETE exactly as shown.',
     deletePhrase: 'DELETE',
@@ -240,6 +272,13 @@ const copyByLocale = {
     pinned: 'Pinned',
     publish: 'Publish update',
     adminHelp: 'Moderate member access, roles, photos, and audit history.',
+    reviewRequest: 'Review request',
+    requestDetails: 'Access request details',
+    noRequestNote: 'No additional note provided.',
+    rejectReason: 'Reason shown to the requester',
+    rejectReasonHelp: 'A reason is required before rejecting access.',
+    approveRequest: 'Approve member area access',
+    rejectRequest: 'Reject access request',
     approve: 'Approve',
     reject: 'Reject',
     deactivate: 'Deactivate',
@@ -264,20 +303,46 @@ const copyByLocale = {
   },
   es: {
     eyebrow: 'Comunidad de miembros',
-    title: 'Portal de miembros',
+    title: 'Área de miembros',
     description:
-      'Perfiles, grupos, eventos y anuncios para miembros aprobados de la Primera Iglesia Cristiana de Anniston.',
-    setupTitle: 'La configuración del portal está pendiente',
+      'Perfiles privados y recursos comunitarios para miembros y participantes aprobados de la Primera Iglesia Cristiana de Anniston.',
+    setupTitle: 'La configuración del área de miembros está pendiente',
     missing: 'Falta configuración:',
-    signIn: 'Iniciar sesión por correo',
-    signInHelp: 'Le enviaremos un enlace seguro. Las cuentas nuevas requieren aprobación.',
+    signIn: 'Crear una cuenta o iniciar sesión',
+    signInHelp:
+      'Le enviaremos un enlace seguro. Las personas nuevas pueden configurar un perfil privado antes de solicitar acceso al área de miembros.',
+    confirmEmail: 'Confirme su correo para terminar de iniciar sesión',
+    confirmEmailHelp:
+      'Este enlace se abrió en otro navegador o dispositivo. Ingrese el mismo correo que recibió el enlace.',
+    finishSignIn: 'Terminar de iniciar sesión',
+    linkProblem: 'Este enlace no es válido o venció. Solicite otro enlace seguro abajo.',
+    signInComplete: 'Ha iniciado sesión.',
     email: 'Correo electrónico',
     sendLink: 'Enviar enlace',
     linkSent: 'Revise su correo para abrir el enlace seguro.',
-    request: 'Solicitar acceso',
+    request: 'Solicitar acceso al área de miembros',
+    requestHelp:
+      'Cuando su perfil privado esté listo, informe al personal cómo se relaciona con la congregación.',
+    connection: 'Relación con la congregación',
+    connectionRequired: 'Elija la opción que mejor describe su relación.',
+    connectionChurchMember: 'Soy miembro de la iglesia',
+    connectionRegularParticipant: 'Asisto o participo regularmente',
+    connectionHousehold: 'Formo parte del hogar de un miembro o participante',
+    connectionMinistry: 'Soy voluntario o participo en un ministerio',
+    connectionOther: 'Otra relación',
+    requestNote: '¿Hay algo más que el personal deba saber?',
+    requestNoteHelp:
+      'Opcional. No incluya peticiones de oración ni información pastoral, médica, financiera u otra información sensible.',
+    requestNameHelp: 'Agregue su nombre completo arriba antes de solicitar acceso.',
     displayName: 'Nombre completo',
     submitRequest: 'Enviar solicitud',
-    pending: 'Su solicitud espera la revisión de un administrador.',
+    pending: 'Su solicitud de acceso al área de miembros espera revisión del personal.',
+    pendingHelp:
+      'Puede seguir actualizando su perfil privado. El directorio, los grupos, el calendario, las novedades, las fotos y los recursos permanecen bloqueados hasta la aprobación.',
+    checkStatus: 'Comprobar estado de acceso',
+    onboarding: 'Configuración del perfil privado',
+    onboardingHelp:
+      'Solo usted y el personal autorizado de la iglesia pueden ver estos datos mientras configura su cuenta.',
     rejected: 'Su solicitud no fue aprobada. Comuníquese con la oficina si cree que es un error.',
     deactivated: 'Su acceso al portal está desactivado.',
     banned: 'Su acceso al portal está bloqueado.',
@@ -295,7 +360,7 @@ const copyByLocale = {
     saved: 'Cambios guardados.',
     unsaved: 'Tiene cambios sin guardar',
     error: 'Algo salió mal. Inténtelo de nuevo.',
-    loading: 'Cargando el portal',
+    loading: 'Cargando el área de miembros',
     empty: 'No hay contenido todavía.',
     loadMore: 'Cargar más',
     preferredName: 'Nombre preferido',
@@ -308,6 +373,8 @@ const copyByLocale = {
     profileHeading: 'Su perfil',
     profileIntro:
       'Mantenga sus datos de contacto al día y elija exactamente qué pueden ver los demás miembros.',
+    restrictedProfileIntro:
+      'Configure los datos privados que el personal puede usar para identificarle y contactarle.',
     personalDetails: 'Datos personales',
     personalDetailsHelp:
       'Esta información ayuda al personal de la iglesia a identificarle y contactarle.',
@@ -344,7 +411,7 @@ const copyByLocale = {
     requestDeletion: 'Solicitar eliminación',
     confirmDeletion: '¿Solicitar la eliminación de su perfil?',
     deletionModalHelp:
-      'Esta solicitud cierra su sesión y bloquea el acceso mientras un administrador elimina su perfil y foto. No se puede deshacer desde aquí.',
+      'Esta solicitud cierra su sesión en el área de miembros y bloquea el acceso mientras un administrador elimina su perfil y foto. No se puede deshacer desde aquí.',
     confirmationLabel: 'Escriba ELIMINAR para confirmar',
     confirmationHelp: 'Escriba ELIMINAR exactamente como aparece.',
     deletePhrase: 'ELIMINAR',
@@ -387,6 +454,13 @@ const copyByLocale = {
     pinned: 'Fijado',
     publish: 'Publicar',
     adminHelp: 'Modere acceso, funciones, fotos e historial.',
+    reviewRequest: 'Revisar solicitud',
+    requestDetails: 'Detalles de la solicitud de acceso',
+    noRequestNote: 'No se proporcionó una nota adicional.',
+    rejectReason: 'Motivo que verá la persona solicitante',
+    rejectReasonHelp: 'Se requiere un motivo antes de rechazar el acceso.',
+    approveRequest: 'Aprobar acceso al área de miembros',
+    rejectRequest: 'Rechazar solicitud de acceso',
     approve: 'Aprobar',
     reject: 'Rechazar',
     deactivate: 'Desactivar',
@@ -430,6 +504,17 @@ const emptyProfile = (uid: string, email: string): DirectoryProfile => ({
   },
 });
 
+const connectionOptions = (copy: typeof copyByLocale.en) => [
+  { value: 'churchMember', label: copy.connectionChurchMember },
+  { value: 'regularParticipant', label: copy.connectionRegularParticipant },
+  { value: 'householdOrFamily', label: copy.connectionHousehold },
+  { value: 'ministryOrVolunteer', label: copy.connectionMinistry },
+  { value: 'other', label: copy.connectionOther },
+];
+
+const connectionLabel = (copy: typeof copyByLocale.en, connection?: MemberConnection) =>
+  connectionOptions(copy).find((option) => option.value === connection)?.label ?? copy.empty;
+
 export function MembersPage() {
   return <MemberPortalPage section="profile" />;
 }
@@ -465,36 +550,42 @@ function MemberPortalPage({ section }: { section: PortalSection }) {
   const [access, setAccess] = useState<MemberAccess | null>(null);
   const [profile, setProfile] = useState<DirectoryProfile | null>(null);
   const [authReady, setAuthReady] = useState(false);
+  const [accountReady, setAccountReady] = useState(false);
+  const [linkRequiresEmail, setLinkRequiresEmail] = useState(false);
+  const [linkProblem, setLinkProblem] = useState(false);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const configured = isMemberPortalConfigured();
 
-  const refresh = async (currentUser = user) => {
+  const refresh = async (currentUser = user, forceRefresh = false) => {
     if (!currentUser) {
       return;
     }
-    const [nextAccess, nextProfile] = await Promise.all([
-      loadMemberAccess(currentUser.uid),
-      loadOwnProfile(currentUser.uid),
-    ]);
+    let nextAccess = await loadMemberAccess(currentUser.uid, forceRefresh);
+    if (!nextAccess) {
+      nextAccess = await ensureMemberOnboardingAccount(currentUser);
+    }
+    const nextProfile = await loadOwnProfile(currentUser.uid, forceRefresh);
     setAccess(nextAccess);
     const resolved = nextProfile ?? emptyProfile(currentUser.uid, currentUser.email ?? '');
     setProfile(resolved);
     if (nextAccess?.status === 'approved' && nextProfile) {
       await migrateLegacyDirectoryEntry(nextProfile);
     }
+    setAccountReady(true);
   };
 
   useEffect(() => {
     if (!configured) {
       return undefined;
     }
-    completeEmailLinkSignIn(window.location.href).catch(() =>
-      setNotice({ type: 'error', text: copy.error })
-    );
+    completeEmailLinkSignIn(window.location.href)
+      .then((result) => setLinkRequiresEmail(result === 'needs-email'))
+      .catch(() => setLinkProblem(true));
     return subscribeToAuth((nextUser) => {
       setUser(nextUser ? { uid: nextUser.uid, email: nextUser.email } : null);
       setAuthReady(true);
+      setAccountReady(!nextUser);
       if (!nextUser) {
         setAccess(null);
         setProfile(null);
@@ -504,9 +595,29 @@ function MemberPortalPage({ section }: { section: PortalSection }) {
 
   useEffect(() => {
     if (user) {
-      refresh(user).catch(() => setNotice({ type: 'error', text: copy.error }));
+      refresh(user).catch(() => {
+        setAccountReady(true);
+        setNotice({ type: 'error', text: copy.error });
+      });
     }
   }, [user]);
+
+  useEffect(() => {
+    if (!user || !access || access.status === 'approved') {
+      return undefined;
+    }
+    const refreshOnFocus = () => {
+      if (document.visibilityState === 'visible') {
+        refresh(user, true).catch(() => undefined);
+      }
+    };
+    window.addEventListener('focus', refreshOnFocus);
+    document.addEventListener('visibilitychange', refreshOnFocus);
+    return () => {
+      window.removeEventListener('focus', refreshOnFocus);
+      document.removeEventListener('visibilitychange', refreshOnFocus);
+    };
+  }, [user, access?.status]);
 
   const run = async (work: () => Promise<void>, success = copy.saved) => {
     setBusy(true);
@@ -546,8 +657,26 @@ function MemberPortalPage({ section }: { section: PortalSection }) {
             <Loader aria-label={copy.loading} />
           </Center>
         ) : null}
-        {configured && authReady && !user ? <SignIn copy={copy} busy={busy} run={run} /> : null}
-        {configured && user ? (
+        {configured && authReady && !user ? (
+          <SignIn
+            copy={copy}
+            busy={busy}
+            run={run}
+            linkRequiresEmail={linkRequiresEmail}
+            linkProblem={linkProblem}
+            completeLink={async (email) => {
+              await completeEmailLinkSignIn(window.location.href, email);
+              setLinkRequiresEmail(false);
+              setLinkProblem(false);
+            }}
+          />
+        ) : null}
+        {configured && user && !accountReady ? (
+          <Center py="xl">
+            <Loader aria-label={copy.loading} />
+          </Center>
+        ) : null}
+        {configured && user && accountReady ? (
           <>
             <Group justify="space-between">
               <Badge variant="light" color={access?.status === 'approved' ? 'green' : 'moss'}>
@@ -562,10 +691,19 @@ function MemberPortalPage({ section }: { section: PortalSection }) {
                 {copy.signOut}
               </Button>
             </Group>
-            {!access ? (
-              <AccessRequest copy={copy} user={user} busy={busy} run={run} refresh={refresh} />
+            {access && ['onboarding', 'pending'].includes(access.status) && profile ? (
+              <RestrictedProfileArea
+                access={access}
+                profile={profile}
+                setProfile={setProfile}
+                copy={copy}
+                locale={locale}
+                busy={busy}
+                run={run}
+                refresh={() => refresh(user, true)}
+              />
             ) : null}
-            {access && access.status !== 'approved' ? (
+            {access && !['onboarding', 'pending', 'approved'].includes(access.status) ? (
               <BlockedState copy={copy} access={access} busy={busy} run={run} refresh={refresh} />
             ) : null}
             {access?.status === 'approved' && profile ? (
@@ -606,22 +744,41 @@ function SignIn({
   copy,
   busy,
   run,
+  linkRequiresEmail,
+  linkProblem,
+  completeLink,
 }: {
   copy: typeof copyByLocale.en;
   busy: boolean;
   run: (work: () => Promise<void>, success?: string) => Promise<void>;
+  linkRequiresEmail: boolean;
+  linkProblem: boolean;
+  completeLink: (email: string) => Promise<void>;
 }) {
   const [email, setEmail] = useState('');
   return (
     <Paper withBorder p="xl">
-      <Title order={2}>{copy.signIn}</Title>
+      <Title order={2}>{linkRequiresEmail ? copy.confirmEmail : copy.signIn}</Title>
       <Text c="dimmed" mt="sm">
-        {copy.signInHelp}
+        {linkRequiresEmail ? copy.confirmEmailHelp : copy.signInHelp}
       </Text>
+      {linkProblem ? (
+        <Alert color="red" mt="lg">
+          {copy.linkProblem}
+        </Alert>
+      ) : null}
       <form
         onSubmit={(event) => {
           event.preventDefault();
-          run(() => sendMemberSignInLink(email, window.location.href.split('#')[0]), copy.linkSent);
+          if (linkRequiresEmail) {
+            run(() => completeLink(email), copy.signInComplete);
+          } else {
+            run(
+              () =>
+                sendMemberSignInLink(email, `${window.location.origin}${window.location.pathname}`),
+              copy.linkSent
+            );
+          }
         }}
       >
         <Group align="end" mt="lg">
@@ -634,7 +791,7 @@ function SignIn({
             onChange={(event) => setEmail(event.currentTarget.value)}
           />
           <Button type="submit" loading={busy}>
-            {copy.sendLink}
+            {linkRequiresEmail ? copy.finishSignIn : copy.sendLink}
           </Button>
         </Group>
       </form>
@@ -642,46 +799,125 @@ function SignIn({
   );
 }
 
-function AccessRequest({
+function RestrictedProfileArea({
+  access,
+  profile,
+  setProfile,
   copy,
-  user,
+  locale,
   busy,
   run,
   refresh,
 }: {
+  access: MemberAccess;
+  profile: DirectoryProfile;
+  setProfile: (profile: DirectoryProfile) => void;
   copy: typeof copyByLocale.en;
-  user: PortalUser;
+  locale: 'en' | 'es';
   busy: boolean;
   run: (work: () => Promise<void>, success?: string) => Promise<void>;
   refresh: () => Promise<void>;
 }) {
-  const [name, setName] = useState('');
+  const [connection, setConnection] = useState<MemberConnection | null>(access.connection ?? null);
+  const [requestNote, setRequestNote] = useState(access.requestNote ?? '');
+  const pending = access.status === 'pending';
   return (
-    <Paper withBorder p="xl">
-      <Title order={2}>{copy.request}</Title>
-      <form
-        onSubmit={(event) => {
-          event.preventDefault();
-          run(async () => {
-            await requestMemberAccess(user, name);
-            await refresh();
-          }, copy.pending);
-        }}
+    <Stack gap="lg">
+      <Alert
+        color={pending ? 'moss' : 'blue'}
+        icon={pending ? <IconLock size={18} /> : <IconUser size={18} />}
+        title={pending ? copy.pending : copy.onboarding}
       >
-        <Group align="end" mt="lg">
-          <TextInput
-            className={classes.emailInput}
-            label={copy.displayName}
-            value={name}
-            required
-            onChange={(event) => setName(event.currentTarget.value)}
-          />
-          <Button type="submit" loading={busy}>
-            {copy.submitRequest}
+        <Text>{pending ? copy.pendingHelp : copy.onboardingHelp}</Text>
+        {pending ? (
+          <Button
+            variant="light"
+            mt="md"
+            size="sm"
+            loading={busy}
+            leftSection={<IconRefresh size={17} />}
+            onClick={() => run(refresh, copy.pending)}
+          >
+            {copy.checkStatus}
           </Button>
-        </Group>
-      </form>
-    </Paper>
+        ) : null}
+      </Alert>
+      <ProfilePanel
+        key={access.status}
+        profile={profile}
+        setProfile={setProfile}
+        copy={copy}
+        busy={busy}
+        run={run}
+        refresh={refresh}
+        access={access}
+        restricted
+      />
+      {!pending ? (
+        <Paper withBorder p={{ base: 'lg', md: 'xl' }}>
+          <Title order={2}>{copy.request}</Title>
+          <Text c="dimmed" mt="sm" maw={720}>
+            {copy.requestHelp}
+          </Text>
+          <form
+            onSubmit={(event) => {
+              event.preventDefault();
+              if (!connection || !profile.displayName.trim()) {
+                return;
+              }
+              run(async () => {
+                await requestMemberAreaAccess(access, profile, connection, requestNote);
+                void notifyMemberAccessRequest({
+                  name: profile.displayName.trim(),
+                  preferredName: profile.preferredName.trim(),
+                  email: profile.email,
+                  phone: profile.phone.trim(),
+                  connection: connectionLabel(copy, connection),
+                  note: requestNote.trim(),
+                  locale,
+                }).catch(() => undefined);
+                await refresh();
+              }, copy.pending);
+            }}
+          >
+            <Stack mt="lg" gap="md">
+              {!profile.displayName.trim() ? (
+                <Alert color="moss" icon={<IconAlertCircle size={18} />}>
+                  {copy.requestNameHelp}
+                </Alert>
+              ) : null}
+              <Select
+                label={copy.connection}
+                description={copy.connectionRequired}
+                data={connectionOptions(copy)}
+                value={connection}
+                required
+                allowDeselect={false}
+                onChange={(value) => setConnection(value as MemberConnection | null)}
+              />
+              <Textarea
+                label={copy.requestNote}
+                description={copy.requestNoteHelp}
+                value={requestNote}
+                maxLength={500}
+                minRows={3}
+                autosize
+                onChange={(event) => setRequestNote(event.currentTarget.value)}
+              />
+              <Group justify="flex-end">
+                <Button
+                  type="submit"
+                  loading={busy}
+                  disabled={!connection || !profile.displayName.trim()}
+                >
+                  {copy.submitRequest}
+                </Button>
+              </Group>
+            </Stack>
+          </form>
+        </Paper>
+      ) : null}
+    </Stack>
   );
 }
 
@@ -833,6 +1069,7 @@ function ProfilePanel({
   run,
   refresh,
   access,
+  restricted = false,
 }: {
   profile: DirectoryProfile;
   setProfile: (profile: DirectoryProfile) => void;
@@ -841,6 +1078,7 @@ function ProfilePanel({
   run: (work: () => Promise<void>, success?: string) => Promise<void>;
   refresh: () => Promise<void>;
   access: MemberAccess;
+  restricted?: boolean;
 }) {
   const [savedProfile, setSavedProfile] = useState(profile);
   const [deleteOpened, setDeleteOpened] = useState(false);
@@ -865,8 +1103,22 @@ function ProfilePanel({
 
   const saveProfile = () =>
     run(async () => {
-      await saveOwnProfile(profile);
-      setSavedProfile(profile);
+      await saveOwnProfile(profile, !restricted);
+      const saved = restricted
+        ? {
+            ...profile,
+            visibility: {
+              listed: false,
+              email: false,
+              phone: false,
+              pronouns: false,
+              household: false,
+              photo: false,
+            },
+          }
+        : profile;
+      setProfile(saved);
+      setSavedProfile(saved);
       await refresh();
     });
   const closeDeleteModal = () => {
@@ -882,7 +1134,7 @@ function ProfilePanel({
             <Text className={classes.sectionEyebrow}>{copy.profile}</Text>
             <Title order={2}>{copy.profileHeading}</Title>
             <Text c="dimmed" mt="xs" maw={620}>
-              {copy.profileIntro}
+              {restricted ? copy.restrictedProfileIntro : copy.profileIntro}
             </Text>
           </Box>
           {hasChanges ? (
@@ -902,7 +1154,7 @@ function ProfilePanel({
         </Group>
       </Paper>
 
-      <div className={classes.profileGrid}>
+      <div className={restricted ? classes.profileGridSingle : classes.profileGrid}>
         <Paper withBorder p={{ base: 'lg', md: 'xl' }} className={classes.profileCard}>
           <div className={classes.cardHeader}>
             <Title order={3}>{copy.personalDetails}</Title>
@@ -980,90 +1232,94 @@ function ProfilePanel({
           </form>
         </Paper>
 
-        <Stack gap="lg" className={classes.profileSidebar}>
-          <AvatarPanel
-            uid={profile.uid}
-            name={profile.preferredName || profile.displayName}
-            copy={copy}
-            busy={busy}
-            run={run}
-          />
-          <Paper withBorder p="lg" className={classes.resourceCard}>
-            <Group wrap="nowrap" align="flex-start">
-              <Box className={classes.resourceIcon} aria-hidden="true">
-                <IconFileText size={22} />
-              </Box>
-              <Box>
-                <Title order={3} size="h4">
-                  {copy.memberResources}
-                </Title>
-                <Text c="dimmed" size="sm" mt={4}>
-                  {copy.givingDescription}
-                </Text>
-                <Button
-                  component={Link}
-                  to={getLocalizedPath('memberGivingStatements', useLocale())}
-                  variant="light"
-                  mt="md"
-                  size="sm"
-                >
-                  {copy.openGiving}
-                </Button>
-              </Box>
-            </Group>
-          </Paper>
-        </Stack>
+        {!restricted ? (
+          <Stack gap="lg" className={classes.profileSidebar}>
+            <AvatarPanel
+              uid={profile.uid}
+              name={profile.preferredName || profile.displayName}
+              copy={copy}
+              busy={busy}
+              run={run}
+            />
+            <Paper withBorder p="lg" className={classes.resourceCard}>
+              <Group wrap="nowrap" align="flex-start">
+                <Box className={classes.resourceIcon} aria-hidden="true">
+                  <IconFileText size={22} />
+                </Box>
+                <Box>
+                  <Title order={3} size="h4">
+                    {copy.memberResources}
+                  </Title>
+                  <Text c="dimmed" size="sm" mt={4}>
+                    {copy.givingDescription}
+                  </Text>
+                  <Button
+                    component={Link}
+                    to={getLocalizedPath('memberGivingStatements', useLocale())}
+                    variant="light"
+                    mt="md"
+                    size="sm"
+                  >
+                    {copy.openGiving}
+                  </Button>
+                </Box>
+              </Group>
+            </Paper>
+          </Stack>
+        ) : null}
       </div>
 
-      <Paper withBorder p={{ base: 'lg', md: 'xl' }} className={classes.privacyCard}>
-        <div className={classes.cardHeader}>
-          <Title order={3}>{copy.privacyHeading}</Title>
-          <Text c="dimmed" size="sm" mt={4}>
-            {copy.privacyHelp}
-          </Text>
-        </div>
-        <div
-          className={classes.directoryToggle}
-          data-enabled={profile.visibility.listed || undefined}
-        >
-          <Switch
-            size="lg"
-            label={copy.directoryListed}
-            description={profile.visibility.listed ? copy.directoryOnHelp : copy.directoryOffHelp}
-            checked={profile.visibility.listed}
-            onChange={(event) => visibility('listed', event.currentTarget.checked)}
-          />
-        </div>
-        {profile.visibility.listed ? (
-          <Box className={classes.sharingOptions}>
-            <Text fw={700} size="sm" mb="sm">
-              {copy.sharedDetails}
+      {!restricted ? (
+        <Paper withBorder p={{ base: 'lg', md: 'xl' }} className={classes.privacyCard}>
+          <div className={classes.cardHeader}>
+            <Title order={3}>{copy.privacyHeading}</Title>
+            <Text c="dimmed" size="sm" mt={4}>
+              {copy.privacyHelp}
             </Text>
-            <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="xs">
-              {(
-                [
-                  ['email', copy.showEmail],
-                  ['phone', copy.showPhone],
-                  ['pronouns', copy.showPronouns],
-                  ['household', copy.showHousehold],
-                  ['photo', copy.showPhoto],
-                ] as Array<[keyof DirectoryProfile['visibility'], string]>
-              ).map(([key, label]) => (
-                <Switch
-                  key={key}
-                  label={label}
-                  checked={profile.visibility[key]}
-                  onChange={(event) => visibility(key, event.currentTarget.checked)}
-                  className={classes.sharingSwitch}
-                />
-              ))}
-            </SimpleGrid>
-            <Text c="dimmed" size="xs" mt="md" aria-live="polite">
-              {sharedDetails.join(' · ') || copy.noSharedDetails}
-            </Text>
-          </Box>
-        ) : null}
-      </Paper>
+          </div>
+          <div
+            className={classes.directoryToggle}
+            data-enabled={profile.visibility.listed || undefined}
+          >
+            <Switch
+              size="lg"
+              label={copy.directoryListed}
+              description={profile.visibility.listed ? copy.directoryOnHelp : copy.directoryOffHelp}
+              checked={profile.visibility.listed}
+              onChange={(event) => visibility('listed', event.currentTarget.checked)}
+            />
+          </div>
+          {profile.visibility.listed ? (
+            <Box className={classes.sharingOptions}>
+              <Text fw={700} size="sm" mb="sm">
+                {copy.sharedDetails}
+              </Text>
+              <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="xs">
+                {(
+                  [
+                    ['email', copy.showEmail],
+                    ['phone', copy.showPhone],
+                    ['pronouns', copy.showPronouns],
+                    ['household', copy.showHousehold],
+                    ['photo', copy.showPhoto],
+                  ] as Array<[keyof DirectoryProfile['visibility'], string]>
+                ).map(([key, label]) => (
+                  <Switch
+                    key={key}
+                    label={label}
+                    checked={profile.visibility[key]}
+                    onChange={(event) => visibility(key, event.currentTarget.checked)}
+                    className={classes.sharingSwitch}
+                  />
+                ))}
+              </SimpleGrid>
+              <Text c="dimmed" size="xs" mt="md" aria-live="polite">
+                {sharedDetails.join(' · ') || copy.noSharedDetails}
+              </Text>
+            </Box>
+          ) : null}
+        </Paper>
+      ) : null}
 
       <Group className={classes.saveBar} justify="space-between" wrap="wrap">
         <Text
@@ -2332,13 +2588,27 @@ function AdminMemberCard({
             <Badge>{member.status}</Badge>
             <Badge variant="outline">{member.role}</Badge>
           </Group>
+          {member.status === 'pending' ? (
+            <Text size="sm" mt="sm">
+              {connectionLabel(copy, member.connection)}
+            </Text>
+          ) : null}
+          {member.status === 'pending' && member.requestNote ? (
+            <Text size="sm" c="dimmed" mt={4} maw={620}>
+              {member.requestNote}
+            </Text>
+          ) : null}
         </div>
         <Group>
           {member.status === 'pending' ? (
-            <>
-              {action('approved', copy.approve)}
-              {action('rejected', copy.reject)}
-            </>
+            <AdminAccessReview
+              copy={copy}
+              actor={access}
+              member={member}
+              busy={busy}
+              run={run}
+              reload={reload}
+            />
           ) : null}
           {member.status === 'approved' ? (
             <>
@@ -2398,6 +2668,147 @@ function AdminMemberCard({
         </>
       ) : null}
     </Paper>
+  );
+}
+
+function AdminAccessReview({
+  copy,
+  actor,
+  member,
+  busy,
+  run,
+  reload,
+}: {
+  copy: typeof copyByLocale.en;
+  actor: MemberAccess;
+  member: MemberAccess;
+  busy: boolean;
+  run: (work: () => Promise<void>, success?: string) => Promise<void>;
+  reload: () => Promise<void>;
+}) {
+  const [opened, setOpened] = useState(false);
+  const [profile, setProfile] = useState<DirectoryProfile | null>(null);
+  const [rejecting, setRejecting] = useState(false);
+  const [reason, setReason] = useState('');
+  const open = async () => {
+    setProfile((await loadOwnProfile(member.uid, true)) ?? emptyProfile(member.uid, member.email));
+    setRejecting(false);
+    setReason('');
+    setOpened(true);
+  };
+  const decide = (status: 'approved' | 'rejected', statusReason = '') =>
+    run(async () => {
+      await changeMemberStatus(actor, member, status, statusReason);
+      setOpened(false);
+      await reload();
+    });
+  return (
+    <>
+      <Button size="xs" onClick={open}>
+        {copy.reviewRequest}
+      </Button>
+      <Modal
+        opened={opened}
+        onClose={() => setOpened(false)}
+        title={copy.requestDetails}
+        centered
+        size="lg"
+      >
+        <Stack>
+          <div>
+            <Text fw={800}>{member.displayName}</Text>
+            <Text size="sm" c="dimmed">
+              {member.email}
+            </Text>
+          </div>
+          <Paper withBorder p="md">
+            <Text fw={700}>{copy.connection}</Text>
+            <Text size="sm" mt={4}>
+              {connectionLabel(copy, member.connection)}
+            </Text>
+            <Text fw={700} mt="md">
+              {copy.requestNote}
+            </Text>
+            <Text size="sm" mt={4} className={classes.preserveLines}>
+              {member.requestNote || copy.noRequestNote}
+            </Text>
+          </Paper>
+          {profile ? (
+            <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
+              <div>
+                <Text size="xs" c="dimmed">
+                  {copy.displayName}
+                </Text>
+                <Text>{profile.displayName}</Text>
+              </div>
+              <div>
+                <Text size="xs" c="dimmed">
+                  {copy.preferredName}
+                </Text>
+                <Text>{profile.preferredName || copy.empty}</Text>
+              </div>
+              <div>
+                <Text size="xs" c="dimmed">
+                  {copy.phone}
+                </Text>
+                <Text>{profile.phone || copy.empty}</Text>
+              </div>
+              <div>
+                <Text size="xs" c="dimmed">
+                  {copy.household}
+                </Text>
+                <Text>{profile.household || copy.empty}</Text>
+              </div>
+              <div>
+                <Text size="xs" c="dimmed">
+                  {copy.interests}
+                </Text>
+                <Text>{profile.ministryInterests || copy.empty}</Text>
+              </div>
+            </SimpleGrid>
+          ) : (
+            <Center py="md">
+              <Loader />
+            </Center>
+          )}
+          {rejecting ? (
+            <Textarea
+              label={copy.rejectReason}
+              description={copy.rejectReasonHelp}
+              value={reason}
+              required
+              maxLength={300}
+              minRows={3}
+              onChange={(event) => setReason(event.currentTarget.value)}
+            />
+          ) : null}
+          <Group justify="flex-end">
+            <Button variant="default" onClick={() => setOpened(false)}>
+              {copy.cancel}
+            </Button>
+            {rejecting ? (
+              <Button
+                color="red"
+                loading={busy}
+                disabled={!reason.trim()}
+                onClick={() => decide('rejected', reason)}
+              >
+                {copy.rejectRequest}
+              </Button>
+            ) : (
+              <>
+                <Button color="red" variant="light" onClick={() => setRejecting(true)}>
+                  {copy.rejectRequest}
+                </Button>
+                <Button loading={busy} onClick={() => decide('approved')}>
+                  {copy.approveRequest}
+                </Button>
+              </>
+            )}
+          </Group>
+        </Stack>
+      </Modal>
+    </>
   );
 }
 

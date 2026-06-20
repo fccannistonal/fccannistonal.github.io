@@ -299,8 +299,8 @@
       "locale": "en",
       "path": "/members",
       "alternatePath": "/es/miembros",
-      "title": "Member Portal | First Christian Church Anniston",
-      "description": "Sign in to request member access, manage an opt-in directory profile, and find giving statement guidance for First Christian Church Anniston.",
+      "title": "Member Area | First Christian Church Anniston",
+      "description": "Create or sign in to an account, set up a private profile, and request trusted access to the First Christian Church Anniston member area.",
       "robots": "noindex, follow"
     },
     {
@@ -308,8 +308,8 @@
       "locale": "es",
       "path": "/es/miembros",
       "alternatePath": "/members",
-      "title": "Portal de miembros | Primera Iglesia Cristiana de Anniston",
-      "description": "Inicie sesión para solicitar acceso, administrar un perfil opcional del directorio y encontrar orientación sobre comprobantes de donaciones.",
+      "title": "Área de miembros | Primera Iglesia Cristiana de Anniston",
+      "description": "Cree una cuenta o inicie sesión, configure un perfil privado y solicite acceso de confianza al área de miembros de la Primera Iglesia Cristiana de Anniston.",
       "robots": "noindex, follow"
     },
     {
@@ -398,7 +398,7 @@
       "locale": "en",
       "path": "/members/admin",
       "alternatePath": "/es/miembros/administracion",
-      "title": "Member Portal Admin | First Christian Church Anniston",
+      "title": "Member Area Admin | First Christian Church Anniston",
       "description": "Administer member access, groups, photos, and moderation.",
       "robots": "noindex, follow"
     },

@@ -46,6 +46,7 @@ import {
 
 export type MemberRole = 'member' | 'admin';
 export type MemberStatus =
+  | 'onboarding'
   | 'pending'
   | 'approved'
   | 'rejected'
@@ -53,6 +54,12 @@ export type MemberStatus =
   | 'banned'
   | 'deletionRequested'
   | 'deleted';
+export type MemberConnection =
+  | 'churchMember'
+  | 'regularParticipant'
+  | 'householdOrFamily'
+  | 'ministryOrVolunteer'
+  | 'other';
 export type DirectoryVisibility = {
   listed: boolean;
   email: boolean;
@@ -85,8 +92,11 @@ export type MemberAccess = {
   displayName: string;
   role: MemberRole;
   status: MemberStatus;
+  connection?: MemberConnection;
+  requestNote?: string;
   previousStatus?: MemberStatus;
   statusReason?: string;
+  moderatedBy?: string;
   requestedAt?: Date;
   updatedAt?: Date;
 };
@@ -305,6 +315,7 @@ function normalizeStatus(value: unknown): MemberStatus {
     return 'deactivated';
   }
   return [
+    'onboarding',
     'pending',
     'approved',
     'rejected',
@@ -318,14 +329,26 @@ function normalizeStatus(value: unknown): MemberStatus {
 }
 
 function mapAccess(uid: string, data: DocumentData): MemberAccess {
+  const connection = [
+    'churchMember',
+    'regularParticipant',
+    'householdOrFamily',
+    'ministryOrVolunteer',
+    'other',
+  ].includes(String(data.connection))
+    ? (data.connection as MemberConnection)
+    : undefined;
   return {
     uid,
     email: stringValue(data.email),
     displayName: stringValue(data.displayName),
     role: data.role === 'admin' ? 'admin' : 'member',
     status: normalizeStatus(data.status),
+    connection,
+    requestNote: stringValue(data.requestNote) || undefined,
     previousStatus: data.previousStatus ? normalizeStatus(data.previousStatus) : undefined,
     statusReason: stringValue(data.statusReason),
+    moderatedBy: stringValue(data.moderatedBy) || undefined,
     requestedAt: dateValue(data.requestedAt),
     updatedAt: dateValue(data.updatedAt),
   };
@@ -491,18 +514,26 @@ export async function sendMemberSignInLink(email: string, redirectUrl: string) {
   window.localStorage.setItem('fccanniston.member-email', email);
 }
 
-export async function completeEmailLinkSignIn(href: string) {
+export type EmailLinkCompletion = 'not-link' | 'needs-email' | 'complete';
+
+export async function completeEmailLinkSignIn(
+  href: string,
+  suppliedEmail = ''
+): Promise<EmailLinkCompletion> {
   const { auth } = getServices();
   if (!isSignInWithEmailLink(auth, href)) {
-    return false;
+    return 'not-link';
   }
-  const email = window.localStorage.getItem('fccanniston.member-email') ?? '';
+  const email =
+    suppliedEmail.trim() || window.localStorage.getItem('fccanniston.member-email') || '';
   if (!email) {
-    return false;
+    return 'needs-email';
   }
   await signInWithEmailLink(auth, email, href);
   window.localStorage.removeItem('fccanniston.member-email');
-  return true;
+  const completedUrl = new URL(href);
+  window.history.replaceState(window.history.state, '', completedUrl.pathname);
+  return 'complete';
 }
 
 export async function signOutMember() {
@@ -539,27 +570,31 @@ export async function loadMemberAccess(uid: string, forceRefresh = false) {
   );
 }
 
-export async function requestMemberAccess(user: Pick<User, 'uid' | 'email'>, displayName: string) {
+export async function ensureMemberOnboardingAccount(user: Pick<User, 'uid' | 'email'>) {
   const { db } = getServices();
-  const name = displayName.trim() || user.email || 'Member';
-  const actor = { uid: user.uid, displayName: name };
+  const accessRef = doc(db, 'memberAccess', user.uid);
+  const existing = await getDoc(accessRef);
+  if (existing.exists()) {
+    return mapAccess(user.uid, existing.data());
+  }
+  const actor = { uid: user.uid, displayName: user.email ?? 'Member area user' };
   const audit = createAudit(
     db,
     actor,
-    'member.accessRequested',
+    'member.accountCreated',
     'member',
     user.uid,
-    'Access requested'
+    'Member area account created'
   );
   const batch = writeBatch(db);
-  batch.set(doc(db, 'memberAccess', user.uid), {
+  batch.set(accessRef, {
     uid: user.uid,
     email: user.email ?? '',
-    displayName: name,
+    displayName: '',
     role: 'member',
-    status: 'pending',
+    status: 'onboarding',
     schemaVersion: 2,
-    requestedAt: serverTimestamp(),
+    createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
     lastAuditId: audit.ref.id,
   });
@@ -568,7 +603,7 @@ export async function requestMemberAccess(user: Pick<User, 'uid' | 'email'>, dis
     {
       uid: user.uid,
       email: user.email ?? '',
-      displayName: name,
+      displayName: '',
       preferredName: '',
       phone: '',
       pronouns: '',
@@ -582,8 +617,77 @@ export async function requestMemberAccess(user: Pick<User, 'uid' | 'email'>, dis
     { merge: true }
   );
   batch.set(audit.ref, audit.data);
-  await batch.commit();
+  try {
+    await batch.commit();
+  } catch (error) {
+    const raced = await getDoc(accessRef);
+    if (raced.exists()) {
+      return mapAccess(user.uid, raced.data());
+    }
+    throw error;
+  }
   invalidateCurrent(['access:', 'profile:', 'admin:']);
+  return {
+    uid: user.uid,
+    email: user.email ?? '',
+    displayName: '',
+    role: 'member' as const,
+    status: 'onboarding' as const,
+  };
+}
+
+export async function requestMemberAreaAccess(
+  access: MemberAccess,
+  profile: DirectoryProfile,
+  connection: MemberConnection,
+  requestNote: string
+) {
+  if (access.status !== 'onboarding') {
+    throw new Error('A member area access request has already been submitted.');
+  }
+  const displayName = profile.displayName.trim();
+  if (!displayName) {
+    throw new Error('Please enter your full name before requesting access.');
+  }
+  const { db } = getServices();
+  const audit = createAudit(
+    db,
+    { uid: access.uid, displayName },
+    'member.accessRequested',
+    'member',
+    access.uid,
+    'Member area access requested'
+  );
+  const batch = writeBatch(db);
+  batch.set(
+    doc(db, 'directoryProfiles', access.uid),
+    {
+      uid: access.uid,
+      displayName,
+      preferredName: profile.preferredName.trim(),
+      email: profile.email,
+      phone: profile.phone.trim(),
+      pronouns: profile.pronouns.trim(),
+      household: profile.household.trim(),
+      ministryInterests: profile.ministryInterests.trim(),
+      visibility: defaultVisibility(),
+      schemaVersion: 2,
+      updatedAt: serverTimestamp(),
+    },
+    { merge: true }
+  );
+  batch.update(doc(db, 'memberAccess', access.uid), {
+    displayName,
+    status: 'pending',
+    connection,
+    requestNote: requestNote.trim().slice(0, 500),
+    requestedAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+    lastAuditId: audit.ref.id,
+  });
+  batch.set(audit.ref, audit.data);
+  await batch.commit();
+  invalidateCurrent(['access:', 'profile:', 'admin:', 'audit:']);
 }
 
 export async function loadOwnProfile(uid: string, forceRefresh = false) {
@@ -614,9 +718,10 @@ function directoryProjection(profile: DirectoryProfile) {
   };
 }
 
-export async function saveOwnProfile(profile: DirectoryProfile) {
+export async function saveOwnProfile(profile: DirectoryProfile, directoryEnabled = true) {
   const { db } = getServices();
   const batch = writeBatch(db);
+  const visibility = directoryEnabled ? profile.visibility : defaultVisibility();
   batch.set(
     doc(db, 'directoryProfiles', profile.uid),
     {
@@ -628,7 +733,7 @@ export async function saveOwnProfile(profile: DirectoryProfile) {
       pronouns: profile.pronouns.trim(),
       household: profile.household.trim(),
       ministryInterests: profile.ministryInterests.trim(),
-      visibility: profile.visibility,
+      visibility,
       schemaVersion: 2,
       optIn: deleteField(),
       interests: deleteField(),
@@ -638,14 +743,19 @@ export async function saveOwnProfile(profile: DirectoryProfile) {
     { merge: true }
   );
   const entryRef = doc(db, 'directoryEntries', profile.uid);
-  if (profile.visibility.listed) {
-    batch.set(entryRef, directoryProjection(profile));
+  if (directoryEnabled && profile.visibility.listed) {
+    batch.set(entryRef, directoryProjection({ ...profile, visibility }));
   } else {
     batch.delete(entryRef);
   }
   await batch.commit();
   invalidateCurrent(['profile:', 'directory:']);
-  writePortalCache(profile.uid, `profile:${profile.uid}`, profile, CACHE_TTL.profile);
+  writePortalCache(
+    profile.uid,
+    `profile:${profile.uid}`,
+    { ...profile, visibility },
+    CACHE_TTL.profile
+  );
 }
 
 export async function saveMemberProfile(actor: MemberAccess, profile: DirectoryProfile) {

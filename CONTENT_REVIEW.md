@@ -30,7 +30,7 @@ The implementation is ready for technical review. Publication approval still req
 - [ ] Verify deep links, redirects, caching, metadata, social previews, and third-party embeds on `https://fccanniston.com`.
 - [ ] Verify legacy URLs (`/outreach`, `/diversity-theater`, `/es/outreach`, `/es/teatro-diversidad`) load redirect pages and send visitors to the canonical pages.
 - [ ] Verify `/updates/:slug`, `/es/novedades/:slug`, `/feed.xml`, `/feed.json`, `/es/feed.xml`, `/es/feed.json`, and `/admin/` after build.
-- [ ] Verify every English and Spanish member route is noindex and blocks logged-out, pending, rejected, deactivated, banned, and deletion-requested users.
+- [ ] Verify every English and Spanish member route is noindex; logged-out users see sign-in, onboarding and pending users see only their private profile, and rejected, deactivated, banned, and deletion-requested users remain blocked.
 - [ ] Verify the `fccphotos` Worker permits only approved origins, rejects missing/invalid Firebase tokens, and never exposes the private R2 bucket directly.
 - [ ] Confirm the first portal admin was bootstrapped manually and at least two trusted administrators can recover group ownership and member access.
 

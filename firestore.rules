@@ -33,6 +33,7 @@ service cloud.firestore {
 
     function validMemberStatus(status) {
       return status in [
+        'onboarding',
         'pending',
         'approved',
         'rejected',
@@ -60,6 +61,29 @@ service cloud.firestore {
         validMemberStatus(request.resource.data.status);
     }
 
+    function validMemberConnection(connection) {
+      return connection in [
+        'churchMember',
+        'regularParticipant',
+        'householdOrFamily',
+        'ministryOrVolunteer',
+        'other'
+      ];
+    }
+
+    function validAccessRequest() {
+      return validMemberConnection(request.resource.data.connection) &&
+        request.resource.data.requestNote is string &&
+        request.resource.data.requestNote.size() <= 500;
+    }
+
+    function validModerationReason() {
+      return request.resource.data.status != 'rejected' ||
+        (request.resource.data.statusReason is string &&
+          request.resource.data.statusReason.size() > 0 &&
+          request.resource.data.statusReason.size() <= 300);
+    }
+
     function validVisibility() {
       return request.resource.data.visibility.keys().hasOnly([
         'listed', 'email', 'phone', 'pronouns', 'household', 'photo'
@@ -75,7 +99,6 @@ service cloud.firestore {
     function validProfile(uid) {
       return request.resource.data.uid == uid &&
         request.resource.data.displayName is string &&
-        request.resource.data.displayName.size() > 0 &&
         request.resource.data.displayName.size() <= 100 &&
         request.resource.data.preferredName is string && request.resource.data.preferredName.size() <= 100 &&
         request.resource.data.email is string &&
@@ -84,6 +107,11 @@ service cloud.firestore {
         request.resource.data.household is string && request.resource.data.household.size() <= 150 &&
         request.resource.data.ministryInterests is string && request.resource.data.ministryInterests.size() <= 500 &&
         validVisibility();
+    }
+
+    function validProfileForStatus(uid) {
+      return validProfile(uid) &&
+        (accessAfter(uid).status == 'onboarding' || request.resource.data.displayName.size() > 0);
     }
 
     function profileAfter(uid) {
@@ -218,20 +246,40 @@ service cloud.firestore {
       allow list: if isPortalAdmin();
 
       allow create: if isSelf(uid) && validMemberAccessDocument(uid) &&
-        request.resource.data.role == 'member' && request.resource.data.status == 'pending' &&
+        request.resource.data.role == 'member' && request.resource.data.status == 'onboarding' &&
         request.resource.data.email == request.auth.token.email &&
+        request.resource.data.keys().hasOnly([
+          'uid', 'email', 'displayName', 'role', 'status', 'schemaVersion',
+          'createdAt', 'updatedAt', 'lastAuditId'
+        ]) &&
         validAuditReference('member', uid);
 
       allow update: if validMemberAccessDocument(uid) && (
         (
+          isSelf(uid) && resource.data.status == 'onboarding' &&
+          request.resource.data.status == 'pending' &&
+          request.resource.data.email == resource.data.email &&
+          request.resource.data.role == resource.data.role &&
+          request.resource.data.displayName.size() > 0 &&
+          profileAfter(uid).displayName == request.resource.data.displayName &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'displayName', 'status', 'connection', 'requestNote', 'requestedAt',
+            'updatedAt', 'lastAuditId'
+          ]) &&
+          validAccessRequest() && validAuditReference('member', uid)
+        ) ||
+        (
           isSelf(uid) && resource.data.status != 'deleted' &&
           request.resource.data.status == 'deletionRequested' &&
           request.resource.data.role == resource.data.role &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'previousStatus', 'status', 'updatedAt', 'lastAuditId'
+          ]) &&
           validAuditReference('member', uid)
         ) ||
         (
           isPortalAdmin() && request.auth.uid != uid &&
-          validAuditReference('member', uid)
+          validModerationReason() && validAuditReference('member', uid)
         )
       );
 
@@ -240,11 +288,12 @@ service cloud.firestore {
 
     match /directoryProfiles/{uid} {
       allow read: if isPortalAdmin() ||
-        (isSelf(uid) && accessExists(uid) && access(uid).status in ['pending', 'approved', 'deletionRequested', 'deleted']);
+        (isSelf(uid) && accessExists(uid) && access(uid).status in ['onboarding', 'pending', 'approved', 'deletionRequested', 'deleted']);
       allow create, update: if isSelf(uid) &&
-        accessAfter(uid).status in ['pending', 'approved'] &&
-        request.resource.data.email == request.auth.token.email && validProfile(uid);
-      allow create, update: if isPortalAdmin() && validProfile(uid);
+        accessAfter(uid).status in ['onboarding', 'pending', 'approved'] &&
+        request.resource.data.email == request.auth.token.email && validProfileForStatus(uid);
+      allow create, update: if isPortalAdmin() && validProfile(uid) &&
+        request.resource.data.displayName.size() > 0;
       allow delete: if isPortalAdmin() && accessAfter(uid).status == 'deleted';
     }
 
