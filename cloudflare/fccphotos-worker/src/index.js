@@ -264,7 +264,7 @@ async function readAvatar(request, env, identity, uid) {
   if (!object) throw new HttpError(404, 'Photo not found.');
   const headers = new Headers({
     'Content-Type': object.httpMetadata?.contentType || 'image/webp',
-    'Cache-Control': 'private, no-store',
+    'Cache-Control': variant === 'pending' ? 'private, max-age=120' : 'private, max-age=21600',
     ETag: object.httpEtag,
   });
   return new Response(object.body, { headers });

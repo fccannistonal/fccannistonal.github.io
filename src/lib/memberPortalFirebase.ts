@@ -10,26 +10,39 @@ import {
   type User,
 } from 'firebase/auth';
 import {
+  clearIndexedDbPersistence,
   collection,
   collectionGroup,
   deleteField,
   doc,
+  documentId,
   getDoc,
   getDocs,
   getFirestore,
+  initializeFirestore,
   limit,
   orderBy,
+  persistentLocalCache,
+  persistentMultipleTabManager,
   query,
   serverTimestamp,
   startAfter,
+  terminate,
   Timestamp,
   where,
   writeBatch,
   type DocumentData,
   type DocumentSnapshot,
   type Firestore,
-  type QueryDocumentSnapshot,
 } from 'firebase/firestore';
+import {
+  clearAllPortalCaches,
+  clearOtherPortalCaches,
+  clearRegisteredPrivateCaches,
+  getOrLoadPortalCache,
+  invalidatePortalCache,
+  writePortalCache,
+} from './memberPortalCache';
 
 export type MemberRole = 'member' | 'admin';
 export type MemberStatus =
@@ -174,7 +187,8 @@ export type AuditLog = {
   createdAt?: Date;
 };
 
-export type PageResult<T> = { items: T[]; cursor: QueryDocumentSnapshot<DocumentData> | null };
+export type DirectoryCursor = { displayName: string; uid: string };
+export type PageResult<T> = { items: T[]; cursor: DirectoryCursor | null };
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -205,12 +219,82 @@ export function isMemberPortalConfigured() {
   return getMissingFirebaseConfigKeys().length === 0;
 }
 
+let cachedServices: { auth: ReturnType<typeof getAuth>; db: Firestore } | null = null;
+let lastAuthenticatedUid = '';
+
 function getServices() {
+  if (cachedServices) {
+    return cachedServices;
+  }
   if (!isMemberPortalConfigured()) {
     throw new Error('Member portal Firebase configuration is incomplete.');
   }
   const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
-  return { auth: getAuth(app), db: getFirestore(app) };
+  let db: Firestore;
+  try {
+    db = initializeFirestore(app, {
+      localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
+    });
+  } catch {
+    db = getFirestore(app);
+  }
+  cachedServices = { auth: getAuth(app), db };
+  return cachedServices;
+}
+
+const CACHE_TTL = {
+  access: 30_000,
+  profile: 10 * 60_000,
+  directory: 15 * 60_000,
+  groups: 10 * 60_000,
+  groupMembers: 5 * 60_000,
+  events: 10 * 60_000,
+  updates: 5 * 60_000,
+  admin: 60_000,
+  audit: 5 * 60_000,
+  migration: 365 * 24 * 60 * 60_000,
+} as const;
+
+function activeUid() {
+  return getServices().auth.currentUser?.uid ?? '';
+}
+
+async function cachedRead<T>(
+  key: string,
+  ttlMs: number,
+  loader: () => Promise<T>,
+  forceRefresh = false,
+  staleIfErrorMs = 24 * 60 * 60_000
+) {
+  const uid = activeUid();
+  return uid
+    ? getOrLoadPortalCache(uid, key, ttlMs, loader, forceRefresh, staleIfErrorMs)
+    : loader();
+}
+
+function invalidateCurrent(prefixes: string[] = []) {
+  const uid = activeUid();
+  if (uid) {
+    invalidatePortalCache(uid, prefixes);
+  }
+}
+
+async function clearFirestoreCache() {
+  const services = cachedServices;
+  if (!services) {
+    return;
+  }
+  cachedServices = null;
+  await terminate(services.db).catch(() => undefined);
+  await clearIndexedDbPersistence(services.db).catch(() => undefined);
+}
+
+export function getCurrentMemberUid() {
+  return activeUid();
+}
+
+export function invalidateMemberPortalReads(prefixes: string[] = []) {
+  invalidateCurrent(prefixes);
 }
 
 const dateValue = (value: unknown) => (value instanceof Timestamp ? value.toDate() : undefined);
@@ -371,7 +455,24 @@ function createAudit(
 }
 
 export function subscribeToAuth(callback: (user: User | null) => void) {
-  return onAuthStateChanged(getServices().auth, callback);
+  return onAuthStateChanged(getServices().auth, (user) => {
+    if (user) {
+      if (lastAuthenticatedUid && lastAuthenticatedUid !== user.uid) {
+        void clearFirestoreCache();
+        void clearRegisteredPrivateCaches();
+      }
+      lastAuthenticatedUid = user.uid;
+      clearOtherPortalCaches(user.uid);
+    } else {
+      clearAllPortalCaches();
+      if (lastAuthenticatedUid) {
+        lastAuthenticatedUid = '';
+        void clearFirestoreCache();
+        void clearRegisteredPrivateCaches();
+      }
+    }
+    callback(user);
+  });
 }
 
 export async function getMemberIdToken(forceRefresh = false) {
@@ -405,7 +506,13 @@ export async function completeEmailLinkSignIn(href: string) {
 }
 
 export async function signOutMember() {
-  await signOut(getServices().auth);
+  const { auth } = getServices();
+  if (auth.currentUser) {
+    invalidatePortalCache(auth.currentUser.uid);
+  }
+  await clearRegisteredPrivateCaches();
+  await clearFirestoreCache();
+  await signOut(auth);
 }
 
 export async function deleteCurrentAuthAccount() {
@@ -413,12 +520,23 @@ export async function deleteCurrentAuthAccount() {
   if (!user) {
     throw new Error('Authentication required.');
   }
+  invalidatePortalCache(user.uid);
+  await clearRegisteredPrivateCaches();
+  await clearFirestoreCache();
   await deleteUser(user);
 }
 
-export async function loadMemberAccess(uid: string) {
-  const snapshot = await getDoc(doc(getServices().db, 'memberAccess', uid));
-  return snapshot.exists() ? mapAccess(uid, snapshot.data()) : null;
+export async function loadMemberAccess(uid: string, forceRefresh = false) {
+  return cachedRead(
+    `access:${uid}`,
+    CACHE_TTL.access,
+    async () => {
+      const snapshot = await getDoc(doc(getServices().db, 'memberAccess', uid));
+      return snapshot.exists() ? mapAccess(uid, snapshot.data()) : null;
+    },
+    forceRefresh,
+    0
+  );
 }
 
 export async function requestMemberAccess(user: Pick<User, 'uid' | 'email'>, displayName: string) {
@@ -465,11 +583,19 @@ export async function requestMemberAccess(user: Pick<User, 'uid' | 'email'>, dis
   );
   batch.set(audit.ref, audit.data);
   await batch.commit();
+  invalidateCurrent(['access:', 'profile:', 'admin:']);
 }
 
-export async function loadOwnProfile(uid: string) {
-  const snapshot = await getDoc(doc(getServices().db, 'directoryProfiles', uid));
-  return snapshot.exists() ? mapProfile(uid, snapshot.data()) : null;
+export async function loadOwnProfile(uid: string, forceRefresh = false) {
+  return cachedRead(
+    `profile:${uid}`,
+    CACHE_TTL.profile,
+    async () => {
+      const snapshot = await getDoc(doc(getServices().db, 'directoryProfiles', uid));
+      return snapshot.exists() ? mapProfile(uid, snapshot.data()) : null;
+    },
+    forceRefresh
+  );
 }
 
 function directoryProjection(profile: DirectoryProfile) {
@@ -518,6 +644,8 @@ export async function saveOwnProfile(profile: DirectoryProfile) {
     batch.delete(entryRef);
   }
   await batch.commit();
+  invalidateCurrent(['profile:', 'directory:']);
+  writePortalCache(profile.uid, `profile:${profile.uid}`, profile, CACHE_TTL.profile);
 }
 
 export async function saveMemberProfile(actor: MemberAccess, profile: DirectoryProfile) {
@@ -556,107 +684,173 @@ export async function saveMemberProfile(actor: MemberAccess, profile: DirectoryP
   }
   batch.set(audit.ref, audit.data);
   await batch.commit();
+  invalidateCurrent(['profile:', 'directory:', 'admin:']);
 }
 
 export async function migrateLegacyDirectoryEntry(profile: DirectoryProfile) {
   if (!profile.visibility.listed) {
     return;
   }
-  const { db } = getServices();
-  const ref = doc(db, 'directoryEntries', profile.uid);
-  const existing = await getDoc(ref);
-  if (!existing.exists()) {
-    await saveOwnProfile(profile);
-  }
+  const uid = activeUid();
+  await getOrLoadPortalCache(
+    uid,
+    `migration:directory:${profile.uid}`,
+    CACHE_TTL.migration,
+    async () => {
+      const { db } = getServices();
+      const ref = doc(db, 'directoryEntries', profile.uid);
+      const existing = await getDoc(ref);
+      if (!existing.exists()) {
+        await saveOwnProfile(profile);
+      }
+      return true;
+    }
+  );
 }
 
 export async function loadDirectoryPage(
-  cursor: QueryDocumentSnapshot<DocumentData> | null = null,
+  cursor: DirectoryCursor | null = null,
   pageSize = 24
 ): Promise<PageResult<DirectoryEntry>> {
-  const { db } = getServices();
-  const constraints = [where('listed', '==', true), orderBy('displayName'), limit(pageSize)];
-  const snapshots = await getDocs(
-    cursor
-      ? query(collection(db, 'directoryEntries'), ...constraints, startAfter(cursor))
-      : query(collection(db, 'directoryEntries'), ...constraints)
-  );
-  return {
-    items: snapshots.docs.map((item) => mapDirectoryEntry(item.id, item.data())),
-    cursor: snapshots.docs.at(-1) ?? null,
-  };
+  const cacheKey = `directory:${pageSize}:${cursor ? `${cursor.displayName}:${cursor.uid}` : 'first'}`;
+  return cachedRead(cacheKey, CACHE_TTL.directory, async () => {
+    const { db } = getServices();
+    const constraints = [
+      where('listed', '==', true),
+      orderBy('displayName'),
+      orderBy(documentId()),
+      limit(pageSize),
+    ];
+    const snapshots = await getDocs(
+      cursor
+        ? query(
+            collection(db, 'directoryEntries'),
+            ...constraints,
+            startAfter(cursor.displayName, cursor.uid)
+          )
+        : query(collection(db, 'directoryEntries'), ...constraints)
+    );
+    const lastDocument = snapshots.docs.at(-1);
+    return {
+      items: snapshots.docs.map((item) => mapDirectoryEntry(item.id, item.data())),
+      cursor: lastDocument
+        ? { displayName: stringValue(lastDocument.data().displayName), uid: lastDocument.id }
+        : null,
+    };
+  });
 }
 
 export async function loadMyGroups(uid: string) {
-  const { db } = getServices();
-  const [visible, memberships] = await Promise.all([
-    getDocs(
-      query(
-        collection(db, 'groups'),
-        where('status', '==', 'active'),
-        where('visibility', '==', 'allApproved'),
-        orderBy('name'),
-        limit(30)
-      )
-    ),
-    getDocs(query(collectionGroup(db, 'members'), where('uid', '==', uid), limit(50))),
-  ]);
-  const groups = new Map(visible.docs.map((item) => [item.id, mapGroup(item)]));
-  await Promise.all(
-    memberships.docs.map(async (membership) => {
-      const groupRef = membership.ref.parent.parent;
-      if (!groupRef || groups.has(groupRef.id)) {
+  const result = await cachedRead(`groups:member:${uid}`, CACHE_TTL.groups, async () => {
+    const { db } = getServices();
+    const [visible, memberships] = await Promise.all([
+      getDocs(
+        query(
+          collection(db, 'groups'),
+          where('status', '==', 'active'),
+          where('visibility', '==', 'allApproved'),
+          orderBy('name'),
+          limit(30)
+        )
+      ),
+      getDocs(query(collectionGroup(db, 'members'), where('uid', '==', uid), limit(50))),
+    ]);
+    const groups = new Map(visible.docs.map((item) => [item.id, mapGroup(item)]));
+    memberships.docs.forEach((membership) => {
+      const groupId = membership.ref.parent.parent?.id;
+      if (!groupId) {
         return;
       }
-      const snapshot = await getDoc(groupRef);
-      if (snapshot.exists()) {
-        groups.set(snapshot.id, mapGroup(snapshot));
-      }
-    })
-  );
-  return [...groups.values()].sort((left, right) => left.name.localeCompare(right.name));
+      const data = membership.data();
+      writePortalCache(
+        uid,
+        `group-membership:${groupId}:${uid}`,
+        {
+          uid,
+          displayName: stringValue(data.displayName),
+          roles: Array.isArray(data.roles) ? (data.roles as GroupRole[]) : [],
+          joinedAt: dateValue(data.joinedAt),
+        } satisfies GroupMembership,
+        CACHE_TTL.groupMembers
+      );
+    });
+    const missingIds = [
+      ...new Set(
+        memberships.docs
+          .map((membership) => membership.ref.parent.parent?.id)
+          .filter((groupId): groupId is string => typeof groupId === 'string')
+          .filter((groupId) => !groups.has(groupId))
+      ),
+    ];
+    const groupChunks: string[][] = [];
+    for (let index = 0; index < missingIds.length; index += 30) {
+      groupChunks.push(missingIds.slice(index, index + 30));
+    }
+    const memberGroups = await Promise.all(
+      groupChunks.map((ids) =>
+        getDocs(query(collection(db, 'groups'), where(documentId(), 'in', ids)))
+      )
+    );
+    memberGroups.forEach((snapshot) => {
+      snapshot.docs.forEach((item) => groups.set(item.id, mapGroup(item)));
+    });
+    return [...groups.values()].sort((left, right) => left.name.localeCompare(right.name));
+  });
+  result.forEach((group) => writePortalCache(uid, `group:${group.id}`, group, CACHE_TTL.groups));
+  return result;
 }
 
 export async function loadAdminGroups() {
-  const snapshots = await getDocs(
-    query(collection(getServices().db, 'groups'), orderBy('name'), limit(100))
-  );
-  return snapshots.docs.map(mapGroup);
+  const result = await cachedRead('groups:admin', CACHE_TTL.groups, async () => {
+    const snapshots = await getDocs(
+      query(collection(getServices().db, 'groups'), orderBy('name'), limit(100))
+    );
+    return snapshots.docs.map(mapGroup);
+  });
+  const uid = activeUid();
+  result.forEach((group) => writePortalCache(uid, `group:${group.id}`, group, CACHE_TTL.groups));
+  return result;
 }
 
 export async function loadGroup(groupId: string) {
-  const snapshot = await getDoc(doc(getServices().db, 'groups', groupId));
-  return snapshot.exists() ? mapGroup(snapshot) : null;
+  return cachedRead(`group:${groupId}`, CACHE_TTL.groups, async () => {
+    const snapshot = await getDoc(doc(getServices().db, 'groups', groupId));
+    return snapshot.exists() ? mapGroup(snapshot) : null;
+  });
 }
 
 export async function loadGroupMembership(groupId: string, uid: string) {
-  const snapshot = await getDoc(doc(getServices().db, 'groups', groupId, 'members', uid));
-  if (!snapshot.exists()) {
-    return null;
-  }
-  const data = snapshot.data();
-  return {
-    uid,
-    displayName: stringValue(data.displayName),
-    roles: Array.isArray(data.roles) ? (data.roles as GroupRole[]) : [],
-    joinedAt: dateValue(data.joinedAt),
-  } satisfies GroupMembership;
+  return cachedRead(`group-membership:${groupId}:${uid}`, CACHE_TTL.groupMembers, async () => {
+    const snapshot = await getDoc(doc(getServices().db, 'groups', groupId, 'members', uid));
+    if (!snapshot.exists()) {
+      return null;
+    }
+    const data = snapshot.data();
+    return {
+      uid,
+      displayName: stringValue(data.displayName),
+      roles: Array.isArray(data.roles) ? (data.roles as GroupRole[]) : [],
+      joinedAt: dateValue(data.joinedAt),
+    } satisfies GroupMembership;
+  });
 }
 
 export async function loadGroupMembers(groupId: string) {
-  const snapshots = await getDocs(
-    query(
-      collection(getServices().db, 'groups', groupId, 'members'),
-      orderBy('displayName'),
-      limit(100)
-    )
-  );
-  return snapshots.docs.map((item) => ({
-    uid: item.id,
-    displayName: stringValue(item.data().displayName),
-    roles: Array.isArray(item.data().roles) ? (item.data().roles as GroupRole[]) : [],
-    joinedAt: dateValue(item.data().joinedAt),
-  }));
+  return cachedRead(`group-members:${groupId}`, CACHE_TTL.groupMembers, async () => {
+    const snapshots = await getDocs(
+      query(
+        collection(getServices().db, 'groups', groupId, 'members'),
+        orderBy('displayName'),
+        limit(100)
+      )
+    );
+    return snapshots.docs.map((item) => ({
+      uid: item.id,
+      displayName: stringValue(item.data().displayName),
+      roles: Array.isArray(item.data().roles) ? (item.data().roles as GroupRole[]) : [],
+      joinedAt: dateValue(item.data().joinedAt),
+    }));
+  });
 }
 
 export async function saveGroup(
@@ -699,6 +893,13 @@ export async function saveGroup(
   }
   batch.set(audit.ref, audit.data);
   await batch.commit();
+  invalidateCurrent([
+    'groups:',
+    `group:${ref.id}`,
+    `group-members:${ref.id}`,
+    'events:',
+    'updates:',
+  ]);
   return ref.id;
 }
 
@@ -735,6 +936,15 @@ export async function saveGroupMembership(
   });
   batch.set(audit.ref, audit.data);
   await batch.commit();
+  invalidateCurrent([
+    'groups:',
+    `group:${group.id}`,
+    `group-members:${group.id}`,
+    `group-membership:${group.id}:`,
+    'events:',
+    'updates:',
+    'admin:',
+  ]);
 }
 
 export async function removeGroupMembership(
@@ -759,33 +969,45 @@ export async function removeGroupMembership(
   });
   batch.set(audit.ref, audit.data);
   await batch.commit();
+  invalidateCurrent([
+    'groups:',
+    `group:${group.id}`,
+    `group-members:${group.id}`,
+    `group-membership:${group.id}:`,
+    'events:',
+    'updates:',
+    'admin:',
+  ]);
 }
 
 export async function loadEvents(groupIds: string[], from: Date, to: Date) {
   if (groupIds.length === 0) {
     return [];
   }
-  const chunks: string[][] = [];
-  for (let index = 0; index < groupIds.length; index += 30) {
-    chunks.push(groupIds.slice(index, index + 30));
-  }
-  const snapshots = await Promise.all(
-    chunks.map((ids) =>
-      getDocs(
-        query(
-          collection(getServices().db, 'groupEvents'),
-          where('groupId', 'in', ids),
-          where('startsAt', '>=', Timestamp.fromDate(from)),
-          where('startsAt', '<', Timestamp.fromDate(to)),
-          orderBy('startsAt'),
-          limit(100)
+  const cacheKey = `events:${[...groupIds].sort().join(',')}:${from.toISOString().slice(0, 10)}:${to.toISOString().slice(0, 10)}`;
+  return cachedRead(cacheKey, CACHE_TTL.events, async () => {
+    const chunks: string[][] = [];
+    for (let index = 0; index < groupIds.length; index += 30) {
+      chunks.push(groupIds.slice(index, index + 30));
+    }
+    const snapshots = await Promise.all(
+      chunks.map((ids) =>
+        getDocs(
+          query(
+            collection(getServices().db, 'groupEvents'),
+            where('groupId', 'in', ids),
+            where('startsAt', '>=', Timestamp.fromDate(from)),
+            where('startsAt', '<', Timestamp.fromDate(to)),
+            orderBy('startsAt'),
+            limit(100)
+          )
         )
       )
-    )
-  );
-  return snapshots
-    .flatMap((snapshot) => snapshot.docs.map(mapEvent))
-    .sort((a, b) => a.startsAt.getTime() - b.startsAt.getTime());
+    );
+    return snapshots
+      .flatMap((snapshot) => snapshot.docs.map(mapEvent))
+      .sort((a, b) => a.startsAt.getTime() - b.startsAt.getTime());
+  });
 }
 
 export async function saveEvent(
@@ -820,32 +1042,36 @@ export async function saveEvent(
   );
   batch.set(audit.ref, audit.data);
   await batch.commit();
+  invalidateCurrent(['events:', `group:${event.groupId}`, 'admin:', 'audit:']);
 }
 
 export async function loadUpdates(groupIds: string[]) {
   if (groupIds.length === 0) {
     return [];
   }
-  const chunks: string[][] = [];
-  for (let index = 0; index < groupIds.length; index += 30) {
-    chunks.push(groupIds.slice(index, index + 30));
-  }
-  const snapshots = await Promise.all(
-    chunks.map((ids) =>
-      getDocs(
-        query(
-          collection(getServices().db, 'groupUpdates'),
-          where('groupId', 'in', ids),
-          where('status', '==', 'published'),
-          orderBy('publishedAt', 'desc'),
-          limit(30)
+  const cacheKey = `updates:${[...groupIds].sort().join(',')}`;
+  return cachedRead(cacheKey, CACHE_TTL.updates, async () => {
+    const chunks: string[][] = [];
+    for (let index = 0; index < groupIds.length; index += 30) {
+      chunks.push(groupIds.slice(index, index + 30));
+    }
+    const snapshots = await Promise.all(
+      chunks.map((ids) =>
+        getDocs(
+          query(
+            collection(getServices().db, 'groupUpdates'),
+            where('groupId', 'in', ids),
+            where('status', '==', 'published'),
+            orderBy('publishedAt', 'desc'),
+            limit(30)
+          )
         )
       )
-    )
-  );
-  return snapshots
-    .flatMap((snapshot) => snapshot.docs.map(mapUpdate))
-    .sort((a, b) => (b.publishedAt?.getTime() ?? 0) - (a.publishedAt?.getTime() ?? 0));
+    );
+    return snapshots
+      .flatMap((snapshot) => snapshot.docs.map(mapUpdate))
+      .sort((a, b) => (b.publishedAt?.getTime() ?? 0) - (a.publishedAt?.getTime() ?? 0));
+  });
 }
 
 export async function saveUpdate(
@@ -878,6 +1104,7 @@ export async function saveUpdate(
   );
   batch.set(audit.ref, audit.data);
   await batch.commit();
+  invalidateCurrent(['updates:', `group:${update.groupId}`, 'admin:', 'audit:']);
 }
 
 export async function requestProfileDeletion(access: MemberAccess) {
@@ -907,19 +1134,22 @@ export async function requestProfileDeletion(access: MemberAccess) {
   });
   batch.set(audit.ref, audit.data);
   await batch.commit();
+  invalidateCurrent(['access:', 'profile:', 'directory:', 'admin:', 'audit:']);
 }
 
 export async function loadMembersByStatus(status: MemberStatus, pageSize = 50) {
-  const statuses = status === 'deactivated' ? ['deactivated', 'revoked'] : [status];
-  const snapshots = await getDocs(
-    query(
-      collection(getServices().db, 'memberAccess'),
-      where('status', 'in', statuses),
-      orderBy('displayName'),
-      limit(pageSize)
-    )
-  );
-  return snapshots.docs.map((item) => mapAccess(item.id, item.data()));
+  return cachedRead(`admin:members:${status}:${pageSize}`, CACHE_TTL.admin, async () => {
+    const statuses = status === 'deactivated' ? ['deactivated', 'revoked'] : [status];
+    const snapshots = await getDocs(
+      query(
+        collection(getServices().db, 'memberAccess'),
+        where('status', 'in', statuses),
+        orderBy('displayName'),
+        limit(pageSize)
+      )
+    );
+    return snapshots.docs.map((item) => mapAccess(item.id, item.data()));
+  });
 }
 
 export async function changeMemberStatus(
@@ -953,6 +1183,7 @@ export async function changeMemberStatus(
   }
   batch.set(audit.ref, audit.data);
   await batch.commit();
+  invalidateCurrent(['admin:', 'directory:', `access:${member.uid}`, 'audit:']);
 }
 
 export async function changeMemberRole(
@@ -977,6 +1208,7 @@ export async function changeMemberRole(
   });
   batch.set(audit.ref, audit.data);
   await batch.commit();
+  invalidateCurrent(['admin:', `access:${member.uid}`, 'audit:']);
 }
 
 export async function processDeletion(actor: MemberAccess, member: MemberAccess) {
@@ -1021,43 +1253,57 @@ export async function processDeletion(actor: MemberAccess, member: MemberAccess)
   });
   batch.set(audit.ref, audit.data);
   await batch.commit();
+  invalidateCurrent([
+    'admin:',
+    'directory:',
+    'groups:',
+    'group:',
+    'group-',
+    'events:',
+    'updates:',
+    'audit:',
+  ]);
 }
 
 export async function loadAvatarModeration() {
-  const snapshots = await getDocs(
-    query(
-      collection(getServices().db, 'avatarMetadata'),
-      where('status', '==', 'pending'),
-      orderBy('updatedAt'),
-      limit(50)
-    )
-  );
-  return snapshots.docs.map(
-    (item) =>
-      ({
-        uid: item.id,
-        status: item.data().status,
-        pendingKey: stringValue(item.data().pendingKey) || undefined,
-        approvedKey: stringValue(item.data().approvedKey) || undefined,
-        updatedAt: dateValue(item.data().updatedAt),
-      }) as AvatarMetadata
-  );
+  return cachedRead('admin:avatar-moderation', CACHE_TTL.admin, async () => {
+    const snapshots = await getDocs(
+      query(
+        collection(getServices().db, 'avatarMetadata'),
+        where('status', '==', 'pending'),
+        orderBy('updatedAt'),
+        limit(50)
+      )
+    );
+    return snapshots.docs.map(
+      (item) =>
+        ({
+          uid: item.id,
+          status: item.data().status,
+          pendingKey: stringValue(item.data().pendingKey) || undefined,
+          approvedKey: stringValue(item.data().approvedKey) || undefined,
+          updatedAt: dateValue(item.data().updatedAt),
+        }) as AvatarMetadata
+    );
+  });
 }
 
 export async function loadAuditLogs() {
-  const snapshots = await getDocs(
-    query(collection(getServices().db, 'auditLogs'), orderBy('createdAt', 'desc'), limit(100))
-  );
-  return snapshots.docs.map((item) => ({
-    id: item.id,
-    actorUid: stringValue(item.data().actorUid),
-    actorDisplayName: stringValue(item.data().actorDisplayName),
-    action: stringValue(item.data().action),
-    entityType: stringValue(item.data().entityType),
-    targetId: stringValue(item.data().targetId),
-    summary: stringValue(item.data().summary),
-    createdAt: dateValue(item.data().createdAt),
-  }));
+  return cachedRead('audit:recent', CACHE_TTL.audit, async () => {
+    const snapshots = await getDocs(
+      query(collection(getServices().db, 'auditLogs'), orderBy('createdAt', 'desc'), limit(100))
+    );
+    return snapshots.docs.map((item) => ({
+      id: item.id,
+      actorUid: stringValue(item.data().actorUid),
+      actorDisplayName: stringValue(item.data().actorDisplayName),
+      action: stringValue(item.data().action),
+      entityType: stringValue(item.data().entityType),
+      targetId: stringValue(item.data().targetId),
+      summary: stringValue(item.data().summary),
+      createdAt: dateValue(item.data().createdAt),
+    }));
+  });
 }
 
 export function createIcs(event: GroupEvent) {

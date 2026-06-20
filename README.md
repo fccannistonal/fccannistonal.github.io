@@ -158,6 +158,20 @@ The first administrator must be assigned manually in Firebase Console by setting
 
 Legacy `revoked` access records are treated as `deactivated`. Existing opt-in directory profiles are projected into the safer redacted directory collection the next time an approved member loads or saves their profile.
 
+### Portal caching and request control
+
+The portal enables Firestore's persistent browser cache and keeps mapped query results in a Firebase-UID-scoped local cache. Concurrent identical loads are deduplicated, expired data may be used for up to 24 hours when the network is unavailable, and writes invalidate the affected cache namespaces.
+
+- Access status: 30 seconds.
+- Admin member/photo queues: 1 minute.
+- Profiles and group lists: 10 minutes.
+- Directory pages: 15 minutes.
+- Group members and updates: 5 minutes.
+- Events: 10 minutes.
+- Approved avatar blobs: 6 hours; pending avatars: 2 minutes.
+
+Signing out or deleting an Auth account clears local portal records, Firestore persistence when available, object URLs, and the authenticated avatar Cache Storage. Cache keys are never shared between Firebase UIDs.
+
 ### Private profile photo Worker
 
 The deployable Worker is in `cloudflare/fccphotos-worker/`. It uses the existing Worker name `fccphotos`, private R2 bucket `fccannistonmembers`, and binding `photoBucket`. The production Worker remains on `workers.dev`; it does not host the website and requires no DNS changes.

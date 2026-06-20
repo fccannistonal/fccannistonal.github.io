@@ -407,9 +407,11 @@ function MemberPortalPage({ section }: { section: PortalSection }) {
     if (!currentUser) {
       return;
     }
-    const nextAccess = await loadMemberAccess(currentUser.uid);
+    const [nextAccess, nextProfile] = await Promise.all([
+      loadMemberAccess(currentUser.uid),
+      loadOwnProfile(currentUser.uid),
+    ]);
     setAccess(nextAccess);
-    const nextProfile = await loadOwnProfile(currentUser.uid);
     const resolved = nextProfile ?? emptyProfile(currentUser.uid, currentUser.email ?? '');
     setProfile(resolved);
     if (nextAccess?.status === 'approved' && nextProfile) {
@@ -1232,8 +1234,12 @@ function GroupPanel({
     from.setMonth(from.getMonth() - 1);
     const to = new Date();
     to.setFullYear(to.getFullYear() + 1);
-    setEvents(await loadEvents([groupId], from, to));
-    setUpdates(await loadUpdates([groupId]));
+    const [nextEvents, nextUpdates] = await Promise.all([
+      loadEvents([groupId], from, to),
+      loadUpdates([groupId]),
+    ]);
+    setEvents(nextEvents);
+    setUpdates(nextUpdates);
   };
   useEffect(() => {
     reload();
@@ -1902,11 +1908,11 @@ function AdminPanel({
   const [audits, setAudits] = useState<AuditLog[]>([]);
   const [tab, setTab] = useState<string>('members');
   const reload = async () => {
-    setMembers(await loadMembersByStatus(status));
-    if (tab === 'photos') {
+    if (tab === 'members') {
+      setMembers(await loadMembersByStatus(status));
+    } else if (tab === 'photos') {
       setPhotos(await loadAvatarModeration());
-    }
-    if (tab === 'audit') {
+    } else if (tab === 'audit') {
       setAudits(await loadAuditLogs());
     }
   };
