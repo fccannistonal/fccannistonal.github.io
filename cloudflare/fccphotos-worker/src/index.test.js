@@ -170,7 +170,7 @@ describe('fccphotos worker', () => {
     expect(pending.status).toBe(403);
   });
 
-  it('enforces processed WebP and the admin role', async () => {
+  it('enforces processed image types and the admin role', async () => {
     const form = new FormData();
     form.set('photo', new File(['png'], 'avatar.png', { type: 'image/png' }));
     const invalidUpload = await handleRequest(
@@ -191,6 +191,25 @@ describe('fccphotos worker', () => {
       createEnv()
     );
     expect(moderation.status).toBe(403);
+  });
+
+  it('accepts a locally processed JPEG fallback', async () => {
+    const env = createEnv();
+    const form = new FormData();
+    form.set('photo', new File(['jpeg'], 'avatar.jpg', { type: 'image/jpeg' }));
+    const response = await handleRequest(
+      new Request('https://worker.test/v1/avatars/me', {
+        method: 'PUT',
+        headers: { authorization: `Bearer ${await token('member')}` },
+        body: form,
+      }),
+      env
+    );
+
+    expect(response.status).toBe(201);
+    expect([...env.photoBucket.objects.keys()].some((key) => /avatars\/member\/.+\.jpg$/.test(key))).toBe(
+      true
+    );
   });
 
   it('lets admins approve pending photos and cleans the previous object', async () => {

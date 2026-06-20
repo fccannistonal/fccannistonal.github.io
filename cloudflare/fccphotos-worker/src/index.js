@@ -172,8 +172,8 @@ async function requireAdmin(env, identity) {
 async function readPhoto(formData) {
   const photo = formData.get('photo');
   if (!(photo instanceof File)) throw new HttpError(400, 'A photo file is required.');
-  if (photo.type !== 'image/webp')
-    throw new HttpError(415, 'Only processed WebP avatars are accepted.');
+  if (!['image/webp', 'image/jpeg'].includes(photo.type))
+    throw new HttpError(415, 'Only processed WebP or JPEG avatars are accepted.');
   if (photo.size <= 0 || photo.size > MAX_PHOTO_BYTES) {
     throw new HttpError(413, 'Avatar files must be no larger than 100 KB.');
   }
@@ -204,7 +204,8 @@ async function uploadPending(request, env, identity) {
     throw new HttpError(429, 'Please wait five minutes before uploading another photo.');
   }
   const photo = await readPhoto(await request.formData());
-  const key = `avatars/${identity.uid}/${crypto.randomUUID()}.webp`;
+  const extension = photo.type === 'image/webp' ? 'webp' : 'jpg';
+  const key = `avatars/${identity.uid}/${crypto.randomUUID()}.${extension}`;
   const audit = createAuditWrite(
     env,
     actor,
@@ -213,7 +214,7 @@ async function uploadPending(request, env, identity) {
     'Profile photo submitted for review'
   );
   await env.photoBucket.put(key, photo.stream(), {
-    httpMetadata: { contentType: 'image/webp' },
+    httpMetadata: { contentType: photo.type },
     customMetadata: { ownerUid: identity.uid, state: 'pending' },
   });
   try {
@@ -364,7 +365,8 @@ async function adminUpload(request, env, identity, uid) {
   const photo = await readPhoto(form);
   await firestoreGet(env, identity.token, `memberAccess/${uid}`);
   const existing = metadata(await firestoreGet(env, identity.token, `avatarMetadata/${uid}`, true));
-  const key = `avatars/${uid}/${crypto.randomUUID()}.webp`;
+  const extension = photo.type === 'image/webp' ? 'webp' : 'jpg';
+  const key = `avatars/${uid}/${crypto.randomUUID()}.${extension}`;
   const audit = createAuditWrite(
     env,
     actor,
@@ -373,7 +375,7 @@ async function adminUpload(request, env, identity, uid) {
     'Administrator uploaded a member-consented photo'
   );
   await env.photoBucket.put(key, photo.stream(), {
-    httpMetadata: { contentType: 'image/webp' },
+    httpMetadata: { contentType: photo.type },
     customMetadata: { ownerUid: uid, state: 'approved', uploadedBy: identity.uid },
   });
   const now = new Date();

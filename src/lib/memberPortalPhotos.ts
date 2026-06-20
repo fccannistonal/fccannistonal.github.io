@@ -10,6 +10,19 @@ const avatarUrls = new Map<string, { url: string | null; expiresAt: number }>();
 const AVATAR_CACHE_NAME = 'fccanniston-member-avatars-v1';
 const APPROVED_AVATAR_TTL = 6 * 60 * 60_000;
 const PENDING_AVATAR_TTL = 2 * 60_000;
+const MAX_SOURCE_BYTES = 25 * 1024 * 1024;
+const MAX_SOURCE_PIXELS = 48_000_000;
+const MAX_AVATAR_BYTES = 100 * 1024;
+const AVATAR_SIZE = 256;
+
+export type AvatarPosition = { x: number; y: number };
+
+export type AvatarSource = {
+  blob: Blob;
+  height: number;
+  url: string;
+  width: number;
+};
 
 class PhotoRequestError extends Error {
   constructor(
@@ -22,6 +35,81 @@ class PhotoRequestError extends Error {
 
 export function isPhotoWorkerConfigured() {
   return workerUrl.length > 0;
+}
+
+function isHeicFile(file: File) {
+  return (
+    ['image/heic', 'image/heif', 'image/heic-sequence', 'image/heif-sequence'].includes(
+      file.type.toLowerCase()
+    ) || /\.(?:heic|heif)$/i.test(file.name)
+  );
+}
+
+function isStandardImageFile(file: File) {
+  return (
+    ['image/jpeg', 'image/png', 'image/webp'].includes(file.type.toLowerCase()) ||
+    /\.(?:jpe?g|png|webp)$/i.test(file.name)
+  );
+}
+
+function loadImage(blob: Blob) {
+  return new Promise<{ image: HTMLImageElement; url: string }>((resolve, reject) => {
+    const url = URL.createObjectURL(blob);
+    const image = new Image();
+    image.onload = () => resolve({ image, url });
+    image.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error('This photo could not be opened in your browser.'));
+    };
+    image.src = url;
+  });
+}
+
+export async function createAvatarSource(file: File): Promise<AvatarSource> {
+  if (file.size <= 0 || file.size > MAX_SOURCE_BYTES) {
+    throw new Error('Choose a photo smaller than 25 MB.');
+  }
+
+  let blob: Blob = file;
+  if (isHeicFile(file)) {
+    try {
+      const { heicTo } = await import('heic-to/csp');
+      blob = await heicTo({ blob: file, type: 'image/jpeg', quality: 0.92 });
+    } catch {
+      throw new Error('This HEIC photo could not be opened. Try exporting it as a JPEG.');
+    }
+  } else if (!isStandardImageFile(file)) {
+    throw new Error('Choose a JPEG, PNG, WebP, HEIC, or HEIF photo.');
+  }
+
+  const { image, url } = await loadImage(blob);
+  if (image.naturalWidth <= 0 || image.naturalHeight <= 0) {
+    URL.revokeObjectURL(url);
+    throw new Error('This photo does not contain a usable image.');
+  }
+  if (image.naturalWidth * image.naturalHeight > MAX_SOURCE_PIXELS) {
+    URL.revokeObjectURL(url);
+    throw new Error('This photo is too large to process safely.');
+  }
+
+  return { blob, height: image.naturalHeight, url, width: image.naturalWidth };
+}
+
+export function releaseAvatarSource(source: AvatarSource | null) {
+  if (source) {
+    URL.revokeObjectURL(source.url);
+  }
+}
+
+export function getAvatarCrop(width: number, height: number, position: AvatarPosition) {
+  const size = Math.min(width, height);
+  const x = Math.max(0, Math.min(100, position.x)) / 100;
+  const y = Math.max(0, Math.min(100, position.y)) / 100;
+  return {
+    size,
+    sourceX: Math.round((width - size) * x),
+    sourceY: Math.round((height - size) * y),
+  };
 }
 
 async function authorizedFetch(path: string, init: RequestInit = {}) {
@@ -43,45 +131,53 @@ async function authorizedFetch(path: string, init: RequestInit = {}) {
   return response;
 }
 
-export async function prepareAvatar(file: File) {
-  if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
-    throw new Error('Choose a JPEG, PNG, or WebP image.');
-  }
-  if (file.size > 5 * 1024 * 1024) {
-    throw new Error('Choose an image smaller than 5 MB.');
-  }
-
-  const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
-  if (bitmap.width * bitmap.height > 24_000_000) {
-    bitmap.close();
-    throw new Error('This image is too large to process safely.');
-  }
-  const size = Math.min(bitmap.width, bitmap.height);
-  const sourceX = Math.floor((bitmap.width - size) / 2);
-  const sourceY = Math.floor((bitmap.height - size) / 2);
+export async function prepareAvatar(source: Blob, position: AvatarPosition = { x: 50, y: 50 }) {
+  const { image, url } = await loadImage(source);
+  const { size, sourceX, sourceY } = getAvatarCrop(
+    image.naturalWidth,
+    image.naturalHeight,
+    position
+  );
   const canvas = document.createElement('canvas');
-  canvas.width = 256;
-  canvas.height = 256;
+  canvas.width = AVATAR_SIZE;
+  canvas.height = AVATAR_SIZE;
   const context = canvas.getContext('2d');
   if (!context) {
+    URL.revokeObjectURL(url);
     throw new Error('Image processing is unavailable in this browser.');
   }
-  context.drawImage(bitmap, sourceX, sourceY, size, size, 0, 0, 256, 256);
-  bitmap.close();
+  context.fillStyle = '#ffffff';
+  context.fillRect(0, 0, AVATAR_SIZE, AVATAR_SIZE);
+  context.drawImage(image, sourceX, sourceY, size, size, 0, 0, AVATAR_SIZE, AVATAR_SIZE);
+  URL.revokeObjectURL(url);
 
   let quality = 0.82;
   let blob: Blob | null = null;
   while (quality >= 0.45) {
     blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/webp', quality));
-    if (blob && blob.size <= 100 * 1024) {
+    if (blob?.type === 'image/webp' && blob.size <= MAX_AVATAR_BYTES) {
       break;
     }
     quality -= 0.08;
   }
-  if (!blob || blob.type !== 'image/webp' || blob.size > 100 * 1024) {
-    throw new Error('The cropped image could not be reduced below 100 KB.');
+
+  if (!blob || blob.type !== 'image/webp' || blob.size > MAX_AVATAR_BYTES) {
+    quality = 0.82;
+    while (quality >= 0.37) {
+      blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', quality));
+      if (blob?.type === 'image/jpeg' && blob.size <= MAX_AVATAR_BYTES) {
+        break;
+      }
+      quality -= 0.08;
+    }
   }
-  return new File([blob], 'avatar.webp', { type: 'image/webp' });
+
+  if (!blob || !['image/webp', 'image/jpeg'].includes(blob.type) || blob.size > MAX_AVATAR_BYTES) {
+    throw new Error('The cropped photo could not be reduced below 100 KB.');
+  }
+  return new File([blob], blob.type === 'image/webp' ? 'avatar.webp' : 'avatar.jpg', {
+    type: blob.type,
+  });
 }
 
 export async function fetchAvatar(uid: string, variant: 'approved' | 'pending' = 'approved') {

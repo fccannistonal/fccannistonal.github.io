@@ -4,7 +4,6 @@ import {
   IconAddressBook,
   IconAlertCircle,
   IconCalendar,
-  IconCamera,
   IconCircleCheck,
   IconFileText,
   IconLock,
@@ -27,11 +26,11 @@ import {
   Checkbox,
   Container,
   Divider,
-  FileInput,
   Group,
   Loader,
   Modal,
   MultiSelect,
+  Notification,
   Paper,
   Select,
   SimpleGrid,
@@ -44,6 +43,7 @@ import {
   Title,
 } from '@mantine/core';
 import { PageHeader } from '../components/church/PageHeader';
+import { AvatarCropper } from '../components/member/AvatarCropper';
 import { siteConfig } from '../content/churchContent';
 import { notifyMemberAccessRequest } from '../lib/formConfig';
 import { useLocale } from '../lib/i18n';
@@ -211,11 +211,16 @@ const copyByLocale = {
     showHousehold: 'Show my household',
     showPhoto: 'Show my approved photo',
     photo: 'Profile photo',
-    photoHelp: 'Photos are cropped to a small square WebP and require administrator approval.',
-    choosePhoto: 'Choose a new photo',
-    photoFormats: 'JPG, PNG, or WebP. Choose a clear, square image for the best result.',
-    uploadPhoto: 'Upload photo',
-    replacePhoto: 'Save new photo',
+    photoHelp:
+      'Position and compress your photo in this browser before submitting it for approval.',
+    choosePhoto: 'Choose and position photo',
+    photoFormats: 'JPG, PNG, WebP, HEIC, or HEIF up to 25 MB.',
+    cropTitle: 'Position your profile photo',
+    cropHelp: 'Use the controls to choose which part of the photo stays centered in your profile.',
+    cropHorizontal: 'Move photo left or right',
+    cropVertical: 'Move photo up or down',
+    uploadPhoto: 'Submit photo for review',
+    replacePhoto: 'Replace and position photo',
     removePhoto: 'Remove photo',
     removePhotoTitle: 'Remove your profile photo?',
     removePhotoHelp: 'Your current photo will no longer be available in the member directory.',
@@ -294,6 +299,7 @@ const copyByLocale = {
     approvePhoto: 'Approve photo',
     rejectPhoto: 'Reject photo',
     adminUpload: 'Upload with member consent',
+    adminConfirmPhoto: 'Upload positioned photo',
     consent: 'I confirm the member consented to this photo.',
     noAccess: 'You do not have permission to open this section.',
     givingHelp:
@@ -393,11 +399,15 @@ const copyByLocale = {
     showHousehold: 'Mostrar mi hogar',
     showPhoto: 'Mostrar mi foto aprobada',
     photo: 'Foto de perfil',
-    photoHelp: 'Las fotos se recortan a un WebP cuadrado pequeño y requieren aprobación.',
-    choosePhoto: 'Elegir una foto nueva',
-    photoFormats: 'JPG, PNG o WebP. Elija una imagen clara y cuadrada para un mejor resultado.',
-    uploadPhoto: 'Subir foto',
-    replacePhoto: 'Guardar foto nueva',
+    photoHelp: 'Posicione y comprima su foto en este navegador antes de enviarla para aprobación.',
+    choosePhoto: 'Elegir y posicionar foto',
+    photoFormats: 'JPG, PNG, WebP, HEIC o HEIF de hasta 25 MB.',
+    cropTitle: 'Posicione su foto de perfil',
+    cropHelp: 'Use los controles para elegir qué parte de la foto queda centrada en su perfil.',
+    cropHorizontal: 'Mover foto a la izquierda o derecha',
+    cropVertical: 'Mover foto hacia arriba o abajo',
+    uploadPhoto: 'Enviar foto para revisión',
+    replacePhoto: 'Reemplazar y posicionar foto',
     removePhoto: 'Quitar foto',
     removePhotoTitle: '¿Quitar su foto de perfil?',
     removePhotoHelp: 'Su foto actual dejará de estar disponible en el directorio de miembros.',
@@ -476,6 +486,7 @@ const copyByLocale = {
     approvePhoto: 'Aprobar foto',
     rejectPhoto: 'Rechazar foto',
     adminUpload: 'Subir con consentimiento',
+    adminConfirmPhoto: 'Subir foto posicionada',
     consent: 'Confirmo que el miembro dio permiso para esta foto.',
     noAccess: 'No tiene permiso para abrir esta sección.',
     givingHelp:
@@ -603,6 +614,14 @@ function MemberPortalPage({ section }: { section: PortalSection }) {
   }, [user]);
 
   useEffect(() => {
+    if (!notice) {
+      return undefined;
+    }
+    const timeout = window.setTimeout(() => setNotice(null), 6000);
+    return () => window.clearTimeout(timeout);
+  }, [notice]);
+
+  useEffect(() => {
     if (!user || !access || access.status === 'approved') {
       return undefined;
     }
@@ -633,11 +652,12 @@ function MemberPortalPage({ section }: { section: PortalSection }) {
   };
 
   return (
-    <Container size="xl" py={{ base: 'xl', md: '4rem' }}>
-      <PageHeader eyebrow={copy.eyebrow} title={copy.title} description={copy.description} />
-      <Stack gap="xl" mt="xl">
-        {notice ? (
-          <Alert
+    <>
+      {notice ? (
+        <div className={classes.portalToast} data-testid="portal-toast">
+          <Notification
+            role={notice.type === 'error' ? 'alert' : 'status'}
+            aria-live={notice.type === 'error' ? 'assertive' : 'polite'}
             color={notice.type === 'success' ? 'green' : 'red'}
             icon={
               notice.type === 'success' ? (
@@ -647,82 +667,89 @@ function MemberPortalPage({ section }: { section: PortalSection }) {
               )
             }
             title={notice.type === 'success' ? copy.saved : copy.error}
+            onClose={() => setNotice(null)}
+            withBorder
           >
             {notice.text}
-          </Alert>
-        ) : null}
-        {!configured ? <SetupPending copy={copy} /> : null}
-        {configured && !authReady ? (
-          <Center py="xl">
-            <Loader aria-label={copy.loading} />
-          </Center>
-        ) : null}
-        {configured && authReady && !user ? (
-          <SignIn
-            copy={copy}
-            busy={busy}
-            run={run}
-            linkRequiresEmail={linkRequiresEmail}
-            linkProblem={linkProblem}
-            completeLink={async (email) => {
-              await completeEmailLinkSignIn(window.location.href, email);
-              setLinkRequiresEmail(false);
-              setLinkProblem(false);
-            }}
-          />
-        ) : null}
-        {configured && user && !accountReady ? (
-          <Center py="xl">
-            <Loader aria-label={copy.loading} />
-          </Center>
-        ) : null}
-        {configured && user && accountReady ? (
-          <>
-            <Group justify="space-between">
-              <Badge variant="light" color={access?.status === 'approved' ? 'green' : 'moss'}>
-                {user.email}
-              </Badge>
-              <Button
-                variant="light"
-                color="dark"
-                leftSection={<IconLogout size={18} />}
-                onClick={() => signOutMember()}
-              >
-                {copy.signOut}
-              </Button>
-            </Group>
-            {access && ['onboarding', 'pending'].includes(access.status) && profile ? (
-              <RestrictedProfileArea
-                access={access}
-                profile={profile}
-                setProfile={setProfile}
-                copy={copy}
-                locale={locale}
-                busy={busy}
-                run={run}
-                refresh={() => refresh(user, true)}
-              />
-            ) : null}
-            {access && !['onboarding', 'pending', 'approved'].includes(access.status) ? (
-              <BlockedState copy={copy} access={access} busy={busy} run={run} refresh={refresh} />
-            ) : null}
-            {access?.status === 'approved' && profile ? (
-              <PortalShell
-                section={section}
-                access={access}
-                profile={profile}
-                setProfile={setProfile}
-                copy={copy}
-                locale={locale}
-                busy={busy}
-                run={run}
-                refresh={refresh}
-              />
-            ) : null}
-          </>
-        ) : null}
-      </Stack>
-    </Container>
+          </Notification>
+        </div>
+      ) : null}
+      <Container size="xl" py={{ base: 'xl', md: '4rem' }}>
+        <PageHeader eyebrow={copy.eyebrow} title={copy.title} description={copy.description} />
+        <Stack gap="xl" mt="xl">
+          {!configured ? <SetupPending copy={copy} /> : null}
+          {configured && !authReady ? (
+            <Center py="xl">
+              <Loader aria-label={copy.loading} />
+            </Center>
+          ) : null}
+          {configured && authReady && !user ? (
+            <SignIn
+              copy={copy}
+              busy={busy}
+              run={run}
+              linkRequiresEmail={linkRequiresEmail}
+              linkProblem={linkProblem}
+              completeLink={async (email) => {
+                await completeEmailLinkSignIn(window.location.href, email);
+                setLinkRequiresEmail(false);
+                setLinkProblem(false);
+              }}
+            />
+          ) : null}
+          {configured && user && !accountReady ? (
+            <Center py="xl">
+              <Loader aria-label={copy.loading} />
+            </Center>
+          ) : null}
+          {configured && user && accountReady ? (
+            <>
+              <Group justify="space-between">
+                <Badge variant="light" color={access?.status === 'approved' ? 'green' : 'moss'}>
+                  {user.email}
+                </Badge>
+                <Button
+                  variant="light"
+                  color="dark"
+                  leftSection={<IconLogout size={18} />}
+                  onClick={() => signOutMember()}
+                >
+                  {copy.signOut}
+                </Button>
+              </Group>
+              {access && ['onboarding', 'pending'].includes(access.status) && profile ? (
+                <RestrictedProfileArea
+                  access={access}
+                  profile={profile}
+                  setProfile={setProfile}
+                  copy={copy}
+                  locale={locale}
+                  busy={busy}
+                  run={run}
+                  refresh={() => refresh(user, true)}
+                />
+              ) : null}
+              {access && !['onboarding', 'pending', 'approved'].includes(access.status) ? (
+                <BlockedState copy={copy} access={access} busy={busy} run={run} refresh={refresh} />
+              ) : null}
+              {access?.status === 'approved' && profile ? (
+                <PortalShell
+                  section={section}
+                  access={access}
+                  profile={profile}
+                  setProfile={setProfile}
+                  copy={copy}
+                  locale={locale}
+                  busy={busy}
+                  run={run}
+                  refresh={refresh}
+                />
+              ) : null}
+            </>
+          ) : null}
+        </Stack>
+      </Container>
+    </>
   );
 }
 
@@ -1429,7 +1456,6 @@ function AvatarPanel({
   run: (work: () => Promise<void>, success?: string) => Promise<void>;
 }) {
   const [url, setUrl] = useState<string | null>(null);
-  const [file, setFile] = useState<File | null>(null);
   const [removeOpened, setRemoveOpened] = useState(false);
   useEffect(() => {
     if (isPhotoWorkerConfigured()) {
@@ -1446,40 +1472,37 @@ function AvatarPanel({
       </Text>
       <Group mt="xl" align="center" wrap="nowrap" className={classes.photoPicker}>
         <Avatar src={url} name={name} size={96} radius="xl" className={classes.profileAvatar} />
-        <FileInput
-          accept="image/jpeg,image/png,image/webp"
-          label={copy.choosePhoto}
-          description={copy.photoFormats}
-          value={file}
-          onChange={setFile}
-          leftSection={<IconCamera size={16} />}
-          clearable
-          className={classes.photoInput}
-        />
+        {isPhotoWorkerConfigured() ? (
+          <Stack gap="xs" className={classes.photoInput}>
+            <AvatarCropper
+              busy={busy}
+              copy={copy}
+              triggerLabel={url ? copy.replacePhoto : copy.choosePhoto}
+              onError={(message) =>
+                void run(async () => {
+                  throw new Error(message);
+                })
+              }
+              onSubmit={async (source, position) => {
+                let succeeded = false;
+                await run(async () => {
+                  const prepared = await prepareAvatar(source, position);
+                  await uploadMyAvatar(prepared);
+                  setUrl(await fetchAvatar(uid, 'pending'));
+                  succeeded = true;
+                }, copy.pendingPhoto);
+                return succeeded;
+              }}
+            />
+          </Stack>
+        ) : null}
       </Group>
       {isPhotoWorkerConfigured() ? (
-        <Group mt="lg">
-          <Button
-            disabled={!file}
-            loading={busy}
-            onClick={() =>
-              file &&
-              run(async () => {
-                const prepared = await prepareAvatar(file);
-                await uploadMyAvatar(prepared);
-                setUrl(await fetchAvatar(uid, 'pending'));
-                setFile(null);
-              }, copy.pendingPhoto)
-            }
-          >
-            {url ? copy.replacePhoto : copy.uploadPhoto}
+        url ? (
+          <Button color="red" variant="subtle" mt="md" onClick={() => setRemoveOpened(true)}>
+            {copy.removePhoto}
           </Button>
-          {url ? (
-            <Button color="red" variant="subtle" onClick={() => setRemoveOpened(true)}>
-              {copy.removePhoto}
-            </Button>
-          ) : null}
-        </Group>
+        ) : null
       ) : (
         <Alert color="moss" mt="lg">
           {copy.setupTitle}
@@ -2934,36 +2957,35 @@ function AdminPhotoUpload({
   busy: boolean;
   run: (work: () => Promise<void>, success?: string) => Promise<void>;
 }) {
-  const [file, setFile] = useState<File | null>(null);
   const [consent, setConsent] = useState(false);
   return (
-    <Group align="end" mt="lg">
-      <FileInput
-        accept="image/jpeg,image/png,image/webp"
-        label={copy.adminUpload}
-        value={file}
-        onChange={setFile}
-      />
+    <Group align="center" mt="lg">
       <Checkbox
         label={copy.consent}
         checked={consent}
         onChange={(event) => setConsent(event.currentTarget.checked)}
       />
-      <Button
-        size="xs"
-        disabled={!file || !consent}
-        loading={busy}
-        onClick={() =>
-          file &&
-          run(async () => {
-            await uploadMemberAvatar(uid, await prepareAvatar(file));
-            setFile(null);
-            setConsent(false);
+      <AvatarCropper
+        busy={busy}
+        copy={copy}
+        disabled={!consent}
+        triggerLabel={copy.adminUpload}
+        submitLabel={copy.adminConfirmPhoto}
+        onError={(message) =>
+          void run(async () => {
+            throw new Error(message);
           })
         }
-      >
-        {copy.uploadPhoto}
-      </Button>
+        onSubmit={async (source, position) => {
+          let succeeded = false;
+          await run(async () => {
+            await uploadMemberAvatar(uid, await prepareAvatar(source, position));
+            setConsent(false);
+            succeeded = true;
+          });
+          return succeeded;
+        }}
+      />
       <Button
         size="xs"
         color="red"

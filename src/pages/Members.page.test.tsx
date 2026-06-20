@@ -248,4 +248,24 @@ describe('MembersPage', () => {
     expect(confirmButton).toBeEnabled();
     expect(memberMocks.requestProfileDeletion).not.toHaveBeenCalled();
   });
+
+  it('shows portal failures in an immediately visible toast', async () => {
+    memberMocks.authenticated = true;
+    memberMocks.saveOwnProfile.mockRejectedValue(new Error('The profile could not be saved.'));
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter initialEntries={['/members/profile']}>
+        <MembersPage />
+      </MemoryRouter>
+    );
+
+    await user.click(
+      await screen.findByRole('switch', { name: /include me in the member directory/i })
+    );
+    await user.click(screen.getByRole('button', { name: /save changes/i }));
+
+    const toast = await screen.findByTestId('portal-toast');
+    expect(toast).toHaveTextContent('The profile could not be saved.');
+    expect(toast).toHaveTextContent(/something went wrong/i);
+  });
 });
