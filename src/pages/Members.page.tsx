@@ -48,8 +48,8 @@ import { siteConfig } from '../content/churchContent';
 import { notifyMemberAccessRequest } from '../lib/formConfig';
 import { useLocale } from '../lib/i18n';
 import {
-  changeMemberRole,
-  changeMemberStatus,
+  changePortalAccessStatus,
+  changePortalPermission,
   completeEmailLinkSignIn,
   createIcs,
   deleteCurrentAuthAccount,
@@ -57,6 +57,7 @@ import {
   getMissingFirebaseConfigKeys,
   isMemberPortalConfigured,
   loadAdminGroups,
+  loadAdminMemberRecords,
   loadAuditLogs,
   loadAvatarModeration,
   loadDirectoryPage,
@@ -65,8 +66,10 @@ import {
   loadGroupMembers,
   loadGroupMembership,
   loadMemberAccess,
+  loadMemberAdminNotes,
   loadMembersByStatus,
   loadMyGroups,
+  loadOwnChurchMetadata,
   loadOwnProfile,
   loadUpdates,
   migrateLegacyDirectoryEntry,
@@ -74,17 +77,23 @@ import {
   removeGroupMembership,
   requestMemberAreaAccess,
   requestProfileDeletion,
+  saveChurchMetadata,
   saveEvent,
   saveGroup,
   saveGroupMembership,
+  saveMemberAdminNotes,
   saveMemberProfile,
   saveOwnProfile,
   saveUpdate,
   sendMemberSignInLink,
   signOutMember,
   subscribeToAuth,
+  type AdminMemberRecord,
   type AuditLog,
   type AvatarMetadata,
+  type ChurchMetadata,
+  type ChurchRole,
+  type ChurchStatus,
   type DirectoryEntry,
   type DirectoryProfile,
   type GroupEvent,
@@ -92,8 +101,9 @@ import {
   type GroupRole,
   type GroupUpdate,
   type MemberAccess,
+  type MemberAdminNotes,
   type MemberConnection,
-  type MemberStatus,
+  type PortalAccessStatus,
   type PortalGroup,
 } from '../lib/memberPortalFirebase';
 import {
@@ -106,6 +116,27 @@ import {
   uploadMemberAvatar,
   uploadMyAvatar,
 } from '../lib/memberPortalPhotos';
+import {
+  CHURCH_ROLE_OPTIONS,
+  CHURCH_STATUS_OPTIONS,
+  CONTACT_CHANNEL_OPTIONS,
+  defaultDirectoryVisibility,
+  emptyChurchMetadata,
+  emptyDirectoryProfile,
+  formatAddress,
+  formatBirthday,
+  formatPhone,
+  isValidEmail,
+  isValidMonthDay,
+  MINISTRY_INTEREST_OPTIONS,
+  normalizeDirectoryProfile,
+  optionData,
+  optionLabel,
+  searchableMemberText,
+  type ContactChannel,
+  type MinistryInterestId,
+  type PreferredContactMethod,
+} from '../lib/memberProfile';
 import { getLocalizedPath, type RouteId } from '../lib/routing';
 import classes from './Members.page.module.css';
 
@@ -190,6 +221,43 @@ const copyByLocale = {
     household: 'Household or family',
     interests: 'Ministry interests',
     interestsHelp: 'Share the ministries, service opportunities, or groups you care about.',
+    interestsNoObligation: 'Selecting an interest does not commit you to serve.',
+    otherInterest: 'Other ministry interest',
+    addressingNote: 'How should we address you?',
+    addressingNoteHelp:
+      'Optional notes about titles, greetings, or how you prefer to be addressed.',
+    birthday: 'Birthday',
+    birthdayHelp: 'Month and day only. Your birth year is not collected.',
+    month: 'Month',
+    day: 'Day',
+    contactHeading: 'Contact information',
+    contactHelp: 'Choose how church staff may contact you. Text messages require explicit consent.',
+    alternateEmail: 'Alternate email',
+    alternateEmailHelp:
+      'Used for contact and shown instead of your sign-in email if you share email.',
+    communicationPreferences: 'Allowed contact methods',
+    preferredContact: 'Preferred contact method',
+    noRoutineContact: 'No routine contact',
+    phoneRequired: 'Add a valid phone number before choosing phone calls or text messages.',
+    invalidPhone: 'Enter a 10-digit U.S. number or an international number beginning with +.',
+    invalidEmail: 'Enter a valid email address.',
+    invalidBirthday: 'Choose a valid month and day.',
+    addressHeading: 'Mailing address',
+    addressHelp: 'Church staff can use this address even when you keep it out of the directory.',
+    addressLine1: 'Street address',
+    addressLine2: 'Address line 2',
+    city: 'City',
+    region: 'State or region',
+    postalCode: 'ZIP or postal code',
+    country: 'Country',
+    householdHelp: 'Share family or household information in whatever wording fits your household.',
+    officialHeading: 'Official church record',
+    officialHelp:
+      'Church staff manage these values. Contact the church office if a correction is needed.',
+    churchStatus: 'Church status',
+    churchRoles: 'Church roles',
+    dateJoined: 'Date joined',
+    notAssigned: 'Not assigned',
     profileHeading: 'Your profile',
     profileIntro:
       'Keep your contact details current and choose exactly what other members can see.',
@@ -208,7 +276,13 @@ const copyByLocale = {
     showEmail: 'Show my email',
     showPhone: 'Show my phone',
     showPronouns: 'Show my pronouns',
+    showPreferredName: 'Show my preferred name',
+    showAddress: 'Show my address',
+    showBirthday: 'Show my birthday',
     showHousehold: 'Show my household',
+    showInterests: 'Show my ministry interests',
+    showChurchStatus: 'Show my church status',
+    showChurchRoles: 'Show my church roles',
     showPhoto: 'Show my approved photo',
     photo: 'Profile photo',
     photoHelp:
@@ -293,6 +367,19 @@ const copyByLocale = {
     makeAdmin: 'Make admin',
     removeAdmin: 'Remove admin',
     editProfile: 'Edit profile',
+    editChurchRecord: 'Edit church record',
+    editInternalNotes: 'Internal notes',
+    membershipNotes: 'Membership notes',
+    internalNotes: 'Internal notes',
+    lastReviewed: 'Last reviewed',
+    markReviewed: 'Save and mark reviewed now',
+    searchMembers: 'Search member records',
+    accessStatusFilter: 'Portal access status',
+    churchStatusFilter: 'Church status',
+    churchRoleFilter: 'Church role',
+    ministryFilter: 'Ministry interest',
+    allOptions: 'All',
+    portalPermission: 'Portal permission',
     processDeletion: 'Process deletion',
     audit: 'Audit history',
     photos: 'Photo review',
@@ -376,6 +463,46 @@ const copyByLocale = {
     household: 'Hogar o familia',
     interests: 'Intereses ministeriales',
     interestsHelp: 'Comparta los ministerios, oportunidades de servicio o grupos que le interesan.',
+    interestsNoObligation: 'Seleccionar un interés no le obliga a servir.',
+    otherInterest: 'Otro interés ministerial',
+    addressingNote: '¿Cómo debemos dirigirnos a usted?',
+    addressingNoteHelp:
+      'Notas opcionales sobre títulos, saludos o cómo prefiere que se dirijan a usted.',
+    birthday: 'Cumpleaños',
+    birthdayHelp: 'Solo mes y día. No recopilamos el año de nacimiento.',
+    month: 'Mes',
+    day: 'Día',
+    contactHeading: 'Información de contacto',
+    contactHelp:
+      'Elija cómo puede contactarle el personal. Los mensajes de texto requieren permiso explícito.',
+    alternateEmail: 'Correo alternativo',
+    alternateEmailHelp:
+      'Se usa para contacto y se muestra en lugar del correo de acceso si comparte su correo.',
+    communicationPreferences: 'Métodos de contacto permitidos',
+    preferredContact: 'Método de contacto preferido',
+    noRoutineContact: 'Sin contacto rutinario',
+    phoneRequired: 'Agregue un teléfono válido antes de elegir llamadas o mensajes de texto.',
+    invalidPhone:
+      'Ingrese un número estadounidense de 10 dígitos o uno internacional que comience con +.',
+    invalidEmail: 'Ingrese un correo electrónico válido.',
+    invalidBirthday: 'Elija un mes y día válidos.',
+    addressHeading: 'Dirección postal',
+    addressHelp: 'El personal puede usar esta dirección aunque no la comparta en el directorio.',
+    addressLine1: 'Dirección',
+    addressLine2: 'Línea de dirección 2',
+    city: 'Ciudad',
+    region: 'Estado o región',
+    postalCode: 'Código postal',
+    country: 'País',
+    householdHelp:
+      'Comparta información familiar o del hogar con las palabras que mejor le representen.',
+    officialHeading: 'Registro oficial de la iglesia',
+    officialHelp:
+      'El personal administra estos valores. Comuníquese con la oficina si necesita una corrección.',
+    churchStatus: 'Estado en la iglesia',
+    churchRoles: 'Funciones en la iglesia',
+    dateJoined: 'Fecha de ingreso',
+    notAssigned: 'Sin asignar',
     profileHeading: 'Su perfil',
     profileIntro:
       'Mantenga sus datos de contacto al día y elija exactamente qué pueden ver los demás miembros.',
@@ -396,7 +523,13 @@ const copyByLocale = {
     showEmail: 'Mostrar mi correo',
     showPhone: 'Mostrar mi teléfono',
     showPronouns: 'Mostrar mis pronombres',
+    showPreferredName: 'Mostrar mi nombre preferido',
+    showAddress: 'Mostrar mi dirección',
+    showBirthday: 'Mostrar mi cumpleaños',
     showHousehold: 'Mostrar mi hogar',
+    showInterests: 'Mostrar mis intereses ministeriales',
+    showChurchStatus: 'Mostrar mi estado en la iglesia',
+    showChurchRoles: 'Mostrar mis funciones en la iglesia',
     showPhoto: 'Mostrar mi foto aprobada',
     photo: 'Foto de perfil',
     photoHelp: 'Posicione y comprima su foto en este navegador antes de enviarla para aprobación.',
@@ -480,6 +613,19 @@ const copyByLocale = {
     makeAdmin: 'Hacer administrador',
     removeAdmin: 'Quitar administrador',
     editProfile: 'Editar perfil',
+    editChurchRecord: 'Editar registro de la iglesia',
+    editInternalNotes: 'Notas internas',
+    membershipNotes: 'Notas de membresía',
+    internalNotes: 'Notas internas',
+    lastReviewed: 'Última revisión',
+    markReviewed: 'Guardar y marcar como revisado ahora',
+    searchMembers: 'Buscar registros de miembros',
+    accessStatusFilter: 'Estado de acceso al portal',
+    churchStatusFilter: 'Estado en la iglesia',
+    churchRoleFilter: 'Función en la iglesia',
+    ministryFilter: 'Interés ministerial',
+    allOptions: 'Todos',
+    portalPermission: 'Permiso del portal',
     processDeletion: 'Procesar eliminación',
     audit: 'Historial',
     photos: 'Revisión de fotos',
@@ -495,25 +641,6 @@ const copyByLocale = {
     contactOffice: 'Contactar la oficina',
   },
 };
-
-const emptyProfile = (uid: string, email: string): DirectoryProfile => ({
-  uid,
-  displayName: '',
-  preferredName: '',
-  email,
-  phone: '',
-  pronouns: '',
-  household: '',
-  ministryInterests: '',
-  visibility: {
-    listed: false,
-    email: false,
-    phone: false,
-    pronouns: false,
-    household: false,
-    photo: false,
-  },
-});
 
 const connectionOptions = (copy: typeof copyByLocale.en) => [
   { value: 'churchMember', label: copy.connectionChurchMember },
@@ -560,6 +687,7 @@ function MemberPortalPage({ section }: { section: PortalSection }) {
   const [user, setUser] = useState<PortalUser | null>(null);
   const [access, setAccess] = useState<MemberAccess | null>(null);
   const [profile, setProfile] = useState<DirectoryProfile | null>(null);
+  const [church, setChurch] = useState<ChurchMetadata | null>(null);
   const [authReady, setAuthReady] = useState(false);
   const [accountReady, setAccountReady] = useState(false);
   const [linkRequiresEmail, setLinkRequiresEmail] = useState(false);
@@ -576,10 +704,16 @@ function MemberPortalPage({ section }: { section: PortalSection }) {
     if (!nextAccess) {
       nextAccess = await ensureMemberOnboardingAccount(currentUser);
     }
-    const nextProfile = await loadOwnProfile(currentUser.uid, forceRefresh);
+    const [nextProfile, nextChurch] = await Promise.all([
+      loadOwnProfile(currentUser.uid, forceRefresh),
+      loadOwnChurchMetadata(currentUser.uid, forceRefresh).catch(() =>
+        emptyChurchMetadata(currentUser.uid)
+      ),
+    ]);
     setAccess(nextAccess);
-    const resolved = nextProfile ?? emptyProfile(currentUser.uid, currentUser.email ?? '');
+    const resolved = nextProfile ?? emptyDirectoryProfile(currentUser.uid, currentUser.email ?? '');
     setProfile(resolved);
+    setChurch(nextChurch);
     if (nextAccess?.status === 'approved' && nextProfile) {
       await migrateLegacyDirectoryEntry(nextProfile);
     }
@@ -600,6 +734,7 @@ function MemberPortalPage({ section }: { section: PortalSection }) {
       if (!nextUser) {
         setAccess(null);
         setProfile(null);
+        setChurch(null);
       }
     });
   }, [configured, copy.error]);
@@ -732,11 +867,12 @@ function MemberPortalPage({ section }: { section: PortalSection }) {
               {access && !['onboarding', 'pending', 'approved'].includes(access.status) ? (
                 <BlockedState copy={copy} access={access} busy={busy} run={run} refresh={refresh} />
               ) : null}
-              {access?.status === 'approved' && profile ? (
+              {access?.status === 'approved' && profile && church ? (
                 <PortalShell
                   section={section}
                   access={access}
                   profile={profile}
+                  church={church}
                   setProfile={setProfile}
                   copy={copy}
                   locale={locale}
@@ -878,6 +1014,8 @@ function RestrictedProfileArea({
         run={run}
         refresh={refresh}
         access={access}
+        church={emptyChurchMetadata(access.uid)}
+        locale={locale}
         restricted
       />
       {!pending ? (
@@ -1006,6 +1144,7 @@ function PortalShell({
   section,
   access,
   profile,
+  church,
   setProfile,
   copy,
   locale,
@@ -1016,6 +1155,7 @@ function PortalShell({
   section: PortalSection;
   access: MemberAccess;
   profile: DirectoryProfile;
+  church: ChurchMetadata;
   setProfile: (profile: DirectoryProfile) => void;
   copy: typeof copyByLocale.en;
   locale: 'en' | 'es';
@@ -1065,7 +1205,9 @@ function PortalShell({
         </Tabs.List>
       </Tabs>
       {section === 'profile' ? (
-        <ProfilePanel {...{ profile, setProfile, copy, busy, run, refresh, access }} />
+        <ProfilePanel
+          {...{ profile, church, setProfile, copy, busy, run, refresh, access, locale }}
+        />
       ) : null}
       {section === 'directory' ? <DirectoryPanel copy={copy} /> : null}
       {section === 'groups' ? (
@@ -1090,24 +1232,29 @@ function PortalShell({
 
 function ProfilePanel({
   profile,
+  church,
   setProfile,
   copy,
   busy,
   run,
   refresh,
   access,
+  locale,
   restricted = false,
 }: {
   profile: DirectoryProfile;
+  church: ChurchMetadata;
   setProfile: (profile: DirectoryProfile) => void;
   copy: typeof copyByLocale.en;
   busy: boolean;
   run: (work: () => Promise<void>, success?: string) => Promise<void>;
   refresh: () => Promise<void>;
   access: MemberAccess;
+  locale: 'en' | 'es';
   restricted?: boolean;
 }) {
   const [savedProfile, setSavedProfile] = useState(profile);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [deleteOpened, setDeleteOpened] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState('');
   const update = (next: Partial<DirectoryProfile>) => setProfile({ ...profile, ...next });
@@ -1121,33 +1268,60 @@ function ProfilePanel({
   const hasChanges =
     JSON.stringify(editableProfile(profile)) !== JSON.stringify(editableProfile(savedProfile));
   const sharedDetails = [
+    profile.visibility.preferredName && copy.showPreferredName,
     profile.visibility.email && copy.showEmail,
     profile.visibility.phone && copy.showPhone,
     profile.visibility.pronouns && copy.showPronouns,
+    profile.visibility.address && copy.showAddress,
+    profile.visibility.birthday && copy.showBirthday,
     profile.visibility.household && copy.showHousehold,
+    profile.visibility.ministryInterests && copy.showInterests,
     profile.visibility.photo && copy.showPhoto,
+    profile.visibility.churchStatus && copy.showChurchStatus,
+    profile.visibility.churchRoles && copy.showChurchRoles,
   ].filter(Boolean) as string[];
 
-  const saveProfile = () =>
+  const saveProfile = () => {
+    const errors: Record<string, string> = {};
+    if (!isValidEmail(profile.alternateEmail)) {
+      errors.alternateEmail = copy.invalidEmail;
+    }
+    if (profile.birthday && !isValidMonthDay(profile.birthday)) {
+      errors.birthday = copy.invalidBirthday;
+    }
+    if (
+      (profile.communicationChannels.includes('phone') ||
+        profile.communicationChannels.includes('sms')) &&
+      !profile.phone.trim()
+    ) {
+      errors.phone = copy.phoneRequired;
+    }
+    let normalized: DirectoryProfile;
+    try {
+      normalized = normalizeDirectoryProfile(profile);
+    } catch (error) {
+      if (error instanceof Error && error.message === 'invalid-phone') {
+        errors.phone = copy.invalidPhone;
+      }
+      normalized = profile;
+    }
+    setFieldErrors(errors);
+    if (Object.keys(errors).length) {
+      return;
+    }
     run(async () => {
-      await saveOwnProfile(profile, !restricted);
+      await saveOwnProfile(normalized, !restricted);
       const saved = restricted
         ? {
-            ...profile,
-            visibility: {
-              listed: false,
-              email: false,
-              phone: false,
-              pronouns: false,
-              household: false,
-              photo: false,
-            },
+            ...normalized,
+            visibility: defaultDirectoryVisibility(),
           }
-        : profile;
+        : normalized;
       setProfile(saved);
       setSavedProfile(saved);
       await refresh();
     });
+  };
   const closeDeleteModal = () => {
     setDeleteOpened(false);
     setDeleteConfirmation('');
@@ -1182,21 +1356,15 @@ function ProfilePanel({
       </Paper>
 
       <div className={restricted ? classes.profileGridSingle : classes.profileGrid}>
-        <Paper withBorder p={{ base: 'lg', md: 'xl' }} className={classes.profileCard}>
-          <div className={classes.cardHeader}>
-            <Title order={3}>{copy.personalDetails}</Title>
-            <Text c="dimmed" size="sm" mt={4}>
-              {copy.personalDetailsHelp}
-            </Text>
-          </div>
-          <form
-            id="member-profile-form"
-            onSubmit={(event) => {
-              event.preventDefault();
-              saveProfile();
-            }}
-          >
-            <Stack mt="xl" gap="lg">
+        <form
+          id="member-profile-form"
+          onSubmit={(event) => {
+            event.preventDefault();
+            saveProfile();
+          }}
+        >
+          <Stack gap="lg">
+            <ProfileSection title={copy.personalDetails} description={copy.personalDetailsHelp}>
               <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
                 <TextInput
                   label={copy.displayName}
@@ -1214,6 +1382,69 @@ function ProfilePanel({
                   onChange={(event) => update({ preferredName: event.currentTarget.value })}
                 />
               </SimpleGrid>
+              <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
+                <TextInput
+                  label={copy.pronouns}
+                  value={profile.pronouns}
+                  maxLength={60}
+                  onChange={(event) => update({ pronouns: event.currentTarget.value })}
+                />
+                <TextInput
+                  label={copy.addressingNote}
+                  description={copy.addressingNoteHelp}
+                  value={profile.addressingNote}
+                  maxLength={300}
+                  onChange={(event) => update({ addressingNote: event.currentTarget.value })}
+                />
+              </SimpleGrid>
+              <Box>
+                <Text fw={500} size="sm">
+                  {copy.birthday}
+                </Text>
+                <Text c="dimmed" size="xs" mb="xs">
+                  {copy.birthdayHelp}
+                </Text>
+                <Group grow align="flex-start">
+                  <Select
+                    label={copy.month}
+                    clearable
+                    data={Array.from({ length: 12 }, (_, index) => ({
+                      value: String(index + 1),
+                      label: new Intl.DateTimeFormat(locale === 'es' ? 'es-US' : 'en-US', {
+                        month: 'long',
+                        timeZone: 'UTC',
+                      }).format(new Date(Date.UTC(2024, index, 1))),
+                    }))}
+                    value={profile.birthday ? String(profile.birthday.month) : null}
+                    error={fieldErrors.birthday}
+                    onChange={(value) =>
+                      update({
+                        birthday: value
+                          ? { month: Number(value), day: profile.birthday?.day ?? 1 }
+                          : null,
+                      })
+                    }
+                  />
+                  <Select
+                    label={copy.day}
+                    clearable
+                    disabled={!profile.birthday}
+                    data={Array.from({ length: 31 }, (_, index) => String(index + 1))}
+                    value={profile.birthday ? String(profile.birthday.day) : null}
+                    onChange={(value) =>
+                      update({
+                        birthday:
+                          value && profile.birthday
+                            ? { ...profile.birthday, day: Number(value) }
+                            : null,
+                      })
+                    }
+                  />
+                </Group>
+              </Box>
+            </ProfileSection>
+
+            <ProfileSection title={copy.contactHeading} description={copy.contactHelp}>
               <TextInput
                 label={copy.email}
                 description={copy.privateEmailHelp}
@@ -1223,41 +1454,191 @@ function ProfilePanel({
                 readOnly
                 className={classes.readOnlyField}
               />
-              <TextInput
-                label={copy.phone}
-                value={profile.phone}
-                type="tel"
-                autoComplete="tel"
-                maxLength={40}
-                onChange={(event) => update({ phone: event.currentTarget.value })}
-              />
               <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
                 <TextInput
-                  label={copy.pronouns}
-                  value={profile.pronouns}
-                  maxLength={60}
-                  onChange={(event) => update({ pronouns: event.currentTarget.value })}
+                  label={copy.alternateEmail}
+                  description={copy.alternateEmailHelp}
+                  value={profile.alternateEmail}
+                  type="email"
+                  autoComplete="email"
+                  error={fieldErrors.alternateEmail}
+                  maxLength={320}
+                  onChange={(event) => update({ alternateEmail: event.currentTarget.value })}
                 />
                 <TextInput
-                  label={copy.household}
-                  value={profile.household}
-                  autoComplete="organization"
-                  maxLength={150}
-                  onChange={(event) => update({ household: event.currentTarget.value })}
+                  label={copy.phone}
+                  value={formatPhone(profile.phone)}
+                  type="tel"
+                  autoComplete="tel"
+                  error={fieldErrors.phone}
+                  maxLength={40}
+                  onChange={(event) => update({ phone: event.currentTarget.value })}
                 />
               </SimpleGrid>
+              <Checkbox.Group
+                label={copy.communicationPreferences}
+                value={profile.communicationChannels}
+                onChange={(values) => {
+                  const channels = values as ContactChannel[];
+                  update({
+                    communicationChannels: channels,
+                    preferredContactMethod: channels.includes(
+                      profile.preferredContactMethod as ContactChannel
+                    )
+                      ? profile.preferredContactMethod
+                      : (channels[0] ?? 'none'),
+                  });
+                }}
+              >
+                <Group mt="xs">
+                  {CONTACT_CHANNEL_OPTIONS.map((option) => (
+                    <Checkbox
+                      key={option.value}
+                      value={option.value}
+                      label={option.label[locale]}
+                    />
+                  ))}
+                </Group>
+              </Checkbox.Group>
+              <Checkbox
+                label={copy.noRoutineContact}
+                checked={profile.communicationChannels.length === 0}
+                onChange={(event) => {
+                  if (event.currentTarget.checked) {
+                    update({ communicationChannels: [], preferredContactMethod: 'none' });
+                  } else {
+                    update({ communicationChannels: ['email'], preferredContactMethod: 'email' });
+                  }
+                }}
+              />
+              <Select
+                label={copy.preferredContact}
+                disabled={profile.communicationChannels.length === 0}
+                allowDeselect={false}
+                data={optionData(CONTACT_CHANNEL_OPTIONS, locale).filter((option) =>
+                  profile.communicationChannels.includes(option.value)
+                )}
+                value={
+                  profile.preferredContactMethod === 'none' ? null : profile.preferredContactMethod
+                }
+                onChange={(value) =>
+                  update({ preferredContactMethod: (value ?? 'none') as PreferredContactMethod })
+                }
+              />
+            </ProfileSection>
+
+            <ProfileSection title={copy.addressHeading} description={copy.addressHelp}>
+              <TextInput
+                label={copy.addressLine1}
+                autoComplete="address-line1"
+                value={profile.address.line1}
+                onChange={(event) =>
+                  update({ address: { ...profile.address, line1: event.currentTarget.value } })
+                }
+              />
+              <TextInput
+                label={copy.addressLine2}
+                autoComplete="address-line2"
+                value={profile.address.line2}
+                onChange={(event) =>
+                  update({ address: { ...profile.address, line2: event.currentTarget.value } })
+                }
+              />
+              <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="md">
+                <TextInput
+                  label={copy.city}
+                  autoComplete="address-level2"
+                  value={profile.address.city}
+                  onChange={(event) =>
+                    update({ address: { ...profile.address, city: event.currentTarget.value } })
+                  }
+                />
+                <TextInput
+                  label={copy.region}
+                  autoComplete="address-level1"
+                  value={profile.address.region}
+                  onChange={(event) =>
+                    update({ address: { ...profile.address, region: event.currentTarget.value } })
+                  }
+                />
+                <TextInput
+                  label={copy.postalCode}
+                  autoComplete="postal-code"
+                  value={profile.address.postalCode}
+                  onChange={(event) =>
+                    update({
+                      address: { ...profile.address, postalCode: event.currentTarget.value },
+                    })
+                  }
+                />
+              </SimpleGrid>
+              <TextInput
+                label={copy.country}
+                autoComplete="country-name"
+                value={profile.address.country}
+                onChange={(event) =>
+                  update({ address: { ...profile.address, country: event.currentTarget.value } })
+                }
+              />
+            </ProfileSection>
+
+            <ProfileSection title={copy.household} description={copy.householdHelp}>
               <Textarea
-                label={copy.interests}
-                description={copy.interestsHelp}
-                value={profile.ministryInterests}
-                maxLength={500}
+                label={copy.household}
+                value={profile.household}
+                maxLength={1000}
                 minRows={3}
                 autosize
-                onChange={(event) => update({ ministryInterests: event.currentTarget.value })}
+                onChange={(event) => update({ household: event.currentTarget.value })}
               />
-            </Stack>
-          </form>
-        </Paper>
+            </ProfileSection>
+
+            <ProfileSection title={copy.interests} description={copy.interestsHelp}>
+              <MultiSelect
+                label={copy.interests}
+                description={copy.interestsNoObligation}
+                data={optionData(MINISTRY_INTEREST_OPTIONS, locale)}
+                value={profile.ministryInterests}
+                searchable
+                onChange={(values) => update({ ministryInterests: values as MinistryInterestId[] })}
+              />
+              {profile.ministryInterests.includes('other') ? (
+                <TextInput
+                  label={copy.otherInterest}
+                  value={profile.otherMinistryInterest}
+                  maxLength={300}
+                  onChange={(event) => update({ otherMinistryInterest: event.currentTarget.value })}
+                />
+              ) : null}
+            </ProfileSection>
+
+            {!restricted ? (
+              <ProfileSection title={copy.officialHeading} description={copy.officialHelp}>
+                <SimpleGrid cols={{ base: 1, sm: 3 }}>
+                  <ReadOnlyValue
+                    label={copy.churchStatus}
+                    value={
+                      optionLabel(CHURCH_STATUS_OPTIONS, church.churchStatus, locale) ||
+                      copy.notAssigned
+                    }
+                  />
+                  <ReadOnlyValue
+                    label={copy.churchRoles}
+                    value={
+                      church.churchRoles
+                        .map((role) => optionLabel(CHURCH_ROLE_OPTIONS, role, locale))
+                        .join(', ') || copy.notAssigned
+                    }
+                  />
+                  <ReadOnlyValue
+                    label={copy.dateJoined}
+                    value={formatDateOnly(church.dateJoined, locale) || copy.notAssigned}
+                  />
+                </SimpleGrid>
+              </ProfileSection>
+            ) : null}
+          </Stack>
+        </form>
 
         {!restricted ? (
           <Stack gap="lg" className={classes.profileSidebar}>
@@ -1324,11 +1705,17 @@ function ProfilePanel({
               <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="xs">
                 {(
                   [
+                    ['preferredName', copy.showPreferredName],
                     ['email', copy.showEmail],
                     ['phone', copy.showPhone],
                     ['pronouns', copy.showPronouns],
+                    ['address', copy.showAddress],
+                    ['birthday', copy.showBirthday],
                     ['household', copy.showHousehold],
+                    ['ministryInterests', copy.showInterests],
                     ['photo', copy.showPhoto],
+                    ['churchStatus', copy.showChurchStatus],
+                    ['churchRoles', copy.showChurchRoles],
                   ] as Array<[keyof DirectoryProfile['visibility'], string]>
                 ).map(([key, label]) => (
                   <Switch
@@ -1439,6 +1826,41 @@ function ProfilePanel({
         </Stack>
       </Modal>
     </Stack>
+  );
+}
+
+function ProfileSection({
+  title,
+  description,
+  children,
+}: {
+  title: string;
+  description: string;
+  children: ReactNode;
+}) {
+  return (
+    <Paper withBorder p={{ base: 'lg', md: 'xl' }} className={classes.profileCard}>
+      <div className={classes.cardHeader}>
+        <Title order={3}>{title}</Title>
+        <Text c="dimmed" size="sm" mt={4}>
+          {description}
+        </Text>
+      </div>
+      <Stack mt="xl" gap="lg">
+        {children}
+      </Stack>
+    </Paper>
+  );
+}
+
+function ReadOnlyValue({ label, value }: { label: string; value: string }) {
+  return (
+    <Box>
+      <Text size="xs" c="dimmed" fw={700}>
+        {label}
+      </Text>
+      <Text mt={3}>{value}</Text>
+    </Box>
   );
 }
 
@@ -1591,6 +2013,7 @@ function DirectoryPanel({ copy }: { copy: typeof copyByLocale.en }) {
 }
 
 function MemberCard({ entry }: { entry: DirectoryEntry }) {
+  const locale = useLocale();
   const [url, setUrl] = useState<string | null>(null);
   useEffect(() => {
     if (entry.showPhoto) {
@@ -1612,12 +2035,55 @@ function MemberCard({ entry }: { entry: DirectoryEntry }) {
         </div>
       </Group>
       <Stack gap={2} mt="md">
-        {entry.email ? <Text size="sm">{entry.email}</Text> : null}
-        {entry.phone ? <Text size="sm">{entry.phone}</Text> : null}
-        {entry.household ? <Text size="sm">{entry.household}</Text> : null}
-        {entry.ministryInterests ? (
+        {entry.churchStatus || entry.churchRoles.length ? (
+          <Group gap="xs" mb="xs">
+            {entry.churchStatus ? (
+              <Badge color="moss" variant="light">
+                {optionLabel(CHURCH_STATUS_OPTIONS, entry.churchStatus, locale)}
+              </Badge>
+            ) : null}
+            {entry.churchRoles.map((role) => (
+              <Badge key={role} color="brand" variant="outline">
+                {optionLabel(CHURCH_ROLE_OPTIONS, role, locale)}
+              </Badge>
+            ))}
+          </Group>
+        ) : null}
+        {entry.email ? (
+          <Text component="a" href={`mailto:${entry.email}`} size="sm">
+            {entry.email}
+          </Text>
+        ) : null}
+        {entry.phone ? (
+          <Text component="a" href={`tel:${entry.phone}`} size="sm">
+            {formatPhone(entry.phone)}
+          </Text>
+        ) : null}
+        {entry.birthday ? <Text size="sm">{formatBirthday(entry.birthday, locale)}</Text> : null}
+        {entry.address ? (
+          <Text size="sm">
+            {formatAddress(entry.address).map((line) => (
+              <span key={line} className={classes.addressLine}>
+                {line}
+              </span>
+            ))}
+          </Text>
+        ) : null}
+        {entry.household ? (
+          <Text size="sm" className={classes.preserveLines}>
+            {entry.household}
+          </Text>
+        ) : null}
+        {entry.ministryInterests.length ? (
           <Text size="sm" c="dimmed" mt="xs">
-            {entry.ministryInterests}
+            {entry.ministryInterests
+              .map((interest) =>
+                interest === 'other'
+                  ? entry.otherMinistryInterest ||
+                    optionLabel(MINISTRY_INTEREST_OPTIONS, interest, locale)
+                  : optionLabel(MINISTRY_INTEREST_OPTIONS, interest, locale)
+              )
+              .join(' · ')}
           </Text>
         ) : null}
       </Stack>
@@ -2448,23 +2914,19 @@ function AdminPanel({
   busy: boolean;
   run: (work: () => Promise<void>, success?: string) => Promise<void>;
 }) {
-  const statuses: MemberStatus[] = [
-    'pending',
-    'approved',
-    'rejected',
-    'deactivated',
-    'banned',
-    'deletionRequested',
-    'deleted',
-  ];
-  const [status, setStatus] = useState<MemberStatus>('pending');
-  const [members, setMembers] = useState<MemberAccess[]>([]);
+  const locale = useLocale();
+  const [records, setRecords] = useState<AdminMemberRecord[]>([]);
+  const [search, setSearch] = useState('');
+  const [accessFilter, setAccessFilter] = useState<string>('all');
+  const [churchStatusFilter, setChurchStatusFilter] = useState<string>('all');
+  const [churchRoleFilter, setChurchRoleFilter] = useState<string>('all');
+  const [ministryFilter, setMinistryFilter] = useState<string>('all');
   const [photos, setPhotos] = useState<AvatarMetadata[]>([]);
   const [audits, setAudits] = useState<AuditLog[]>([]);
   const [tab, setTab] = useState<string>('members');
   const reload = async () => {
     if (tab === 'members') {
-      setMembers(await loadMembersByStatus(status));
+      setRecords(await loadAdminMemberRecords());
     } else if (tab === 'photos') {
       setPhotos(await loadAvatarModeration());
     } else if (tab === 'audit') {
@@ -2473,7 +2935,23 @@ function AdminPanel({
   };
   useEffect(() => {
     reload();
-  }, [status, tab]);
+  }, [tab]);
+  const normalizedSearch = search
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim();
+  const members = records.filter(
+    (record) =>
+      (accessFilter === 'all' || record.access.status === accessFilter) &&
+      (churchStatusFilter === 'all' || record.church.churchStatus === churchStatusFilter) &&
+      (churchRoleFilter === 'all' ||
+        record.church.churchRoles.includes(churchRoleFilter as ChurchRole)) &&
+      (ministryFilter === 'all' ||
+        record.profile.ministryInterests.includes(ministryFilter as MinistryInterestId)) &&
+      (!normalizedSearch ||
+        searchableMemberText(record.profile, record.church, locale).includes(normalizedSearch))
+  );
   return (
     <Stack>
       <Title order={2}>{copy.admin}</Title>
@@ -2485,21 +2963,73 @@ function AdminPanel({
           <Tabs.Tab value="audit">{copy.audit}</Tabs.Tab>
         </Tabs.List>
         <Tabs.Panel value="members" pt="lg">
-          <Group mb="lg">
-            {statuses.map((item) => (
-              <Button
-                key={item}
-                size="xs"
-                variant={status === item ? 'filled' : 'light'}
-                onClick={() => setStatus(item)}
-              >
-                {item}
-              </Button>
-            ))}
-          </Group>
+          <Paper withBorder p="lg" mb="lg">
+            <TextInput
+              label={copy.searchMembers}
+              value={search}
+              onChange={(event) => setSearch(event.currentTarget.value)}
+            />
+            <SimpleGrid cols={{ base: 1, sm: 2, lg: 4 }} mt="md">
+              <Select
+                label={copy.accessStatusFilter}
+                value={accessFilter}
+                allowDeselect={false}
+                data={[
+                  { value: 'all', label: copy.allOptions },
+                  ...(
+                    [
+                      'onboarding',
+                      'pending',
+                      'approved',
+                      'rejected',
+                      'deactivated',
+                      'banned',
+                      'deletionRequested',
+                      'deleted',
+                    ] as PortalAccessStatus[]
+                  ).map((value) => ({ value, label: value })),
+                ]}
+                onChange={(value) => setAccessFilter(value || 'all')}
+              />
+              <Select
+                label={copy.churchStatusFilter}
+                value={churchStatusFilter}
+                allowDeselect={false}
+                data={[
+                  { value: 'all', label: copy.allOptions },
+                  ...optionData(CHURCH_STATUS_OPTIONS, locale),
+                ]}
+                onChange={(value) => setChurchStatusFilter(value || 'all')}
+              />
+              <Select
+                label={copy.churchRoleFilter}
+                value={churchRoleFilter}
+                allowDeselect={false}
+                data={[
+                  { value: 'all', label: copy.allOptions },
+                  ...optionData(CHURCH_ROLE_OPTIONS, locale),
+                ]}
+                onChange={(value) => setChurchRoleFilter(value || 'all')}
+              />
+              <Select
+                label={copy.ministryFilter}
+                value={ministryFilter}
+                searchable
+                allowDeselect={false}
+                data={[
+                  { value: 'all', label: copy.allOptions },
+                  ...optionData(MINISTRY_INTEREST_OPTIONS, locale),
+                ]}
+                onChange={(value) => setMinistryFilter(value || 'all')}
+              />
+            </SimpleGrid>
+          </Paper>
           <Stack>
-            {members.map((member) => (
-              <AdminMemberCard key={member.uid} {...{ copy, access, member, busy, run, reload }} />
+            {members.map((record) => (
+              <AdminMemberCard
+                key={record.access.uid}
+                {...{ copy, access, record, busy, run, reload }}
+              />
             ))}
             {members.length === 0 ? <Text c="dimmed">{copy.empty}</Text> : null}
           </Stack>
@@ -2570,19 +3100,21 @@ function AdminPanel({
 function AdminMemberCard({
   copy,
   access,
-  member,
+  record,
   busy,
   run,
   reload,
 }: {
   copy: typeof copyByLocale.en;
   access: MemberAccess;
-  member: MemberAccess;
+  record: AdminMemberRecord;
   busy: boolean;
   run: (work: () => Promise<void>, success?: string) => Promise<void>;
   reload: () => Promise<void>;
 }) {
-  const action = (next: MemberStatus, label: string) => (
+  const member = record.access;
+  const locale = useLocale();
+  const action = (next: PortalAccessStatus, label: string) => (
     <Button
       size="xs"
       color={next === 'approved' || next === 'deactivated' ? 'green' : 'red'}
@@ -2592,7 +3124,7 @@ function AdminMemberCard({
       onClick={() => {
         if (next === 'approved' || window.confirm(`${label}: ${member.displayName}?`)) {
           run(async () => {
-            await changeMemberStatus(access, member, next);
+            await changePortalAccessStatus(access, member, next);
             await reload();
           });
         }
@@ -2611,7 +3143,19 @@ function AdminMemberCard({
           </Text>
           <Group mt="xs">
             <Badge>{member.status}</Badge>
-            <Badge variant="outline">{member.role}</Badge>
+            <Badge variant="outline">
+              {copy.portalPermission}: {member.role}
+            </Badge>
+            {record.church.churchStatus ? (
+              <Badge color="moss" variant="light">
+                {optionLabel(CHURCH_STATUS_OPTIONS, record.church.churchStatus, locale)}
+              </Badge>
+            ) : null}
+            {record.church.churchRoles.map((role) => (
+              <Badge key={role} color="brand" variant="outline">
+                {optionLabel(CHURCH_ROLE_OPTIONS, role, locale)}
+              </Badge>
+            ))}
           </Group>
           {member.status === 'pending' ? (
             <Text size="sm" mt="sm">
@@ -2645,7 +3189,7 @@ function AdminMemberCard({
                 disabled={member.uid === access.uid}
                 onClick={() =>
                   run(async () => {
-                    await changeMemberRole(
+                    await changePortalPermission(
                       access,
                       member,
                       member.role === 'admin' ? 'member' : 'admin'
@@ -2686,10 +3230,30 @@ function AdminMemberCard({
           ) : null}
         </Group>
       </Group>
-      {member.status === 'approved' ? (
+      {member.status !== 'deleted' ? (
         <>
-          <AdminProfileEditor copy={copy} actor={access} member={member} busy={busy} run={run} />
-          <AdminPhotoUpload copy={copy} uid={member.uid} busy={busy} run={run} />
+          <Group mt="md">
+            <AdminProfileEditor
+              copy={copy}
+              actor={access}
+              initialProfile={record.profile}
+              busy={busy}
+              run={run}
+              reload={reload}
+            />
+            <AdminChurchRecordEditor
+              copy={copy}
+              actor={access}
+              initialMetadata={record.church}
+              busy={busy}
+              run={run}
+              reload={reload}
+            />
+            <AdminNotesEditor copy={copy} actor={access} uid={member.uid} busy={busy} run={run} />
+          </Group>
+          {member.status === 'approved' ? (
+            <AdminPhotoUpload copy={copy} uid={member.uid} busy={busy} run={run} />
+          ) : null}
         </>
       ) : null}
     </Paper>
@@ -2711,19 +3275,22 @@ function AdminAccessReview({
   run: (work: () => Promise<void>, success?: string) => Promise<void>;
   reload: () => Promise<void>;
 }) {
+  const locale = useLocale();
   const [opened, setOpened] = useState(false);
   const [profile, setProfile] = useState<DirectoryProfile | null>(null);
   const [rejecting, setRejecting] = useState(false);
   const [reason, setReason] = useState('');
   const open = async () => {
-    setProfile((await loadOwnProfile(member.uid, true)) ?? emptyProfile(member.uid, member.email));
+    setProfile(
+      (await loadOwnProfile(member.uid, true)) ?? emptyDirectoryProfile(member.uid, member.email)
+    );
     setRejecting(false);
     setReason('');
     setOpened(true);
   };
   const decide = (status: 'approved' | 'rejected', statusReason = '') =>
     run(async () => {
-      await changeMemberStatus(actor, member, status, statusReason);
+      await changePortalAccessStatus(actor, member, status, statusReason);
       setOpened(false);
       await reload();
     });
@@ -2788,7 +3355,16 @@ function AdminAccessReview({
                 <Text size="xs" c="dimmed">
                   {copy.interests}
                 </Text>
-                <Text>{profile.ministryInterests || copy.empty}</Text>
+                <Text>
+                  {profile.ministryInterests
+                    .map((interest) =>
+                      interest === 'other'
+                        ? profile.otherMinistryInterest
+                        : optionLabel(MINISTRY_INTEREST_OPTIONS, interest, locale)
+                    )
+                    .filter(Boolean)
+                    .join(', ') || copy.empty}
+                </Text>
               </div>
             </SimpleGrid>
           ) : (
@@ -2840,40 +3416,39 @@ function AdminAccessReview({
 function AdminProfileEditor({
   copy,
   actor,
-  member,
+  initialProfile,
   busy,
   run,
+  reload,
 }: {
   copy: typeof copyByLocale.en;
   actor: MemberAccess;
-  member: MemberAccess;
+  initialProfile: DirectoryProfile;
   busy: boolean;
   run: (work: () => Promise<void>, success?: string) => Promise<void>;
+  reload: () => Promise<void>;
 }) {
+  const locale = useLocale();
   const [opened, setOpened] = useState(false);
-  const [profile, setProfile] = useState<DirectoryProfile | null>(null);
-  const open = async () => {
-    setProfile((await loadOwnProfile(member.uid)) ?? emptyProfile(member.uid, member.email));
+  const [profile, setProfile] = useState<DirectoryProfile>(initialProfile);
+  const open = () => {
+    setProfile(initialProfile);
     setOpened(true);
   };
   const update = (next: Partial<DirectoryProfile>) => {
-    if (profile) {
-      setProfile({ ...profile, ...next });
-    }
+    setProfile({ ...profile, ...next });
   };
   const visibility = (key: keyof DirectoryProfile['visibility'], checked: boolean) => {
-    if (profile) {
-      update({ visibility: { ...profile.visibility, [key]: checked } });
-    }
+    update({ visibility: { ...profile.visibility, [key]: checked } });
   };
   return (
     <>
       <Button variant="subtle" size="xs" mt="md" onClick={open}>
         {copy.editProfile}
       </Button>
-      <Modal opened={opened} onClose={() => setOpened(false)} title={copy.editProfile}>
-        {profile ? (
-          <Stack>
+      <Modal opened={opened} onClose={() => setOpened(false)} title={copy.editProfile} size="lg">
+        <Stack>
+          <SimpleGrid cols={{ base: 1, sm: 2 }}>
             <TextInput
               label={copy.displayName}
               value={profile.displayName}
@@ -2884,59 +3459,334 @@ function AdminProfileEditor({
               value={profile.preferredName}
               onChange={(event) => update({ preferredName: event.currentTarget.value })}
             />
-            <TextInput
-              label={copy.phone}
-              value={profile.phone}
-              onChange={(event) => update({ phone: event.currentTarget.value })}
-            />
+          </SimpleGrid>
+          <SimpleGrid cols={{ base: 1, sm: 2 }}>
             <TextInput
               label={copy.pronouns}
               value={profile.pronouns}
               onChange={(event) => update({ pronouns: event.currentTarget.value })}
             />
             <TextInput
-              label={copy.household}
-              value={profile.household}
-              onChange={(event) => update({ household: event.currentTarget.value })}
+              label={copy.addressingNote}
+              value={profile.addressingNote}
+              onChange={(event) => update({ addressingNote: event.currentTarget.value })}
             />
-            <Textarea
-              label={copy.interests}
-              value={profile.ministryInterests}
-              onChange={(event) => update({ ministryInterests: event.currentTarget.value })}
-            />
-            <Switch
-              label={copy.directoryListed}
-              checked={profile.visibility.listed}
-              onChange={(event) => visibility('listed', event.currentTarget.checked)}
-            />
-            <Group>
-              <Checkbox
-                label={copy.showEmail}
-                checked={profile.visibility.email}
-                onChange={(event) => visibility('email', event.currentTarget.checked)}
-              />
-              <Checkbox
-                label={copy.showPhone}
-                checked={profile.visibility.phone}
-                onChange={(event) => visibility('phone', event.currentTarget.checked)}
-              />
-              <Checkbox
-                label={copy.showPhoto}
-                checked={profile.visibility.photo}
-                onChange={(event) => visibility('photo', event.currentTarget.checked)}
-              />
-            </Group>
-            <Button
-              loading={busy}
-              onClick={() =>
-                run(async () => {
-                  await saveMemberProfile(actor, profile);
-                  setOpened(false);
+          </SimpleGrid>
+          <SimpleGrid cols={{ base: 1, sm: 2 }}>
+            <TextInput
+              label={`${copy.birthday} — ${copy.month}`}
+              type="number"
+              min={1}
+              max={12}
+              value={profile.birthday?.month ?? ''}
+              onChange={(event) =>
+                update({
+                  birthday: event.currentTarget.value
+                    ? {
+                        month: Number(event.currentTarget.value),
+                        day: profile.birthday?.day ?? 1,
+                      }
+                    : null,
                 })
               }
-            >
-              {copy.save}
-            </Button>
+            />
+            <TextInput
+              label={`${copy.birthday} — ${copy.day}`}
+              type="number"
+              min={1}
+              max={31}
+              disabled={!profile.birthday}
+              value={profile.birthday?.day ?? ''}
+              onChange={(event) =>
+                update({
+                  birthday:
+                    event.currentTarget.value && profile.birthday
+                      ? { ...profile.birthday, day: Number(event.currentTarget.value) }
+                      : null,
+                })
+              }
+            />
+          </SimpleGrid>
+          <SimpleGrid cols={{ base: 1, sm: 2 }}>
+            <TextInput
+              label={copy.alternateEmail}
+              type="email"
+              value={profile.alternateEmail}
+              onChange={(event) => update({ alternateEmail: event.currentTarget.value })}
+            />
+            <TextInput
+              label={copy.phone}
+              value={formatPhone(profile.phone)}
+              onChange={(event) => update({ phone: event.currentTarget.value })}
+            />
+          </SimpleGrid>
+          <MultiSelect
+            label={copy.communicationPreferences}
+            data={optionData(CONTACT_CHANNEL_OPTIONS, locale)}
+            value={profile.communicationChannels}
+            onChange={(values) => update({ communicationChannels: values as ContactChannel[] })}
+          />
+          <Select
+            label={copy.preferredContact}
+            disabled={profile.communicationChannels.length === 0}
+            data={optionData(CONTACT_CHANNEL_OPTIONS, locale).filter((option) =>
+              profile.communicationChannels.includes(option.value)
+            )}
+            value={
+              profile.preferredContactMethod === 'none' ? null : profile.preferredContactMethod
+            }
+            onChange={(value) =>
+              update({ preferredContactMethod: (value ?? 'none') as PreferredContactMethod })
+            }
+          />
+          <SimpleGrid cols={{ base: 1, sm: 2 }}>
+            <TextInput
+              label={copy.addressLine1}
+              value={profile.address.line1}
+              onChange={(event) =>
+                update({ address: { ...profile.address, line1: event.currentTarget.value } })
+              }
+            />
+            <TextInput
+              label={copy.addressLine2}
+              value={profile.address.line2}
+              onChange={(event) =>
+                update({ address: { ...profile.address, line2: event.currentTarget.value } })
+              }
+            />
+            <TextInput
+              label={copy.city}
+              value={profile.address.city}
+              onChange={(event) =>
+                update({ address: { ...profile.address, city: event.currentTarget.value } })
+              }
+            />
+            <TextInput
+              label={copy.region}
+              value={profile.address.region}
+              onChange={(event) =>
+                update({ address: { ...profile.address, region: event.currentTarget.value } })
+              }
+            />
+            <TextInput
+              label={copy.postalCode}
+              value={profile.address.postalCode}
+              onChange={(event) =>
+                update({ address: { ...profile.address, postalCode: event.currentTarget.value } })
+              }
+            />
+            <TextInput
+              label={copy.country}
+              value={profile.address.country}
+              onChange={(event) =>
+                update({ address: { ...profile.address, country: event.currentTarget.value } })
+              }
+            />
+          </SimpleGrid>
+          <Textarea
+            label={copy.household}
+            value={profile.household}
+            onChange={(event) => update({ household: event.currentTarget.value })}
+          />
+          <MultiSelect
+            label={copy.interests}
+            data={optionData(MINISTRY_INTEREST_OPTIONS, locale)}
+            value={profile.ministryInterests}
+            onChange={(values) => update({ ministryInterests: values as MinistryInterestId[] })}
+          />
+          {profile.ministryInterests.includes('other') ? (
+            <TextInput
+              label={copy.otherInterest}
+              value={profile.otherMinistryInterest}
+              onChange={(event) => update({ otherMinistryInterest: event.currentTarget.value })}
+            />
+          ) : null}
+          <Switch
+            label={copy.directoryListed}
+            checked={profile.visibility.listed}
+            onChange={(event) => visibility('listed', event.currentTarget.checked)}
+          />
+          <SimpleGrid cols={{ base: 1, sm: 2 }}>
+            {(
+              [
+                ['preferredName', copy.showPreferredName],
+                ['email', copy.showEmail],
+                ['phone', copy.showPhone],
+                ['pronouns', copy.showPronouns],
+                ['address', copy.showAddress],
+                ['birthday', copy.showBirthday],
+                ['household', copy.showHousehold],
+                ['ministryInterests', copy.showInterests],
+                ['photo', copy.showPhoto],
+                ['churchStatus', copy.showChurchStatus],
+                ['churchRoles', copy.showChurchRoles],
+              ] as Array<[keyof DirectoryProfile['visibility'], string]>
+            ).map(([key, label]) => (
+              <Checkbox
+                key={key}
+                label={label}
+                checked={profile.visibility[key]}
+                onChange={(event) => visibility(key, event.currentTarget.checked)}
+              />
+            ))}
+          </SimpleGrid>
+          <Button
+            loading={busy}
+            onClick={() =>
+              run(async () => {
+                await saveMemberProfile(actor, profile);
+                setOpened(false);
+                await reload();
+              })
+            }
+          >
+            {copy.save}
+          </Button>
+        </Stack>
+      </Modal>
+    </>
+  );
+}
+
+function AdminChurchRecordEditor({
+  copy,
+  actor,
+  initialMetadata,
+  busy,
+  run,
+  reload,
+}: {
+  copy: typeof copyByLocale.en;
+  actor: MemberAccess;
+  initialMetadata: ChurchMetadata;
+  busy: boolean;
+  run: (work: () => Promise<void>, success?: string) => Promise<void>;
+  reload: () => Promise<void>;
+}) {
+  const locale = useLocale();
+  const [opened, setOpened] = useState(false);
+  const [metadata, setMetadata] = useState(initialMetadata);
+  return (
+    <>
+      <Button
+        variant="subtle"
+        size="xs"
+        onClick={() => {
+          setMetadata(initialMetadata);
+          setOpened(true);
+        }}
+      >
+        {copy.editChurchRecord}
+      </Button>
+      <Modal opened={opened} onClose={() => setOpened(false)} title={copy.editChurchRecord}>
+        <Stack>
+          <Select
+            label={copy.churchStatus}
+            clearable
+            data={optionData(CHURCH_STATUS_OPTIONS, locale)}
+            value={metadata.churchStatus}
+            onChange={(value) =>
+              setMetadata({ ...metadata, churchStatus: value as ChurchStatus | null })
+            }
+          />
+          <MultiSelect
+            label={copy.churchRoles}
+            data={optionData(CHURCH_ROLE_OPTIONS, locale)}
+            value={metadata.churchRoles}
+            onChange={(values) => setMetadata({ ...metadata, churchRoles: values as ChurchRole[] })}
+          />
+          <TextInput
+            label={copy.dateJoined}
+            type="date"
+            value={metadata.dateJoined}
+            onChange={(event) =>
+              setMetadata({ ...metadata, dateJoined: event.currentTarget.value })
+            }
+          />
+          <Button
+            loading={busy}
+            onClick={() =>
+              run(async () => {
+                await saveChurchMetadata(actor, metadata);
+                setOpened(false);
+                await reload();
+              })
+            }
+          >
+            {copy.save}
+          </Button>
+        </Stack>
+      </Modal>
+    </>
+  );
+}
+
+function AdminNotesEditor({
+  copy,
+  actor,
+  uid,
+  busy,
+  run,
+}: {
+  copy: typeof copyByLocale.en;
+  actor: MemberAccess;
+  uid: string;
+  busy: boolean;
+  run: (work: () => Promise<void>, success?: string) => Promise<void>;
+}) {
+  const [opened, setOpened] = useState(false);
+  const [notes, setNotes] = useState<MemberAdminNotes | null>(null);
+  const open = async () => {
+    setNotes(await loadMemberAdminNotes(uid, true));
+    setOpened(true);
+  };
+  const save = (markReviewed: boolean) => {
+    if (!notes) {
+      return;
+    }
+    run(async () => {
+      await saveMemberAdminNotes(actor, notes, markReviewed);
+      setOpened(false);
+    });
+  };
+  return (
+    <>
+      <Button variant="subtle" size="xs" onClick={open}>
+        {copy.editInternalNotes}
+      </Button>
+      <Modal opened={opened} onClose={() => setOpened(false)} title={copy.editInternalNotes}>
+        {notes ? (
+          <Stack>
+            <Textarea
+              label={copy.membershipNotes}
+              minRows={4}
+              autosize
+              value={notes.membershipNotes}
+              onChange={(event) =>
+                setNotes({ ...notes, membershipNotes: event.currentTarget.value })
+              }
+            />
+            <Textarea
+              label={copy.internalNotes}
+              minRows={6}
+              autosize
+              value={notes.internalNotes}
+              onChange={(event) => setNotes({ ...notes, internalNotes: event.currentTarget.value })}
+            />
+            {notes.lastReviewedAt ? (
+              <Text size="sm" c="dimmed">
+                {copy.lastReviewed}: {notes.lastReviewedAt.toLocaleString()} ·{' '}
+                {notes.lastReviewedByName}
+              </Text>
+            ) : null}
+            <Group justify="flex-end">
+              <Button variant="light" loading={busy} onClick={() => save(false)}>
+                {copy.save}
+              </Button>
+              <Button loading={busy} onClick={() => save(true)}>
+                {copy.markReviewed}
+              </Button>
+            </Group>
           </Stack>
         ) : (
           <Center py="xl">
@@ -3035,6 +3885,16 @@ function GivingPanel({ copy, locale }: { copy: typeof copyByLocale.en; locale: '
 function toInputDate(date: Date) {
   const adjusted = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
   return adjusted.toISOString().slice(0, 16);
+}
+
+function formatDateOnly(value: string, locale: 'en' | 'es') {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return '';
+  }
+  return new Intl.DateTimeFormat(locale === 'es' ? 'es-US' : 'en-US', {
+    dateStyle: 'long',
+    timeZone: 'UTC',
+  }).format(new Date(`${value}T00:00:00Z`));
 }
 function downloadIcs(event: GroupEvent) {
   const url = URL.createObjectURL(

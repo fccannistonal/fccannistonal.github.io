@@ -9,7 +9,7 @@ const memberMocks = vi.hoisted(() => ({
   emailLinkResult: 'not-link',
   requestProfileDeletion: vi.fn(),
   requestMemberAreaAccess: vi.fn(),
-  changeMemberStatus: vi.fn(),
+  changePortalAccessStatus: vi.fn(),
   saveOwnProfile: vi.fn(),
 }));
 
@@ -44,23 +44,49 @@ vi.mock('../lib/memberPortalFirebase', async (importOriginal) => {
       uid: 'member-1',
       displayName: 'Alex Morgan',
       preferredName: 'Alex',
-      email: 'alex@example.com',
-      phone: '',
       pronouns: '',
+      addressingNote: '',
+      birthday: null,
+      email: 'alex@example.com',
+      alternateEmail: '',
+      phone: '',
+      communicationChannels: [],
+      preferredContactMethod: 'none',
+      address: {
+        line1: '',
+        line2: '',
+        city: '',
+        region: '',
+        postalCode: '',
+        country: 'United States',
+      },
       household: '',
-      ministryInterests: '',
+      ministryInterests: [],
+      otherMinistryInterest: '',
       visibility: {
         listed: false,
+        preferredName: true,
         email: false,
         phone: false,
         pronouns: false,
+        address: false,
+        birthday: false,
         household: false,
+        ministryInterests: false,
         photo: false,
+        churchStatus: true,
+        churchRoles: true,
       },
+    }),
+    loadOwnChurchMetadata: vi.fn().mockResolvedValue({
+      uid: 'member-1',
+      churchStatus: 'member',
+      churchRoles: ['staff'],
+      dateJoined: '2020-01-01',
     }),
     requestProfileDeletion: memberMocks.requestProfileDeletion,
     requestMemberAreaAccess: memberMocks.requestMemberAreaAccess,
-    changeMemberStatus: memberMocks.changeMemberStatus,
+    changePortalAccessStatus: memberMocks.changePortalAccessStatus,
     loadMembersByStatus: vi.fn().mockResolvedValue([
       {
         uid: 'requester',
@@ -70,6 +96,58 @@ vi.mock('../lib/memberPortalFirebase', async (importOriginal) => {
         status: 'pending',
         connection: 'regularParticipant',
         requestNote: 'I attend worship regularly.',
+      },
+    ]),
+    loadAdminMemberRecords: vi.fn().mockResolvedValue([
+      {
+        access: {
+          uid: 'requester',
+          email: 'requester@example.com',
+          displayName: 'Requesting Person',
+          role: 'member',
+          status: 'pending',
+          connection: 'regularParticipant',
+          requestNote: 'I attend worship regularly.',
+        },
+        profile: {
+          uid: 'requester',
+          displayName: 'Requesting Person',
+          preferredName: '',
+          pronouns: '',
+          addressingNote: '',
+          birthday: null,
+          email: 'requester@example.com',
+          alternateEmail: '',
+          phone: '',
+          communicationChannels: [],
+          preferredContactMethod: 'none',
+          address: {
+            line1: '',
+            line2: '',
+            city: '',
+            region: '',
+            postalCode: '',
+            country: 'United States',
+          },
+          household: '',
+          ministryInterests: [],
+          otherMinistryInterest: '',
+          visibility: {
+            listed: false,
+            preferredName: true,
+            email: false,
+            phone: false,
+            pronouns: false,
+            address: false,
+            birthday: false,
+            household: false,
+            ministryInterests: false,
+            photo: false,
+            churchStatus: true,
+            churchRoles: true,
+          },
+        },
+        church: { uid: 'requester', churchStatus: null, churchRoles: [], dateJoined: '' },
       },
     ]),
     saveOwnProfile: memberMocks.saveOwnProfile,
@@ -88,7 +166,7 @@ describe('MembersPage', () => {
     memberMocks.emailLinkResult = 'not-link';
     memberMocks.requestProfileDeletion.mockReset();
     memberMocks.requestMemberAreaAccess.mockReset();
-    memberMocks.changeMemberStatus.mockReset();
+    memberMocks.changePortalAccessStatus.mockReset();
     memberMocks.saveOwnProfile.mockReset();
     notifyMemberAccessRequest.mockReset();
     notifyMemberAccessRequest.mockResolvedValue(undefined);
@@ -207,7 +285,7 @@ describe('MembersPage', () => {
     await user.click(finalReject);
 
     await waitFor(() =>
-      expect(memberMocks.changeMemberStatus).toHaveBeenCalledWith(
+      expect(memberMocks.changePortalAccessStatus).toHaveBeenCalledWith(
         expect.objectContaining({ role: 'admin' }),
         expect.objectContaining({ uid: 'requester' }),
         'rejected',
@@ -227,11 +305,16 @@ describe('MembersPage', () => {
     );
 
     expect(await screen.findByRole('heading', { name: /your profile/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /contact information/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /mailing address/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /official church record/i })).toBeInTheDocument();
     expect(screen.queryByRole('switch', { name: /show my email/i })).not.toBeInTheDocument();
 
     await user.click(screen.getByRole('switch', { name: /include me in the member directory/i }));
 
     expect(screen.getByRole('switch', { name: /show my email/i })).toBeInTheDocument();
+    expect(screen.getByRole('switch', { name: /show my church status/i })).toBeChecked();
+    expect(screen.getByRole('switch', { name: /show my church roles/i })).toBeChecked();
     expect(screen.getAllByText(/you have unsaved changes/i)).toHaveLength(2);
     expect(screen.getByRole('button', { name: /save changes/i })).toBeEnabled();
 
@@ -247,6 +330,39 @@ describe('MembersPage', () => {
     await user.type(screen.getByLabelText(/type delete to confirm/i), 'DELETE');
     expect(confirmButton).toBeEnabled();
     expect(memberMocks.requestProfileDeletion).not.toHaveBeenCalled();
+  });
+
+  it('requires a phone number before allowing SMS contact', async () => {
+    memberMocks.authenticated = true;
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter initialEntries={['/members/profile']}>
+        <MembersPage />
+      </MemoryRouter>
+    );
+
+    await user.click(await screen.findByRole('checkbox', { name: /text message \(sms\)/i }));
+    await user.click(screen.getByRole('button', { name: /save changes/i }));
+
+    expect(await screen.findByText(/add a valid phone number/i)).toBeInTheDocument();
+    expect(memberMocks.saveOwnProfile).not.toHaveBeenCalled();
+  });
+
+  it('searches the combined administrator member records', async () => {
+    memberMocks.authenticated = true;
+    memberMocks.accessRole = 'admin';
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter initialEntries={['/members/admin']}>
+        <MemberAdminPage />
+      </MemoryRouter>
+    );
+
+    expect(await screen.findByRole('button', { name: /review request/i })).toBeInTheDocument();
+    await user.type(screen.getByLabelText(/search member records/i), 'not present');
+    expect(screen.queryByRole('button', { name: /review request/i })).not.toBeInTheDocument();
+    await user.clear(screen.getByLabelText(/search member records/i));
+    expect(screen.getByRole('button', { name: /review request/i })).toBeInTheDocument();
   });
 
   it('shows portal failures in an immediately visible toast', async () => {

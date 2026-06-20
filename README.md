@@ -154,13 +154,13 @@ VITE_photoBucket_WORKER_URL=https://fccphotos.fccannistonal.workers.dev
 
 The member area uses passwordless email-link account creation and sign-in. A first-time user receives an `onboarding` account that can edit only its own private profile. From that profile the user may request member-area access, which changes the account to `pending`; only staff approval changes it to `approved` and unlocks the directory, groups, calendar, updates, photos, and member resources. This trusted-community access is separate from formal church membership.
 
-Firestore stores account lifecycle records, private profiles, redacted opt-in directory entries, groups and role-separated memberships, events, announcements, deletion requests, avatar metadata, and immutable audit records. Firestore Rules—not the React UI—enforce every status transition, global and group roles, directory redaction, and protected moderation fields. New requests are also sent best-effort to the existing church inbox through FormSubmit; the administrator queue remains the source of truth and approval decisions are shown in the app rather than emailed.
+Firestore stores account lifecycle records, schema-versioned private profiles, member-readable official church metadata, separate admin-only notes, redacted opt-in directory entries, groups and role-separated memberships, events, announcements, deletion requests, avatar metadata, and immutable audit records. Church status and informational church roles are separate from portal permissions. Firestore Rules—not the React UI—enforce every status transition, official-record write, global and group role, directory projection, and protected moderation field. New requests are also sent best-effort to the existing church inbox through FormSubmit; the administrator queue remains the source of truth and approval decisions are shown in the app rather than emailed.
 
 The first administrator must be assigned manually in Firebase Console by setting an approved `memberAccess/{uid}` document's `role` to `admin`. Portal administrators may manage other administrators but cannot change their own global role.
 
 Before releasing the onboarding UI, update the Firebase Authentication email-link template in Firebase Console to describe the action as “Create or sign in to your member area account.” This is a no-cost configuration change and prevents first-time users from being told that they already need a registered account.
 
-Legacy `revoked` access records are treated as `deactivated`. Existing opt-in directory profiles are projected into the safer redacted directory collection the next time an approved member loads or saves their profile.
+Legacy `revoked` access records are treated as `deactivated`. Existing profiles are read with schema-version 3 defaults and projected into the expanded redacted directory collection the next time an approved member loads or saves a valid profile; no bulk migration is required.
 
 ### Portal caching and request control
 

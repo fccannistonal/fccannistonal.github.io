@@ -292,6 +292,10 @@
   overflow-wrap: anywhere;
 }
 
+.addressLine {
+  display: block;
+}
+
 .memberName {
   min-width: 9rem;
 }

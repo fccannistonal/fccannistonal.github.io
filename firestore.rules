@@ -86,26 +86,87 @@ service cloud.firestore {
 
     function validVisibility() {
       return request.resource.data.visibility.keys().hasOnly([
-        'listed', 'email', 'phone', 'pronouns', 'household', 'photo'
+        'listed', 'preferredName', 'email', 'phone', 'pronouns', 'address',
+        'birthday', 'household', 'ministryInterests', 'photo',
+        'churchStatus', 'churchRoles'
       ]) &&
         request.resource.data.visibility.listed is bool &&
+        request.resource.data.visibility.preferredName is bool &&
         request.resource.data.visibility.email is bool &&
         request.resource.data.visibility.phone is bool &&
         request.resource.data.visibility.pronouns is bool &&
+        request.resource.data.visibility.address is bool &&
+        request.resource.data.visibility.birthday is bool &&
         request.resource.data.visibility.household is bool &&
-        request.resource.data.visibility.photo is bool;
+        request.resource.data.visibility.ministryInterests is bool &&
+        request.resource.data.visibility.photo is bool &&
+        request.resource.data.visibility.churchStatus is bool &&
+        request.resource.data.visibility.churchRoles is bool;
+    }
+
+    function validBirthday(birthday) {
+      return birthday == null ||
+        (birthday.keys().hasOnly(['month', 'day']) &&
+          birthday.month is int && birthday.day is int &&
+          birthday.month >= 1 && birthday.month <= 12 && birthday.day >= 1 &&
+          birthday.day <= (
+            birthday.month in [1, 3, 5, 7, 8, 10, 12] ? 31 :
+            birthday.month == 2 ? 29 : 30
+          ));
+    }
+
+    function validAddress(address) {
+      return address.keys().hasOnly([
+          'line1', 'line2', 'city', 'region', 'postalCode', 'country'
+        ]) &&
+        address.line1 is string && address.line1.size() <= 150 &&
+        address.line2 is string && address.line2.size() <= 150 &&
+        address.city is string && address.city.size() <= 100 &&
+        address.region is string && address.region.size() <= 100 &&
+        address.postalCode is string && address.postalCode.size() <= 30 &&
+        address.country is string && address.country.size() > 0 && address.country.size() <= 100;
     }
 
     function validProfile(uid) {
-      return request.resource.data.uid == uid &&
+      return request.resource.data.keys().hasOnly([
+          'uid', 'displayName', 'preferredName', 'pronouns', 'addressingNote',
+          'birthday', 'email', 'alternateEmail', 'phone', 'communicationChannels',
+          'preferredContactMethod', 'address', 'household', 'ministryInterests',
+          'otherMinistryInterest', 'visibility', 'schemaVersion', 'createdAt', 'updatedAt',
+          'lastAuditId'
+        ]) &&
+        request.resource.data.uid == uid &&
         request.resource.data.displayName is string &&
         request.resource.data.displayName.size() <= 100 &&
         request.resource.data.preferredName is string && request.resource.data.preferredName.size() <= 100 &&
-        request.resource.data.email is string &&
-        request.resource.data.phone is string && request.resource.data.phone.size() <= 40 &&
         request.resource.data.pronouns is string && request.resource.data.pronouns.size() <= 60 &&
-        request.resource.data.household is string && request.resource.data.household.size() <= 150 &&
-        request.resource.data.ministryInterests is string && request.resource.data.ministryInterests.size() <= 500 &&
+        request.resource.data.addressingNote is string && request.resource.data.addressingNote.size() <= 300 &&
+        validBirthday(request.resource.data.birthday) &&
+        request.resource.data.email is string && request.resource.data.email.size() <= 320 &&
+        request.resource.data.alternateEmail is string && request.resource.data.alternateEmail.size() <= 320 &&
+        request.resource.data.phone is string && request.resource.data.phone.matches('^$|^\\+[0-9]{8,15}$') &&
+        request.resource.data.communicationChannels is list &&
+        request.resource.data.communicationChannels.size() <= 3 &&
+        request.resource.data.communicationChannels.hasOnly(['email', 'phone', 'sms']) &&
+        request.resource.data.preferredContactMethod in ['none', 'email', 'phone', 'sms'] &&
+        ((request.resource.data.communicationChannels.size() == 0 &&
+            request.resource.data.preferredContactMethod == 'none') ||
+          (request.resource.data.communicationChannels.size() > 0 &&
+            request.resource.data.preferredContactMethod in request.resource.data.communicationChannels)) &&
+        (!(request.resource.data.communicationChannels.hasAny(['phone', 'sms'])) ||
+          request.resource.data.phone.size() > 0) &&
+        validAddress(request.resource.data.address) &&
+        request.resource.data.household is string && request.resource.data.household.size() <= 1000 &&
+        request.resource.data.ministryInterests is list &&
+        request.resource.data.ministryInterests.size() <= 16 &&
+        request.resource.data.ministryInterests.hasOnly([
+          'worship', 'children', 'youth', 'outreach', 'hospitality', 'foodMeals',
+          'prayer', 'music', 'teaching', 'technology', 'communications', 'events',
+          'facilities', 'smallGroups', 'pastoralCare', 'other'
+        ]) &&
+        request.resource.data.otherMinistryInterest is string &&
+        request.resource.data.otherMinistryInterest.size() <= 300 &&
+        request.resource.data.schemaVersion == 3 &&
         validVisibility();
     }
 
@@ -118,22 +179,79 @@ service cloud.firestore {
       return getAfter(/databases/$(database)/documents/directoryProfiles/$(uid)).data;
     }
 
+    function churchMetadataExistsAfter(uid) {
+      return existsAfter(/databases/$(database)/documents/memberChurchMetadata/$(uid));
+    }
+
+    function churchMetadataAfter(uid) {
+      return getAfter(/databases/$(database)/documents/memberChurchMetadata/$(uid)).data;
+    }
+
+    function validChurchMetadata(uid) {
+      return request.resource.data.keys().hasOnly([
+          'uid', 'churchStatus', 'churchRoles', 'dateJoined', 'schemaVersion',
+          'updatedAt', 'lastAuditId'
+        ]) &&
+        request.resource.data.uid == uid &&
+        (request.resource.data.churchStatus == null ||
+          request.resource.data.churchStatus in [
+            'member', 'regularAttender', 'visitor', 'inactive', 'archived'
+          ]) &&
+        request.resource.data.churchRoles is list &&
+        request.resource.data.churchRoles.size() <= 3 &&
+        request.resource.data.churchRoles.hasOnly(['staff', 'leadershipTeam', 'elder']) &&
+        request.resource.data.dateJoined is string &&
+        request.resource.data.dateJoined.matches('^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}$') &&
+        request.resource.data.schemaVersion == 3;
+    }
+
+    function validMemberAdminNotes(uid) {
+      return request.resource.data.keys().hasOnly([
+          'uid', 'membershipNotes', 'internalNotes', 'lastReviewedAt',
+          'lastReviewedByUid', 'lastReviewedByName', 'schemaVersion',
+          'updatedAt', 'lastAuditId'
+        ]) &&
+        request.resource.data.uid == uid &&
+        request.resource.data.membershipNotes is string &&
+        request.resource.data.membershipNotes.size() <= 4000 &&
+        request.resource.data.internalNotes is string &&
+        request.resource.data.internalNotes.size() <= 8000 &&
+        request.resource.data.lastReviewedByUid is string &&
+        request.resource.data.lastReviewedByName is string &&
+        request.resource.data.schemaVersion == 3;
+    }
+
     function validDirectoryEntry(uid) {
       let profile = profileAfter(uid);
       return request.resource.data.keys().hasOnly([
           'uid', 'displayName', 'preferredName', 'email', 'phone', 'pronouns',
-          'household', 'ministryInterests', 'showPhoto', 'listed', 'updatedAt'
+          'birthday', 'address', 'household', 'ministryInterests',
+          'otherMinistryInterest', 'churchStatus', 'churchRoles', 'showPhoto',
+          'listed', 'schemaVersion', 'updatedAt'
         ]) &&
         request.resource.data.uid == uid && request.resource.data.listed == true &&
+        request.resource.data.schemaVersion == 3 &&
         profile.visibility.listed == true &&
         request.resource.data.displayName == profile.displayName &&
-        request.resource.data.preferredName == profile.preferredName &&
-        request.resource.data.email == (profile.visibility.email == true ? profile.email : '') &&
+        request.resource.data.preferredName == (profile.visibility.preferredName == true ? profile.preferredName : '') &&
+        request.resource.data.email == (profile.visibility.email == true ?
+          (profile.alternateEmail.size() > 0 ? profile.alternateEmail : profile.email) : '') &&
         request.resource.data.phone == (profile.visibility.phone == true ? profile.phone : '') &&
         request.resource.data.pronouns == (profile.visibility.pronouns == true ? profile.pronouns : '') &&
+        request.resource.data.birthday == (profile.visibility.birthday == true ? profile.birthday : null) &&
+        request.resource.data.address == (profile.visibility.address == true ? profile.address : null) &&
         request.resource.data.household == (profile.visibility.household == true ? profile.household : '') &&
-        request.resource.data.ministryInterests == profile.ministryInterests &&
-        request.resource.data.showPhoto == profile.visibility.photo;
+        request.resource.data.ministryInterests == (profile.visibility.ministryInterests == true ? profile.ministryInterests : []) &&
+        request.resource.data.otherMinistryInterest == (profile.visibility.ministryInterests == true ? profile.otherMinistryInterest : '') &&
+        request.resource.data.showPhoto == profile.visibility.photo &&
+        (
+          (!churchMetadataExistsAfter(uid) &&
+            request.resource.data.churchStatus == null &&
+            request.resource.data.churchRoles.size() == 0) ||
+          (churchMetadataExistsAfter(uid) &&
+            request.resource.data.churchStatus == (profile.visibility.churchStatus == true ? churchMetadataAfter(uid).churchStatus : null) &&
+            request.resource.data.churchRoles == (profile.visibility.churchRoles == true ? churchMetadataAfter(uid).churchRoles : []))
+        );
     }
 
     function validAvatarAudit(uid) {
@@ -300,8 +418,23 @@ service cloud.firestore {
     match /directoryEntries/{uid} {
       allow read: if isPortalAdmin() || isApprovedMember();
       allow create, update: if isSelf(uid) && isApprovedMember() && validDirectoryEntry(uid);
-      allow create, update: if isPortalAdmin();
+      allow create, update: if isPortalAdmin() && validDirectoryEntry(uid);
       allow delete: if isSelf(uid) || isPortalAdmin();
+    }
+
+    match /memberChurchMetadata/{uid} {
+      allow get: if isSelf(uid) || isPortalAdmin();
+      allow list: if isPortalAdmin();
+      allow create, update: if isPortalAdmin() && validChurchMetadata(uid) &&
+        validAuditReference('member', uid);
+      allow delete: if isPortalAdmin() && accessAfter(uid).status == 'deleted';
+    }
+
+    match /memberAdminNotes/{uid} {
+      allow read: if isPortalAdmin();
+      allow create, update: if isPortalAdmin() && validMemberAdminNotes(uid) &&
+        validAuditReference('member', uid);
+      allow delete: if isPortalAdmin() && accessAfter(uid).status == 'deleted';
     }
 
     match /groups/{groupId} {

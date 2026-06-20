@@ -25,7 +25,16 @@ describe('member portal Firestore rules', () => {
   it('separates private profiles from redacted directory projections', () => {
     expect(rules).toContain('match /directoryProfiles/{uid}');
     expect(rules).toContain('match /directoryEntries/{uid}');
-    expect(rules).toContain("profile.visibility.email == true ? profile.email : ''");
+    expect(rules).toContain('profile.alternateEmail.size() > 0');
+    expect(rules).toContain('profile.visibility.churchRoles == true');
+  });
+
+  it('separates official church metadata from admin-only notes', () => {
+    expect(rules).toContain('match /memberChurchMetadata/{uid}');
+    expect(rules).toContain('match /memberAdminNotes/{uid}');
+    expect(rules).toContain('allow get: if isSelf(uid) || isPortalAdmin()');
+    expect(rules).toContain('allow read: if isPortalAdmin()');
+    expect(rules).toContain("hasOnly(['staff', 'leadershipTeam', 'elder'])");
   });
 
   it('enforces global and group-scoped roles', () => {

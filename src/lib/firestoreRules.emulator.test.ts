@@ -11,6 +11,68 @@ import { doc, getDoc, setDoc, writeBatch } from 'firebase/firestore';
 const projectId = 'demo-fccanniston';
 let environment: RulesTestEnvironment;
 
+const profileDocument = (uid: string, email: string, displayName = '') => ({
+  uid,
+  displayName,
+  preferredName: '',
+  pronouns: '',
+  addressingNote: '',
+  birthday: null,
+  email,
+  alternateEmail: '',
+  phone: '',
+  communicationChannels: [],
+  preferredContactMethod: 'none',
+  address: {
+    line1: '',
+    line2: '',
+    city: '',
+    region: '',
+    postalCode: '',
+    country: 'United States',
+  },
+  household: '',
+  ministryInterests: [],
+  otherMinistryInterest: '',
+  visibility: {
+    listed: false,
+    preferredName: true,
+    email: false,
+    phone: false,
+    pronouns: false,
+    address: false,
+    birthday: false,
+    household: false,
+    ministryInterests: false,
+    photo: false,
+    churchStatus: true,
+    churchRoles: true,
+  },
+  schemaVersion: 3,
+  createdAt: new Date(),
+  updatedAt: new Date(),
+});
+
+const directoryDocument = (uid: string, displayName: string) => ({
+  uid,
+  displayName,
+  preferredName: '',
+  email: '',
+  phone: '',
+  pronouns: '',
+  birthday: null,
+  address: null,
+  household: '',
+  ministryInterests: [],
+  otherMinistryInterest: '',
+  churchStatus: null,
+  churchRoles: [],
+  showPhoto: false,
+  listed: true,
+  schemaVersion: 3,
+  updatedAt: new Date(),
+});
+
 beforeAll(async () => {
   environment = await initializeTestEnvironment({
     projectId,
@@ -58,35 +120,10 @@ async function seed() {
         status: 'banned',
       }),
       setDoc(doc(db, 'directoryProfiles/member'), {
-        uid: 'member',
-        displayName: 'Member',
-        preferredName: '',
-        email: 'member@example.com',
-        phone: '555-0100',
-        pronouns: '',
-        household: '',
-        ministryInterests: '',
-        visibility: {
-          listed: true,
-          email: false,
-          phone: false,
-          pronouns: false,
-          household: false,
-          photo: false,
-        },
+        ...profileDocument('member', 'member@example.com', 'Member'),
+        visibility: { ...profileDocument('member', '').visibility, listed: true },
       }),
-      setDoc(doc(db, 'directoryEntries/member'), {
-        uid: 'member',
-        displayName: 'Member',
-        preferredName: '',
-        email: '',
-        phone: '',
-        pronouns: '',
-        household: '',
-        ministryInterests: '',
-        showPhoto: false,
-        listed: true,
-      }),
+      setDoc(doc(db, 'directoryEntries/member'), directoryDocument('member', 'Member')),
       setDoc(doc(db, 'groups/group-one'), {
         id: 'group-one',
         name: 'Worship Team',
@@ -134,27 +171,10 @@ describe('member portal Firestore rules in the emulator', () => {
       updatedAt: new Date(),
       lastAuditId: 'account-created',
     });
-    create.set(doc(db, 'directoryProfiles/new-user'), {
-      uid: 'new-user',
-      displayName: '',
-      preferredName: '',
-      email: 'new@example.com',
-      phone: '',
-      pronouns: '',
-      household: '',
-      ministryInterests: '',
-      visibility: {
-        listed: false,
-        email: false,
-        phone: false,
-        pronouns: false,
-        household: false,
-        photo: false,
-      },
-      schemaVersion: 2,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
+    create.set(
+      doc(db, 'directoryProfiles/new-user'),
+      profileDocument('new-user', 'new@example.com')
+    );
     await assertSucceeds(create.commit());
 
     await assertSucceeds(getDoc(doc(db, 'directoryProfiles/new-user')));
@@ -374,5 +394,70 @@ describe('member portal Firestore rules in the emulator', () => {
     });
 
     await assertSucceeds(batch.commit());
+  });
+
+  it('separates self-readable church metadata from admin-only notes', async () => {
+    await seed();
+    const adminDb = environment
+      .authenticatedContext('admin', { email: 'admin@example.com' })
+      .firestore();
+    const batch = writeBatch(adminDb);
+    batch.set(doc(adminDb, 'auditLogs/church-record'), {
+      actorUid: 'admin',
+      actorDisplayName: 'Admin',
+      action: 'member.churchMetadataUpdated',
+      entityType: 'member',
+      targetId: 'member',
+      summary: 'Church record updated',
+    });
+    batch.set(doc(adminDb, 'memberChurchMetadata/member'), {
+      uid: 'member',
+      churchStatus: 'member',
+      churchRoles: ['staff'],
+      dateJoined: '2020-01-01',
+      schemaVersion: 3,
+      updatedAt: new Date(),
+      lastAuditId: 'church-record',
+    });
+    batch.set(doc(adminDb, 'memberAdminNotes/member'), {
+      uid: 'member',
+      membershipNotes: 'Received into membership.',
+      internalNotes: 'Private staff note.',
+      lastReviewedByUid: 'admin',
+      lastReviewedByName: 'Admin',
+      schemaVersion: 3,
+      updatedAt: new Date(),
+      lastAuditId: 'church-record',
+    });
+    await assertSucceeds(batch.commit());
+
+    const memberDb = environment
+      .authenticatedContext('member', { email: 'member@example.com' })
+      .firestore();
+    await assertSucceeds(getDoc(doc(memberDb, 'memberChurchMetadata/member')));
+    await assertFails(getDoc(doc(memberDb, 'memberAdminNotes/member')));
+    await assertFails(
+      setDoc(
+        doc(memberDb, 'memberChurchMetadata/member'),
+        { churchRoles: ['elder'] },
+        { merge: true }
+      )
+    );
+  });
+
+  it('rejects directory entries that leak fields hidden by the private profile', async () => {
+    await seed();
+    const db = environment
+      .authenticatedContext('member', { email: 'member@example.com' })
+      .firestore();
+    await assertFails(
+      setDoc(doc(db, 'directoryEntries/member'), {
+        ...directoryDocument('member', 'Member'),
+        email: 'member@example.com',
+      })
+    );
+    await assertSucceeds(
+      setDoc(doc(db, 'directoryEntries/member'), directoryDocument('member', 'Member'))
+    );
   });
 });

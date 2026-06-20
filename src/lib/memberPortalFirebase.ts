@@ -43,9 +43,43 @@ import {
   invalidatePortalCache,
   writePortalCache,
 } from './memberPortalCache';
+import {
+  defaultDirectoryVisibility,
+  emptyChurchMetadata,
+  emptyDirectoryProfile,
+  emptyMemberAdminNotes,
+  normalizeDirectoryProfile,
+  projectDirectoryEntry,
+  type ChurchMetadata,
+  type ChurchRole,
+  type ChurchStatus,
+  type ContactChannel,
+  type DirectoryEntry,
+  type DirectoryProfile,
+  type MailingAddress,
+  type MemberAdminNotes,
+  type MinistryInterestId,
+  type MonthDay,
+  type PreferredContactMethod,
+} from './memberProfile';
 
-export type MemberRole = 'member' | 'admin';
-export type MemberStatus =
+export type {
+  ChurchMetadata,
+  ChurchRole,
+  ChurchStatus,
+  ContactChannel,
+  DirectoryEntry,
+  DirectoryProfile,
+  DirectoryVisibility,
+  MailingAddress,
+  MemberAdminNotes,
+  MinistryInterestId,
+  MonthDay,
+  PreferredContactMethod,
+} from './memberProfile';
+
+export type PortalPermissionRole = 'member' | 'admin';
+export type PortalAccessStatus =
   | 'onboarding'
   | 'pending'
   | 'approved'
@@ -60,14 +94,6 @@ export type MemberConnection =
   | 'householdOrFamily'
   | 'ministryOrVolunteer'
   | 'other';
-export type DirectoryVisibility = {
-  listed: boolean;
-  email: boolean;
-  phone: boolean;
-  pronouns: boolean;
-  household: boolean;
-  photo: boolean;
-};
 export type GroupRole = 'owner' | 'leader' | 'groupAdmin' | 'editor' | 'calendarManager';
 export type GroupStatus = 'draft' | 'active' | 'hidden' | 'archived';
 export type GroupVisibility = 'allApproved' | 'groupMembers' | 'adminOnly';
@@ -90,41 +116,21 @@ export type MemberAccess = {
   uid: string;
   email: string;
   displayName: string;
-  role: MemberRole;
-  status: MemberStatus;
+  role: PortalPermissionRole;
+  status: PortalAccessStatus;
   connection?: MemberConnection;
   requestNote?: string;
-  previousStatus?: MemberStatus;
+  previousStatus?: PortalAccessStatus;
   statusReason?: string;
   moderatedBy?: string;
   requestedAt?: Date;
   updatedAt?: Date;
 };
 
-export type DirectoryProfile = {
-  uid: string;
-  displayName: string;
-  preferredName: string;
-  email: string;
-  phone: string;
-  pronouns: string;
-  household: string;
-  ministryInterests: string;
-  visibility: DirectoryVisibility;
-  createdAt?: Date;
-  updatedAt?: Date;
-};
-
-export type DirectoryEntry = {
-  uid: string;
-  displayName: string;
-  preferredName: string;
-  email: string;
-  phone: string;
-  pronouns: string;
-  household: string;
-  ministryInterests: string;
-  showPhoto: boolean;
+export type AdminMemberRecord = {
+  access: MemberAccess;
+  profile: DirectoryProfile;
+  church: ChurchMetadata;
 };
 
 export type PortalGroup = {
@@ -310,7 +316,7 @@ export function invalidateMemberPortalReads(prefixes: string[] = []) {
 const dateValue = (value: unknown) => (value instanceof Timestamp ? value.toDate() : undefined);
 const stringValue = (value: unknown) => (typeof value === 'string' ? value : '');
 
-function normalizeStatus(value: unknown): MemberStatus {
+function normalizeStatus(value: unknown): PortalAccessStatus {
   if (value === 'revoked') {
     return 'deactivated';
   }
@@ -324,7 +330,7 @@ function normalizeStatus(value: unknown): MemberStatus {
     'deletionRequested',
     'deleted',
   ].includes(String(value))
-    ? (value as MemberStatus)
+    ? (value as PortalAccessStatus)
     : 'pending';
 }
 
@@ -354,33 +360,105 @@ function mapAccess(uid: string, data: DocumentData): MemberAccess {
   };
 }
 
-const defaultVisibility = (): DirectoryVisibility => ({
-  listed: false,
-  email: false,
-  phone: false,
-  pronouns: false,
-  household: false,
-  photo: false,
-});
+const contactChannels = (value: unknown): ContactChannel[] =>
+  Array.isArray(value)
+    ? value.filter((item): item is ContactChannel =>
+        ['email', 'phone', 'sms'].includes(String(item))
+      )
+    : [];
+
+const ministryInterests = (value: unknown): MinistryInterestId[] => {
+  const allowed = [
+    'worship',
+    'children',
+    'youth',
+    'outreach',
+    'hospitality',
+    'foodMeals',
+    'prayer',
+    'music',
+    'teaching',
+    'technology',
+    'communications',
+    'events',
+    'facilities',
+    'smallGroups',
+    'pastoralCare',
+    'other',
+  ];
+  return Array.isArray(value)
+    ? value.filter((item): item is MinistryInterestId => allowed.includes(String(item)))
+    : [];
+};
+
+const churchRoles = (value: unknown): ChurchRole[] =>
+  Array.isArray(value)
+    ? value.filter((item): item is ChurchRole =>
+        ['staff', 'leadershipTeam', 'elder'].includes(String(item))
+      )
+    : [];
+
+function mapAddress(value: unknown): MailingAddress {
+  const address = value && typeof value === 'object' ? (value as DocumentData) : {};
+  return {
+    line1: stringValue(address.line1),
+    line2: stringValue(address.line2),
+    city: stringValue(address.city),
+    region: stringValue(address.region),
+    postalCode: stringValue(address.postalCode),
+    country: stringValue(address.country) || 'United States',
+  };
+}
+
+function mapBirthday(value: unknown): MonthDay | null {
+  if (!value || typeof value !== 'object') {
+    return null;
+  }
+  const birthday = value as DocumentData;
+  return typeof birthday.month === 'number' && typeof birthday.day === 'number'
+    ? { month: birthday.month, day: birthday.day }
+    : null;
+}
 
 function mapProfile(uid: string, data: DocumentData): DirectoryProfile {
   const visibility = data.visibility && typeof data.visibility === 'object' ? data.visibility : {};
+  const legacyInterests = stringValue(data.interests || data.ministryInterests);
+  const selectedInterests = ministryInterests(data.ministryInterests);
   return {
     uid,
     displayName: stringValue(data.displayName),
     preferredName: stringValue(data.preferredName),
-    email: stringValue(data.email),
-    phone: stringValue(data.phone),
     pronouns: stringValue(data.pronouns),
+    addressingNote: stringValue(data.addressingNote),
+    birthday: mapBirthday(data.birthday),
+    email: stringValue(data.email),
+    alternateEmail: stringValue(data.alternateEmail),
+    phone: stringValue(data.phone),
+    communicationChannels: contactChannels(data.communicationChannels),
+    preferredContactMethod: ['email', 'phone', 'sms'].includes(String(data.preferredContactMethod))
+      ? (data.preferredContactMethod as PreferredContactMethod)
+      : 'none',
+    address: mapAddress(data.address),
     household: stringValue(data.household),
-    ministryInterests: stringValue(data.ministryInterests || data.interests),
+    ministryInterests: selectedInterests.length
+      ? selectedInterests
+      : legacyInterests
+        ? ['other']
+        : [],
+    otherMinistryInterest: stringValue(data.otherMinistryInterest) || legacyInterests,
     visibility: {
       listed: visibility.listed === true || data.optIn === true,
+      preferredName: visibility.preferredName !== false,
       email: visibility.email === true,
       phone: visibility.phone === true,
       pronouns: visibility.pronouns === true,
+      address: visibility.address === true,
+      birthday: visibility.birthday === true,
       household: visibility.household === true,
+      ministryInterests: visibility.ministryInterests === true,
       photo: visibility.photo === true,
+      churchStatus: visibility.churchStatus !== false,
+      churchRoles: visibility.churchRoles !== false,
     },
     createdAt: dateValue(data.createdAt),
     updatedAt: dateValue(data.updatedAt),
@@ -395,9 +473,45 @@ function mapDirectoryEntry(uid: string, data: DocumentData): DirectoryEntry {
     email: stringValue(data.email),
     phone: stringValue(data.phone),
     pronouns: stringValue(data.pronouns),
+    birthday: mapBirthday(data.birthday),
+    address: data.address ? mapAddress(data.address) : null,
     household: stringValue(data.household),
-    ministryInterests: stringValue(data.ministryInterests),
+    ministryInterests: ministryInterests(data.ministryInterests),
+    otherMinistryInterest:
+      stringValue(data.otherMinistryInterest) || stringValue(data.ministryInterests),
+    churchStatus: ['member', 'regularAttender', 'visitor', 'inactive', 'archived'].includes(
+      String(data.churchStatus)
+    )
+      ? (data.churchStatus as ChurchStatus)
+      : null,
+    churchRoles: churchRoles(data.churchRoles),
     showPhoto: data.showPhoto === true,
+  };
+}
+
+function mapChurchMetadata(uid: string, data: DocumentData): ChurchMetadata {
+  return {
+    uid,
+    churchStatus: ['member', 'regularAttender', 'visitor', 'inactive', 'archived'].includes(
+      String(data.churchStatus)
+    )
+      ? (data.churchStatus as ChurchStatus)
+      : null,
+    churchRoles: churchRoles(data.churchRoles),
+    dateJoined: stringValue(data.dateJoined),
+    updatedAt: dateValue(data.updatedAt),
+  };
+}
+
+function mapMemberAdminNotes(uid: string, data: DocumentData): MemberAdminNotes {
+  return {
+    uid,
+    membershipNotes: stringValue(data.membershipNotes),
+    internalNotes: stringValue(data.internalNotes),
+    lastReviewedAt: dateValue(data.lastReviewedAt),
+    lastReviewedByUid: stringValue(data.lastReviewedByUid),
+    lastReviewedByName: stringValue(data.lastReviewedByName),
+    updatedAt: dateValue(data.updatedAt),
   };
 }
 
@@ -593,7 +707,7 @@ export async function ensureMemberOnboardingAccount(user: Pick<User, 'uid' | 'em
     displayName: '',
     role: 'member',
     status: 'onboarding',
-    schemaVersion: 2,
+    schemaVersion: 3,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
     lastAuditId: audit.ref.id,
@@ -601,16 +715,8 @@ export async function ensureMemberOnboardingAccount(user: Pick<User, 'uid' | 'em
   batch.set(
     doc(db, 'directoryProfiles', user.uid),
     {
-      uid: user.uid,
-      email: user.email ?? '',
-      displayName: '',
-      preferredName: '',
-      phone: '',
-      pronouns: '',
-      household: '',
-      ministryInterests: '',
-      visibility: defaultVisibility(),
-      schemaVersion: 2,
+      ...emptyDirectoryProfile(user.uid, user.email ?? ''),
+      schemaVersion: 3,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     },
@@ -645,7 +751,8 @@ export async function requestMemberAreaAccess(
   if (access.status !== 'onboarding') {
     throw new Error('A member area access request has already been submitted.');
   }
-  const displayName = profile.displayName.trim();
+  const normalized = normalizeDirectoryProfile(profile);
+  const displayName = normalized.displayName;
   if (!displayName) {
     throw new Error('Please enter your full name before requesting access.');
   }
@@ -662,16 +769,7 @@ export async function requestMemberAreaAccess(
   batch.set(
     doc(db, 'directoryProfiles', access.uid),
     {
-      uid: access.uid,
-      displayName,
-      preferredName: profile.preferredName.trim(),
-      email: profile.email,
-      phone: profile.phone.trim(),
-      pronouns: profile.pronouns.trim(),
-      household: profile.household.trim(),
-      ministryInterests: profile.ministryInterests.trim(),
-      visibility: defaultVisibility(),
-      schemaVersion: 2,
+      ...profileDocument(normalized, defaultDirectoryVisibility()),
       updatedAt: serverTimestamp(),
     },
     { merge: true }
@@ -702,39 +800,60 @@ export async function loadOwnProfile(uid: string, forceRefresh = false) {
   );
 }
 
-function directoryProjection(profile: DirectoryProfile) {
+export async function loadOwnChurchMetadata(uid: string, forceRefresh = false) {
+  return cachedRead(
+    `church:${uid}`,
+    CACHE_TTL.profile,
+    async () => {
+      const snapshot = await getDoc(doc(getServices().db, 'memberChurchMetadata', uid));
+      return snapshot.exists() ? mapChurchMetadata(uid, snapshot.data()) : emptyChurchMetadata(uid);
+    },
+    forceRefresh
+  );
+}
+
+function profileDocument(profile: DirectoryProfile, visibility = profile.visibility) {
   return {
     uid: profile.uid,
     displayName: profile.displayName,
     preferredName: profile.preferredName,
-    email: profile.visibility.email ? profile.email : '',
-    phone: profile.visibility.phone ? profile.phone : '',
-    pronouns: profile.visibility.pronouns ? profile.pronouns : '',
-    household: profile.visibility.household ? profile.household : '',
+    pronouns: profile.pronouns,
+    addressingNote: profile.addressingNote,
+    birthday: profile.birthday,
+    email: profile.email,
+    alternateEmail: profile.alternateEmail,
+    phone: profile.phone,
+    communicationChannels: profile.communicationChannels,
+    preferredContactMethod: profile.preferredContactMethod,
+    address: profile.address,
+    household: profile.household,
     ministryInterests: profile.ministryInterests,
-    showPhoto: profile.visibility.photo,
-    listed: true,
+    otherMinistryInterest: profile.otherMinistryInterest,
+    visibility,
+    schemaVersion: 3,
+  };
+}
+
+function directoryProjection(profile: DirectoryProfile, church: ChurchMetadata) {
+  return {
+    ...projectDirectoryEntry(profile, church),
     updatedAt: serverTimestamp(),
   };
 }
 
 export async function saveOwnProfile(profile: DirectoryProfile, directoryEnabled = true) {
   const { db } = getServices();
+  const normalized = normalizeDirectoryProfile(profile);
   const batch = writeBatch(db);
-  const visibility = directoryEnabled ? profile.visibility : defaultVisibility();
+  const visibility = directoryEnabled ? normalized.visibility : defaultDirectoryVisibility();
+  const churchSnapshot = await getDoc(doc(db, 'memberChurchMetadata', normalized.uid));
+  const church = churchSnapshot.exists()
+    ? mapChurchMetadata(normalized.uid, churchSnapshot.data())
+    : emptyChurchMetadata(normalized.uid);
   batch.set(
-    doc(db, 'directoryProfiles', profile.uid),
+    doc(db, 'directoryProfiles', normalized.uid),
     {
-      uid: profile.uid,
-      displayName: profile.displayName.trim(),
-      preferredName: profile.preferredName.trim(),
-      email: profile.email,
-      phone: profile.phone.trim(),
-      pronouns: profile.pronouns.trim(),
-      household: profile.household.trim(),
-      ministryInterests: profile.ministryInterests.trim(),
-      visibility,
-      schemaVersion: 2,
+      ...profileDocument(normalized, visibility),
       optIn: deleteField(),
       interests: deleteField(),
       approved: deleteField(),
@@ -742,53 +861,52 @@ export async function saveOwnProfile(profile: DirectoryProfile, directoryEnabled
     },
     { merge: true }
   );
-  const entryRef = doc(db, 'directoryEntries', profile.uid);
-  if (directoryEnabled && profile.visibility.listed) {
-    batch.set(entryRef, directoryProjection({ ...profile, visibility }));
+  const entryRef = doc(db, 'directoryEntries', normalized.uid);
+  if (directoryEnabled && visibility.listed) {
+    batch.set(entryRef, directoryProjection({ ...normalized, visibility }, church));
   } else {
     batch.delete(entryRef);
   }
   await batch.commit();
   invalidateCurrent(['profile:', 'directory:']);
   writePortalCache(
-    profile.uid,
-    `profile:${profile.uid}`,
-    { ...profile, visibility },
+    normalized.uid,
+    `profile:${normalized.uid}`,
+    { ...normalized, visibility },
     CACHE_TTL.profile
   );
 }
 
 export async function saveMemberProfile(actor: MemberAccess, profile: DirectoryProfile) {
   const { db } = getServices();
+  const normalized = normalizeDirectoryProfile(profile);
   const audit = createAudit(
     db,
     actor,
     'member.profileUpdated',
     'member',
-    profile.uid,
-    `${profile.displayName}: profile updated`
+    normalized.uid,
+    `${normalized.displayName}: profile updated`
   );
+  const churchSnapshot = await getDoc(doc(db, 'memberChurchMetadata', normalized.uid));
+  const church = churchSnapshot.exists()
+    ? mapChurchMetadata(normalized.uid, churchSnapshot.data())
+    : emptyChurchMetadata(normalized.uid);
   const batch = writeBatch(db);
   batch.set(
-    doc(db, 'directoryProfiles', profile.uid),
+    doc(db, 'directoryProfiles', normalized.uid),
     {
-      uid: profile.uid,
-      displayName: profile.displayName.trim(),
-      preferredName: profile.preferredName.trim(),
-      email: profile.email,
-      phone: profile.phone.trim(),
-      pronouns: profile.pronouns.trim(),
-      household: profile.household.trim(),
-      ministryInterests: profile.ministryInterests.trim(),
-      visibility: profile.visibility,
-      schemaVersion: 2,
+      ...profileDocument(normalized),
+      optIn: deleteField(),
+      interests: deleteField(),
+      approved: deleteField(),
       updatedAt: serverTimestamp(),
     },
     { merge: true }
   );
-  const entryRef = doc(db, 'directoryEntries', profile.uid);
-  if (profile.visibility.listed) {
-    batch.set(entryRef, directoryProjection(profile));
+  const entryRef = doc(db, 'directoryEntries', normalized.uid);
+  if (normalized.visibility.listed) {
+    batch.set(entryRef, directoryProjection(normalized, church));
   } else {
     batch.delete(entryRef);
   }
@@ -797,8 +915,133 @@ export async function saveMemberProfile(actor: MemberAccess, profile: DirectoryP
   invalidateCurrent(['profile:', 'directory:', 'admin:']);
 }
 
+export async function saveChurchMetadata(actor: MemberAccess, metadata: ChurchMetadata) {
+  const { db } = getServices();
+  const profileSnapshot = await getDoc(doc(db, 'directoryProfiles', metadata.uid));
+  if (!profileSnapshot.exists()) {
+    throw new Error('The member profile could not be found.');
+  }
+  const profile = mapProfile(metadata.uid, profileSnapshot.data());
+  const normalized: ChurchMetadata = {
+    uid: metadata.uid,
+    churchStatus: metadata.churchStatus,
+    churchRoles: [...new Set(metadata.churchRoles)],
+    dateJoined: metadata.dateJoined.trim(),
+  };
+  const audit = createAudit(
+    db,
+    actor,
+    'member.churchMetadataUpdated',
+    'member',
+    metadata.uid,
+    `${profile.displayName}: church record updated`
+  );
+  const batch = writeBatch(db);
+  batch.set(
+    doc(db, 'memberChurchMetadata', metadata.uid),
+    {
+      ...normalized,
+      schemaVersion: 3,
+      updatedAt: serverTimestamp(),
+      lastAuditId: audit.ref.id,
+    },
+    { merge: true }
+  );
+  if (profile.visibility.listed) {
+    batch.set(doc(db, 'directoryEntries', metadata.uid), directoryProjection(profile, normalized));
+  }
+  batch.set(audit.ref, audit.data);
+  await batch.commit();
+  invalidateCurrent(['church:', 'directory:', 'admin:', 'audit:']);
+}
+
+export async function loadMemberAdminNotes(uid: string, forceRefresh = false) {
+  return cachedRead(
+    `admin:notes:${uid}`,
+    CACHE_TTL.admin,
+    async () => {
+      const snapshot = await getDoc(doc(getServices().db, 'memberAdminNotes', uid));
+      return snapshot.exists()
+        ? mapMemberAdminNotes(uid, snapshot.data())
+        : emptyMemberAdminNotes(uid);
+    },
+    forceRefresh
+  );
+}
+
+export async function saveMemberAdminNotes(
+  actor: MemberAccess,
+  notes: MemberAdminNotes,
+  markReviewed = false
+) {
+  const { db } = getServices();
+  const audit = createAudit(
+    db,
+    actor,
+    markReviewed ? 'member.recordReviewed' : 'member.adminNotesUpdated',
+    'member',
+    notes.uid,
+    markReviewed ? 'Member record reviewed' : 'Administrative notes updated'
+  );
+  const batch = writeBatch(db);
+  batch.set(
+    doc(db, 'memberAdminNotes', notes.uid),
+    {
+      uid: notes.uid,
+      membershipNotes: notes.membershipNotes.trim(),
+      internalNotes: notes.internalNotes.trim(),
+      lastReviewedAt: markReviewed
+        ? serverTimestamp()
+        : notes.lastReviewedAt
+          ? Timestamp.fromDate(notes.lastReviewedAt)
+          : deleteField(),
+      lastReviewedByUid: markReviewed ? actor.uid : notes.lastReviewedByUid,
+      lastReviewedByName: markReviewed ? actor.displayName : notes.lastReviewedByName,
+      schemaVersion: 3,
+      updatedAt: serverTimestamp(),
+      lastAuditId: audit.ref.id,
+    },
+    { merge: true }
+  );
+  batch.set(audit.ref, audit.data);
+  await batch.commit();
+  invalidateCurrent(['admin:', 'audit:']);
+}
+
+export async function loadAdminMemberRecords(): Promise<AdminMemberRecord[]> {
+  return cachedRead('admin:member-records', CACHE_TTL.admin, async () => {
+    const { db } = getServices();
+    const [accessSnapshot, profileSnapshot, churchSnapshot] = await Promise.all([
+      getDocs(collection(db, 'memberAccess')),
+      getDocs(collection(db, 'directoryProfiles')),
+      getDocs(collection(db, 'memberChurchMetadata')),
+    ]);
+    const profiles = new Map(
+      profileSnapshot.docs.map((item) => [item.id, mapProfile(item.id, item.data())])
+    );
+    const churches = new Map(
+      churchSnapshot.docs.map((item) => [item.id, mapChurchMetadata(item.id, item.data())])
+    );
+    return accessSnapshot.docs
+      .map((item) => {
+        const access = mapAccess(item.id, item.data());
+        return {
+          access,
+          profile: profiles.get(item.id) ?? emptyDirectoryProfile(item.id, access.email),
+          church: churches.get(item.id) ?? emptyChurchMetadata(item.id),
+        };
+      })
+      .sort((a, b) => a.access.displayName.localeCompare(b.access.displayName));
+  });
+}
+
 export async function migrateLegacyDirectoryEntry(profile: DirectoryProfile) {
   if (!profile.visibility.listed) {
+    return;
+  }
+  try {
+    normalizeDirectoryProfile(profile);
+  } catch {
     return;
   }
   const uid = activeUid();
@@ -810,7 +1053,7 @@ export async function migrateLegacyDirectoryEntry(profile: DirectoryProfile) {
       const { db } = getServices();
       const ref = doc(db, 'directoryEntries', profile.uid);
       const existing = await getDoc(ref);
-      if (!existing.exists()) {
+      if (!existing.exists() || existing.data().schemaVersion !== 3) {
         await saveOwnProfile(profile);
       }
       return true;
@@ -1247,7 +1490,7 @@ export async function requestProfileDeletion(access: MemberAccess) {
   invalidateCurrent(['access:', 'profile:', 'directory:', 'admin:', 'audit:']);
 }
 
-export async function loadMembersByStatus(status: MemberStatus, pageSize = 50) {
+export async function loadMembersByStatus(status: PortalAccessStatus, pageSize = 50) {
   return cachedRead(`admin:members:${status}:${pageSize}`, CACHE_TTL.admin, async () => {
     const statuses = status === 'deactivated' ? ['deactivated', 'revoked'] : [status];
     const snapshots = await getDocs(
@@ -1262,10 +1505,10 @@ export async function loadMembersByStatus(status: MemberStatus, pageSize = 50) {
   });
 }
 
-export async function changeMemberStatus(
+export async function changePortalAccessStatus(
   actor: MemberAccess,
   member: MemberAccess,
-  status: MemberStatus,
+  status: PortalAccessStatus,
   reason = ''
 ) {
   const { db } = getServices();
@@ -1296,16 +1539,16 @@ export async function changeMemberStatus(
   invalidateCurrent(['admin:', 'directory:', `access:${member.uid}`, 'audit:']);
 }
 
-export async function changeMemberRole(
+export async function changePortalPermission(
   actor: MemberAccess,
   member: MemberAccess,
-  role: MemberRole
+  role: PortalPermissionRole
 ) {
   const { db } = getServices();
   const audit = createAudit(
     db,
     actor,
-    'member.roleChanged',
+    'member.portalPermissionChanged',
     'member',
     member.uid,
     `${member.displayName}: ${role}`
@@ -1338,6 +1581,8 @@ export async function processDeletion(actor: MemberAccess, member: MemberAccess)
   memberships.docs.forEach((membership) => batch.delete(membership.ref));
   batch.delete(doc(db, 'directoryProfiles', member.uid));
   batch.delete(doc(db, 'directoryEntries', member.uid));
+  batch.delete(doc(db, 'memberChurchMetadata', member.uid));
+  batch.delete(doc(db, 'memberAdminNotes', member.uid));
   batch.delete(doc(db, 'avatarMetadata', member.uid));
   batch.delete(doc(db, 'avatarDirectory', member.uid));
   batch.set(
@@ -1357,7 +1602,7 @@ export async function processDeletion(actor: MemberAccess, member: MemberAccess)
     displayName: 'Deleted member',
     role: 'member',
     status: 'deleted',
-    schemaVersion: 2,
+    schemaVersion: 3,
     updatedAt: serverTimestamp(),
     lastAuditId: audit.ref.id,
   });
