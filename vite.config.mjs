@@ -13,6 +13,11 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: './vitest.setup.mjs',
-    exclude: ['tests/e2e/**', 'node_modules/**', 'dist/**'],
+    exclude: [
+      'tests/e2e/**',
+      'node_modules/**',
+      'dist/**',
+      'src/lib/firestoreRules.emulator.test.ts',
+    ],
   },
 });

@@ -35,7 +35,12 @@ const routeModuleById = {
   updates: 'src/pages/Updates.page.tsx',
   post: 'src/pages/Post.page.tsx',
   members: 'src/pages/Members.page.tsx',
+  memberProfile: 'src/pages/Members.page.tsx',
   memberDirectory: 'src/pages/Members.page.tsx',
+  memberGroups: 'src/pages/Members.page.tsx',
+  memberCalendar: 'src/pages/Members.page.tsx',
+  memberUpdates: 'src/pages/Members.page.tsx',
+  memberAdmin: 'src/pages/Members.page.tsx',
   memberGivingStatements: 'src/pages/Members.page.tsx',
   contact: 'src/pages/Contact.page.tsx',
   privacy: 'src/pages/Privacy.page.tsx',
@@ -105,7 +110,7 @@ const createBreadcrumbRoutes = (route) => {
       }
     }
 
-    if (route.id === 'memberDirectory' || route.id === 'memberGivingStatements') {
+    if (['memberProfile', 'memberDirectory', 'memberGroups', 'memberCalendar', 'memberUpdates', 'memberAdmin', 'memberGivingStatements'].includes(route.id)) {
       const membersRoute = getRouteById('members', route.locale);
       if (membersRoute) {
         routes.push(membersRoute);

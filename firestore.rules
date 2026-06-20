@@ -6,8 +6,16 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    function memberAccess(uid) {
+    function accessExists(uid) {
+      return exists(/databases/$(database)/documents/memberAccess/$(uid));
+    }
+
+    function access(uid) {
       return get(/databases/$(database)/documents/memberAccess/$(uid)).data;
+    }
+
+    function accessAfter(uid) {
+      return getAfter(/databases/$(database)/documents/memberAccess/$(uid)).data;
     }
 
     function isSelf(uid) {
@@ -15,130 +23,350 @@ service cloud.firestore {
     }
 
     function isApprovedMember() {
-      return signedIn() && memberAccess(request.auth.uid).status == 'approved';
+      return signedIn() && accessExists(request.auth.uid) &&
+        access(request.auth.uid).status == 'approved';
     }
 
-    function isAdmin() {
-      return isApprovedMember() && memberAccess(request.auth.uid).role == 'admin';
+    function isPortalAdmin() {
+      return isApprovedMember() && access(request.auth.uid).role == 'admin';
+    }
+
+    function validMemberStatus(status) {
+      return status in [
+        'pending',
+        'approved',
+        'rejected',
+        'deactivated',
+        'banned',
+        'deletionRequested',
+        'deleted'
+      ];
+    }
+
+    function validAuditReference(entityType, targetId) {
+      return request.resource.data.lastAuditId is string &&
+        existsAfter(/databases/$(database)/documents/auditLogs/$(request.resource.data.lastAuditId)) &&
+        getAfter(/databases/$(database)/documents/auditLogs/$(request.resource.data.lastAuditId)).data.actorUid == request.auth.uid &&
+        getAfter(/databases/$(database)/documents/auditLogs/$(request.resource.data.lastAuditId)).data.entityType == entityType &&
+        getAfter(/databases/$(database)/documents/auditLogs/$(request.resource.data.lastAuditId)).data.targetId == targetId;
+    }
+
+    function validMemberAccessDocument(uid) {
+      return request.resource.data.uid == uid &&
+        request.resource.data.email is string &&
+        request.resource.data.displayName is string &&
+        request.resource.data.displayName.size() <= 100 &&
+        request.resource.data.role in ['member', 'admin'] &&
+        validMemberStatus(request.resource.data.status);
     }
 
     function validVisibility() {
-      return request.resource.data.visibility.keys().hasOnly(['email', 'phone', 'household']) &&
+      return request.resource.data.visibility.keys().hasOnly([
+        'listed', 'email', 'phone', 'pronouns', 'household', 'photo'
+      ]) &&
+        request.resource.data.visibility.listed is bool &&
         request.resource.data.visibility.email is bool &&
         request.resource.data.visibility.phone is bool &&
-        request.resource.data.visibility.household is bool;
+        request.resource.data.visibility.pronouns is bool &&
+        request.resource.data.visibility.household is bool &&
+        request.resource.data.visibility.photo is bool;
     }
 
-    function validProfileWrite(uid) {
-      return request.resource.data.keys().hasOnly([
-        'uid',
-        'displayName',
-        'email',
-        'phone',
-        'household',
-        'interests',
-        'optIn',
-        'approved',
-        'visibility',
-        'updatedAt'
-      ]) &&
-        request.resource.data.uid == uid &&
+    function validProfile(uid) {
+      return request.resource.data.uid == uid &&
         request.resource.data.displayName is string &&
+        request.resource.data.displayName.size() > 0 &&
+        request.resource.data.displayName.size() <= 100 &&
+        request.resource.data.preferredName is string && request.resource.data.preferredName.size() <= 100 &&
         request.resource.data.email is string &&
-        request.resource.data.phone is string &&
-        request.resource.data.household is string &&
-        request.resource.data.interests is string &&
-        request.resource.data.optIn is bool &&
-        request.resource.data.approved == false &&
+        request.resource.data.phone is string && request.resource.data.phone.size() <= 40 &&
+        request.resource.data.pronouns is string && request.resource.data.pronouns.size() <= 60 &&
+        request.resource.data.household is string && request.resource.data.household.size() <= 150 &&
+        request.resource.data.ministryInterests is string && request.resource.data.ministryInterests.size() <= 500 &&
         validVisibility();
     }
 
-    function validAccessAdminUpdate() {
-      return request.resource.data.diff(resource.data).affectedKeys().hasOnly([
-        'status',
-        'updatedAt'
-      ]) &&
-        request.resource.data.status in ['pending', 'approved', 'revoked'];
+    function profileAfter(uid) {
+      return getAfter(/databases/$(database)/documents/directoryProfiles/$(uid)).data;
     }
 
-    function validAdminProfileModeration() {
-      return request.resource.data.diff(resource.data).affectedKeys().hasOnly([
-        'approved',
-        'updatedAt'
-      ]) &&
-        request.resource.data.approved is bool;
+    function validDirectoryEntry(uid) {
+      let profile = profileAfter(uid);
+      return request.resource.data.keys().hasOnly([
+          'uid', 'displayName', 'preferredName', 'email', 'phone', 'pronouns',
+          'household', 'ministryInterests', 'showPhoto', 'listed', 'updatedAt'
+        ]) &&
+        request.resource.data.uid == uid && request.resource.data.listed == true &&
+        profile.visibility.listed == true &&
+        request.resource.data.displayName == profile.displayName &&
+        request.resource.data.preferredName == profile.preferredName &&
+        request.resource.data.email == (profile.visibility.email == true ? profile.email : '') &&
+        request.resource.data.phone == (profile.visibility.phone == true ? profile.phone : '') &&
+        request.resource.data.pronouns == (profile.visibility.pronouns == true ? profile.pronouns : '') &&
+        request.resource.data.household == (profile.visibility.household == true ? profile.household : '') &&
+        request.resource.data.ministryInterests == profile.ministryInterests &&
+        request.resource.data.showPhoto == profile.visibility.photo;
     }
 
-    function validAuditWrite() {
-      return request.resource.data.keys().hasOnly(['actorUid', 'action', 'targetUid', 'createdAt']) &&
-        request.resource.data.actorUid == request.auth.uid &&
-        request.resource.data.action is string &&
-        request.resource.data.targetUid is string &&
-        (
-          (
-            request.resource.data.targetUid == request.auth.uid &&
-            request.resource.data.action in ['access-requested', 'profile-updated']
-          ) ||
-          (
-            isAdmin() &&
-            request.resource.data.action in ['access-approved', 'access-revoked']
-          )
-        );
+    function validAvatarAudit(uid) {
+      return request.resource.data.lastAuditId is string &&
+        existsAfter(/databases/$(database)/documents/auditLogs/$(request.resource.data.lastAuditId)) &&
+        getAfter(/databases/$(database)/documents/auditLogs/$(request.resource.data.lastAuditId)).data.actorUid == request.auth.uid &&
+        getAfter(/databases/$(database)/documents/auditLogs/$(request.resource.data.lastAuditId)).data.entityType == 'avatar' &&
+        getAfter(/databases/$(database)/documents/auditLogs/$(request.resource.data.lastAuditId)).data.targetId == uid;
+    }
+
+    function membershipExists(groupId, uid) {
+      return exists(/databases/$(database)/documents/groups/$(groupId)/members/$(uid));
+    }
+
+    function membership(groupId, uid) {
+      return get(/databases/$(database)/documents/groups/$(groupId)/members/$(uid)).data;
+    }
+
+    function hasGroupRole(groupId, role) {
+      return isApprovedMember() && membershipExists(groupId, request.auth.uid) &&
+        role in membership(groupId, request.auth.uid).roles;
+    }
+
+    function canManageGroup(groupId) {
+      return isPortalAdmin() || hasGroupRole(groupId, 'owner') || hasGroupRole(groupId, 'groupAdmin');
+    }
+
+    function canArchiveGroup(groupId) {
+      return isPortalAdmin() || hasGroupRole(groupId, 'owner');
+    }
+
+    function canEditUpdates(groupId) {
+      return canManageGroup(groupId) || hasGroupRole(groupId, 'editor');
+    }
+
+    function canEditCalendar(groupId) {
+      return canManageGroup(groupId) || hasGroupRole(groupId, 'calendarManager');
+    }
+
+    function groupData(groupId) {
+      return get(/databases/$(database)/documents/groups/$(groupId)).data;
+    }
+
+    function canViewGroup(groupId) {
+      let group = groupData(groupId);
+      return isPortalAdmin() ||
+        (isApprovedMember() && membershipExists(groupId, request.auth.uid)) ||
+        (isApprovedMember() && group.status == 'active' && group.visibility == 'allApproved');
+    }
+
+    function validGroupAudit(groupId) {
+      return request.resource.data.lastAuditId is string &&
+        existsAfter(/databases/$(database)/documents/auditLogs/$(request.resource.data.lastAuditId)) &&
+        getAfter(/databases/$(database)/documents/auditLogs/$(request.resource.data.lastAuditId)).data.actorUid == request.auth.uid &&
+        getAfter(/databases/$(database)/documents/auditLogs/$(request.resource.data.lastAuditId)).data.action.matches('^group\\..*');
+    }
+
+    function validMembershipAudit(groupId, uid) {
+      let auditId = getAfter(/databases/$(database)/documents/groups/$(groupId)).data.lastAuditId;
+      return auditId is string &&
+        existsAfter(/databases/$(database)/documents/auditLogs/$(auditId)) &&
+        getAfter(/databases/$(database)/documents/auditLogs/$(auditId)).data.actorUid == request.auth.uid &&
+        getAfter(/databases/$(database)/documents/auditLogs/$(auditId)).data.entityType == 'groupMembership' &&
+        getAfter(/databases/$(database)/documents/auditLogs/$(auditId)).data.targetId == groupId + ':' + uid;
+    }
+
+    function validMemberDeletionAudit(uid) {
+      return existsAfter(/databases/$(database)/documents/memberAccess/$(uid)) &&
+        accessAfter(uid).status == 'deleted' &&
+        existsAfter(/databases/$(database)/documents/auditLogs/$(accessAfter(uid).lastAuditId)) &&
+        getAfter(/databases/$(database)/documents/auditLogs/$(accessAfter(uid).lastAuditId)).data.actorUid == request.auth.uid &&
+        getAfter(/databases/$(database)/documents/auditLogs/$(accessAfter(uid).lastAuditId)).data.action == 'member.deleted';
+    }
+
+    function validGroupDocument(groupId) {
+      return request.resource.data.id == groupId &&
+        request.resource.data.name is string && request.resource.data.name.size() > 0 && request.resource.data.name.size() <= 120 &&
+        request.resource.data.description is string && request.resource.data.description.size() <= 2000 &&
+        request.resource.data.category in [
+          'staff', 'leadership', 'elders', 'deacons', 'worship', 'volunteer',
+          'smallGroup', 'eventTeam', 'committee', 'ministry', 'other'
+        ] &&
+        request.resource.data.status in ['draft', 'active', 'hidden', 'archived'] &&
+        request.resource.data.visibility in ['allApproved', 'groupMembers', 'adminOnly'] &&
+        request.resource.data.contactUid is string && request.resource.data.contactDisplayName is string &&
+        validGroupAudit(groupId);
+    }
+
+    function validRoles() {
+      return request.resource.data.roles is list &&
+        request.resource.data.roles.size() <= 5 &&
+        request.resource.data.roles.hasOnly(['owner', 'leader', 'groupAdmin', 'editor', 'calendarManager']);
+    }
+
+    function eventAudienceAllowed(groupId) {
+      let groupVisibility = groupData(groupId).visibility;
+      return request.resource.data.visibility == 'adminOnly' ||
+        (request.resource.data.visibility == 'groupMembers' && groupVisibility != 'adminOnly') ||
+        (request.resource.data.visibility == 'allApproved' && groupVisibility == 'allApproved');
+    }
+
+    function canViewContent(data) {
+      return isPortalAdmin() ||
+        (isApprovedMember() && data.visibility == 'allApproved') ||
+        (isApprovedMember() && data.visibility == 'groupMembers' && membershipExists(data.groupId, request.auth.uid));
     }
 
     match /memberAccess/{uid} {
-      allow read: if isSelf(uid) || isAdmin();
+      allow get: if isSelf(uid) || isPortalAdmin();
+      allow list: if isPortalAdmin();
 
-      allow create: if isSelf(uid) &&
-        request.resource.data.keys().hasOnly([
-          'uid',
-          'email',
-          'displayName',
-          'role',
-          'status',
-          'requestedAt',
-          'updatedAt'
-        ]) &&
-        request.resource.data.uid == uid &&
-        request.resource.data.email is string &&
-        request.resource.data.displayName is string &&
-        request.resource.data.role == 'member' &&
-        request.resource.data.status == 'pending';
+      allow create: if isSelf(uid) && validMemberAccessDocument(uid) &&
+        request.resource.data.role == 'member' && request.resource.data.status == 'pending' &&
+        request.resource.data.email == request.auth.token.email &&
+        validAuditReference('member', uid);
 
-      allow update: if (isAdmin() && validAccessAdminUpdate()) ||
+      allow update: if validMemberAccessDocument(uid) && (
         (
-          isSelf(uid) &&
-          resource.data.status == 'pending' &&
-          request.resource.data.status == 'pending' &&
-          request.resource.data.role == 'member'
-        );
+          isSelf(uid) && resource.data.status != 'deleted' &&
+          request.resource.data.status == 'deletionRequested' &&
+          request.resource.data.role == resource.data.role &&
+          validAuditReference('member', uid)
+        ) ||
+        (
+          isPortalAdmin() && request.auth.uid != uid &&
+          validAuditReference('member', uid)
+        )
+      );
 
       allow delete: if false;
     }
 
     match /directoryProfiles/{uid} {
-      allow read: if isSelf(uid) ||
-        isAdmin() ||
+      allow read: if isPortalAdmin() ||
+        (isSelf(uid) && accessExists(uid) && access(uid).status in ['pending', 'approved', 'deletionRequested', 'deleted']);
+      allow create, update: if isSelf(uid) &&
+        accessAfter(uid).status in ['pending', 'approved'] &&
+        request.resource.data.email == request.auth.token.email && validProfile(uid);
+      allow create, update: if isPortalAdmin() && validProfile(uid);
+      allow delete: if isPortalAdmin() && accessAfter(uid).status == 'deleted';
+    }
+
+    match /directoryEntries/{uid} {
+      allow read: if isPortalAdmin() || isApprovedMember();
+      allow create, update: if isSelf(uid) && isApprovedMember() && validDirectoryEntry(uid);
+      allow create, update: if isPortalAdmin();
+      allow delete: if isSelf(uid) || isPortalAdmin();
+    }
+
+    match /groups/{groupId} {
+      allow read: if canViewGroup(groupId);
+      allow create: if isPortalAdmin() && validGroupDocument(groupId);
+      allow update: if validGroupDocument(groupId) &&
         (
-          isApprovedMember() &&
-          resource.data.optIn == true &&
-          resource.data.approved == true
+          isPortalAdmin() ||
+          (canManageGroup(groupId) && request.resource.data.status == resource.data.status) ||
+          canArchiveGroup(groupId)
         );
+      allow delete: if false;
 
-      allow create: if isSelf(uid) && validProfileWrite(uid);
+      match /members/{uid} {
+        allow read: if isPortalAdmin() ||
+          (isApprovedMember() && resource.data.uid == request.auth.uid) ||
+          (isApprovedMember() && canViewGroup(groupId));
+        allow create: if canManageGroup(groupId) && validRoles() &&
+          (
+            (
+              !exists(/databases/$(database)/documents/groups/$(groupId)) &&
+              isPortalAdmin()
+            ) ||
+            (
+              validMembershipAudit(groupId, uid) &&
+              (isPortalAdmin() || hasGroupRole(groupId, 'owner') || !('owner' in request.resource.data.roles))
+            )
+          );
+        allow update: if canManageGroup(groupId) && validRoles() &&
+          validMembershipAudit(groupId, uid) &&
+          (
+            isPortalAdmin() || hasGroupRole(groupId, 'owner') ||
+            (!('owner' in resource.data.roles) && !('owner' in request.resource.data.roles))
+          );
+        allow delete: if canManageGroup(groupId) &&
+          (
+            (
+              validMembershipAudit(groupId, uid) &&
+              (isPortalAdmin() || hasGroupRole(groupId, 'owner') || !('owner' in resource.data.roles))
+            ) ||
+            (isPortalAdmin() && validMemberDeletionAudit(uid))
+          );
+      }
+    }
 
-      allow update: if (isAdmin() && validAdminProfileModeration()) ||
-        (isSelf(uid) && validProfileWrite(uid));
-
+    match /groupEvents/{eventId} {
+      allow read: if canViewContent(resource.data);
+      allow create, update: if canEditCalendar(request.resource.data.groupId) &&
+        request.resource.data.title is string && request.resource.data.title.size() > 0 && request.resource.data.title.size() <= 160 &&
+        request.resource.data.description is string && request.resource.data.description.size() <= 4000 &&
+        request.resource.data.location is string && request.resource.data.location.size() <= 300 &&
+        request.resource.data.status in ['scheduled', 'canceled', 'archived'] &&
+        request.resource.data.endsAt > request.resource.data.startsAt &&
+        eventAudienceAllowed(request.resource.data.groupId) &&
+        validAuditReference('groupEvent', eventId);
       allow delete: if false;
     }
 
-    match /directoryAudit/{auditId} {
-      allow read: if isAdmin();
+    match /groupUpdates/{updateId} {
+      allow read: if (resource.data.status == 'published' && canViewContent(resource.data)) ||
+        isPortalAdmin() || canEditUpdates(resource.data.groupId);
+      allow create, update: if canEditUpdates(request.resource.data.groupId) &&
+        request.resource.data.title is string && request.resource.data.title.size() > 0 && request.resource.data.title.size() <= 160 &&
+        request.resource.data.body is string && request.resource.data.body.size() <= 8000 &&
+        request.resource.data.status in ['draft', 'published', 'archived', 'removed'] &&
+        request.resource.data.pinned is bool && request.resource.data.important is bool &&
+        eventAudienceAllowed(request.resource.data.groupId) &&
+        validAuditReference('groupUpdate', updateId);
+      allow delete: if false;
+    }
 
-      allow create: if signedIn() && validAuditWrite();
+    match /deletionRequests/{uid} {
+      allow read: if isSelf(uid) || isPortalAdmin();
+      allow create: if isSelf(uid) && request.resource.data.uid == uid &&
+        request.resource.data.status == 'open' &&
+        validAuditReference('member', uid);
+      allow update: if isPortalAdmin() && request.resource.data.uid == uid &&
+        request.resource.data.status in ['open', 'processing', 'completed', 'canceled'];
+      allow delete: if false;
+    }
 
+    match /avatarMetadata/{uid} {
+      allow read: if isSelf(uid) || isPortalAdmin();
+      allow create, update: if (
+        isSelf(uid) && isApprovedMember() && request.resource.data.uid == uid &&
+        request.resource.data.status in ['pending', 'none'] && validAvatarAudit(uid)
+      ) || (isPortalAdmin() && validAvatarAudit(uid));
+      allow delete: if isSelf(uid) || isPortalAdmin();
+    }
+
+    match /avatarDirectory/{uid} {
+      allow read: if isSelf(uid) || isPortalAdmin() ||
+        (isApprovedMember() &&
+          exists(/databases/$(database)/documents/directoryEntries/$(uid)) &&
+          get(/databases/$(database)/documents/directoryEntries/$(uid)).data.showPhoto == true);
+      allow create, update: if isPortalAdmin() && validAvatarAudit(uid);
+      allow delete: if isSelf(uid) || isPortalAdmin();
+    }
+
+    match /auditLogs/{auditId} {
+      allow read: if isPortalAdmin();
+      allow create: if signedIn() &&
+        request.resource.data.actorUid == request.auth.uid &&
+        request.resource.data.actorDisplayName is string &&
+        request.resource.data.action is string &&
+        request.resource.data.entityType is string &&
+        request.resource.data.targetId is string &&
+        request.resource.data.summary is string;
       allow update, delete: if false;
+    }
+
+    match /directoryAudit/{auditId} {
+      allow read: if isPortalAdmin();
+      allow write: if false;
     }
 
     match /taxDocuments/{document=**} {

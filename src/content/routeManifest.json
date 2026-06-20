@@ -313,12 +313,102 @@
       "robots": "noindex, follow"
     },
     {
+      "id": "memberProfile",
+      "locale": "en",
+      "path": "/members/profile",
+      "alternatePath": "/es/miembros/perfil",
+      "title": "Member Profile | First Christian Church Anniston",
+      "description": "Manage your private member profile and directory preferences.",
+      "robots": "noindex, follow"
+    },
+    {
+      "id": "memberProfile",
+      "locale": "es",
+      "path": "/es/miembros/perfil",
+      "alternatePath": "/members/profile",
+      "title": "Perfil de miembro | Primera Iglesia Cristiana de Anniston",
+      "description": "Administre su perfil privado y sus preferencias del directorio.",
+      "robots": "noindex, follow"
+    },
+    {
       "id": "memberDirectory",
       "locale": "en",
       "path": "/members/directory",
       "alternatePath": "/es/miembros/directorio",
       "title": "Member Directory | First Christian Church Anniston",
       "description": "View the opt-in First Christian Church Anniston member directory after approved member sign-in.",
+      "robots": "noindex, follow"
+    },
+    {
+      "id": "memberGroups",
+      "locale": "en",
+      "path": "/members/groups",
+      "alternatePath": "/es/miembros/grupos",
+      "title": "Member Groups | First Christian Church Anniston",
+      "description": "View church teams, ministries, leadership groups, and small groups.",
+      "robots": "noindex, follow"
+    },
+    {
+      "id": "memberGroups",
+      "locale": "es",
+      "path": "/es/miembros/grupos",
+      "alternatePath": "/members/groups",
+      "title": "Grupos de miembros | Primera Iglesia Cristiana de Anniston",
+      "description": "Vea equipos, ministerios, grupos de liderazgo y grupos pequeños.",
+      "robots": "noindex, follow"
+    },
+    {
+      "id": "memberCalendar",
+      "locale": "en",
+      "path": "/members/calendar",
+      "alternatePath": "/es/miembros/calendario",
+      "title": "Member Calendar | First Christian Church Anniston",
+      "description": "View upcoming events for your church groups.",
+      "robots": "noindex, follow"
+    },
+    {
+      "id": "memberCalendar",
+      "locale": "es",
+      "path": "/es/miembros/calendario",
+      "alternatePath": "/members/calendar",
+      "title": "Calendario de miembros | Primera Iglesia Cristiana de Anniston",
+      "description": "Vea próximos eventos de sus grupos de la iglesia.",
+      "robots": "noindex, follow"
+    },
+    {
+      "id": "memberUpdates",
+      "locale": "en",
+      "path": "/members/updates",
+      "alternatePath": "/es/miembros/novedades",
+      "title": "Member Updates | First Christian Church Anniston",
+      "description": "Read private announcements from your church groups.",
+      "robots": "noindex, follow"
+    },
+    {
+      "id": "memberUpdates",
+      "locale": "es",
+      "path": "/es/miembros/novedades",
+      "alternatePath": "/members/updates",
+      "title": "Novedades de miembros | Primera Iglesia Cristiana de Anniston",
+      "description": "Lea anuncios privados de sus grupos de la iglesia.",
+      "robots": "noindex, follow"
+    },
+    {
+      "id": "memberAdmin",
+      "locale": "en",
+      "path": "/members/admin",
+      "alternatePath": "/es/miembros/administracion",
+      "title": "Member Portal Admin | First Christian Church Anniston",
+      "description": "Administer member access, groups, photos, and moderation.",
+      "robots": "noindex, follow"
+    },
+    {
+      "id": "memberAdmin",
+      "locale": "es",
+      "path": "/es/miembros/administracion",
+      "alternatePath": "/members/admin",
+      "title": "Administración del portal | Primera Iglesia Cristiana de Anniston",
+      "description": "Administre acceso, grupos, fotos y moderación.",
       "robots": "noindex, follow"
     },
     {

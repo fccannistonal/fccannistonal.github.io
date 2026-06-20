@@ -1,0 +1,14 @@
+name = "fccphotos"
+main = "src/index.js"
+compatibility_date = "2026-06-19"
+workers_dev = true
+preview_urls = true
+
+[vars]
+FIREBASE_PROJECT_ID = "fcc-anniston-members"
+ALLOWED_ORIGINS = "https://fccanniston.com,https://www.fccanniston.com,https://fccannistonal.github.io"
+
+[[r2_buckets]]
+binding = "photoBucket"
+bucket_name = "fccannistonmembers"
+

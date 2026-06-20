@@ -17,7 +17,12 @@ export type RouteId =
   | 'diversityTheater'
   | 'updates'
   | 'members'
+  | 'memberProfile'
   | 'memberDirectory'
+  | 'memberGroups'
+  | 'memberCalendar'
+  | 'memberUpdates'
+  | 'memberAdmin'
   | 'memberGivingStatements'
   | 'contact'
   | 'privacy';

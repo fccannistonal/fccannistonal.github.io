@@ -363,7 +363,12 @@ const en: LocalizedContent = {
       diversityTheater: 'Diversity Theater',
       updates: 'Updates',
       members: 'Members',
+      memberProfile: 'Profile',
       memberDirectory: 'Member Directory',
+      memberGroups: 'Groups',
+      memberCalendar: 'Calendar',
+      memberUpdates: 'Member Updates',
+      memberAdmin: 'Portal Admin',
       memberGivingStatements: 'Giving Statements',
       contact: 'Contact',
       privacy: 'Privacy',
@@ -1110,8 +1115,10 @@ const en: LocalizedContent = {
       {
         title: 'Member portal',
         paragraphs: [
-          'The member portal uses Firebase Authentication for email-link sign-in and Firestore for approved member access records and opt-in directory profiles.',
-          'Directory participation is optional, profile changes are subject to approval, and this website does not store tax documents or giving-statement PDFs.',
+          'The member portal uses Firebase Authentication for email-link sign-in and Firestore for member access, private profiles, groups, events, announcements, and moderation history.',
+          'Directory participation and profile photos are optional. Directory entries contain only the contact fields each approved member chose to share.',
+          'Profile photos are cropped and compressed in your browser, stored in a private Cloudflare R2 bucket, and delivered through an authenticated Cloudflare Worker after administrator review. Original full-resolution images are not uploaded.',
+          'The portal does not store pastoral care, medical, financial, prayer-request, tax-document, or giving-statement information.',
         ],
       },
       {
@@ -1183,7 +1190,12 @@ const es: LocalizedContent = {
       diversityTheater: 'Teatro Diversidad',
       updates: 'Novedades',
       members: 'Miembros',
+      memberProfile: 'Perfil',
       memberDirectory: 'Directorio de miembros',
+      memberGroups: 'Grupos',
+      memberCalendar: 'Calendario',
+      memberUpdates: 'Novedades de miembros',
+      memberAdmin: 'Administración del portal',
       memberGivingStatements: 'Comprobantes de donaciones',
       contact: 'Contacto',
       privacy: 'Privacidad',
@@ -1931,8 +1943,10 @@ const es: LocalizedContent = {
       {
         title: 'Portal de miembros',
         paragraphs: [
-          'El portal de miembros usa Firebase Authentication para iniciar sesión con enlace por correo y Firestore para registros de acceso aprobados y perfiles opcionales del directorio.',
-          'Participar en el directorio es opcional, los cambios de perfil están sujetos a aprobación y este sitio no almacena documentos fiscales ni archivos PDF de comprobantes de donaciones.',
+          'El portal usa Firebase Authentication para iniciar sesión y Firestore para acceso, perfiles privados, grupos, eventos, anuncios e historial de moderación.',
+          'Participar en el directorio y usar una foto es opcional. El directorio contiene solamente los datos que cada miembro aprobado decidió compartir.',
+          'Las fotos se recortan y comprimen en el navegador, se guardan en un depósito privado de Cloudflare R2 y se entregan mediante un Worker autenticado después de revisión. No se suben las imágenes originales.',
+          'El portal no guarda información pastoral, médica, financiera, peticiones de oración, documentos fiscales ni comprobantes de donaciones.',
         ],
       },
       {

@@ -44,7 +44,9 @@ Most of the real app lives under `src/`. If you are trying to update the deploye
 ## Routes
 
 - `/`
-- English: `/visit`, `/about`, `/about/membership-and-baptism`, `/about/recommended-reading`, `/staff`, `/community`, `/community/sunday-worship`, `/community/childrens-ministry`, `/community/hispanic-ministry`, `/community/service-and-outreach`, `/community/diversity-theater`, `/updates`, `/updates/:slug`, `/members`, `/members/directory`, `/members/giving-statements`, `/contact`, `/privacy`
+- English public site: `/visit`, `/about`, `/about/membership-and-baptism`, `/about/recommended-reading`, `/staff`, `/community`, `/community/sunday-worship`, `/community/childrens-ministry`, `/community/hispanic-ministry`, `/community/service-and-outreach`, `/community/diversity-theater`, `/updates`, `/updates/:slug`, `/contact`, `/privacy`
+- English member portal: `/members`, `/members/profile`, `/members/directory`, `/members/groups`, `/members/groups/:groupId`, `/members/calendar`, `/members/updates`, `/members/admin`, `/members/giving-statements`
+- Spanish member portal: `/es/miembros`, `/es/miembros/perfil`, `/es/miembros/directorio`, `/es/miembros/grupos`, `/es/miembros/grupos/:groupId`, `/es/miembros/calendario`, `/es/miembros/novedades`, `/es/miembros/administracion`, `/es/miembros/comprobantes-de-donaciones`
 - Spanish: `/es/visita`, `/es/acerca`, `/es/acerca/membresia-y-bautismo`, `/es/acerca/lecturas-recomendadas`, `/es/personal`, `/es/comunidad`, `/es/comunidad/adoracion-dominical`, `/es/comunidad/ministerio-infantil`, `/es/comunidad/ministerio-hispano`, `/es/comunidad/servicio-comunitario`, `/es/comunidad/teatro-diversidad`, `/es/novedades`, `/es/novedades/:slug`, `/es/miembros`, `/es/miembros/directorio`, `/es/miembros/comprobantes-de-donaciones`, `/es/contacto`, `/es/privacidad`
 
 Legacy `/outreach`, `/diversity-theater`, `/es/outreach`, and `/es/teatro-diversidad`
@@ -145,11 +147,35 @@ VITE_FIREBASE_PROJECT_ID=
 VITE_FIREBASE_STORAGE_BUCKET=
 VITE_FIREBASE_MESSAGING_SENDER_ID=
 VITE_FIREBASE_APP_ID=
+VITE_photoBucket_WORKER_URL=https://fccphotos.fccannistonal.workers.dev
 ```
 
 `VITE_FIREBASE_MEASUREMENT_ID` may also be present for the project, but the member portal does not initialize Firebase Analytics.
 
-The first version uses passwordless email-link sign-in, approved access records in `memberAccess/{uid}`, opt-in directory profiles in `directoryProfiles/{uid}`, and audit entries in `directoryAudit/{id}`. Firestore rules deny unauthenticated reads, allow pending users to manage their own request/profile draft, allow approved members to view only approved opt-in profiles, allow admins to approve/moderate access, and explicitly deny `taxDocuments/{document=**}`.
+The portal uses passwordless email-link sign-in and requires administrator approval. Firestore stores account lifecycle records, private profiles, redacted opt-in directory entries, groups and role-separated memberships, events, announcements, deletion requests, avatar metadata, and immutable audit records. Firestore Rules—not the React UI—enforce member status, global roles, group roles, directory redaction, and protected moderation fields.
+
+The first administrator must be assigned manually in Firebase Console by setting an approved `memberAccess/{uid}` document's `role` to `admin`. Portal administrators may manage other administrators but cannot change their own global role.
+
+Legacy `revoked` access records are treated as `deactivated`. Existing opt-in directory profiles are projected into the safer redacted directory collection the next time an approved member loads or saves their profile.
+
+### Private profile photo Worker
+
+The deployable Worker is in `cloudflare/fccphotos-worker/`. It uses the existing Worker name `fccphotos`, private R2 bucket `fccannistonmembers`, and binding `photoBucket`. The production Worker remains on `workers.dev`; it does not host the website and requires no DNS changes.
+
+```bash
+npm run worker:dev
+npm run worker:deploy
+```
+
+The Worker verifies Firebase ID-token signatures and status/role data before every photo operation, then uses the caller's ID token for Firestore REST writes so Firestore Rules remain authoritative. It contains no Firebase service account, Cloudflare API token, R2 credentials, or frontend secret. Production CORS permits only the church domains and GitHub Pages fallback; local origins belong only in `.dev.vars` copied from `.dev.vars.example`.
+
+Deployment order is: deploy Firestore indexes and rules, deploy the Worker, verify `/health` and unauthorized rejection, then deploy the GitHub Pages build. The R2 bucket must remain private.
+
+```bash
+npm run firebase:deploy
+npm run worker:deploy
+curl https://fccphotos.fccannistonal.workers.dev/health
+```
 
 Giving statements remain a Tithely/church-office handoff. Do not upload, generate, or store tax PDFs in Firebase, GitHub, Cloudflare, or the generated `dist`.
 

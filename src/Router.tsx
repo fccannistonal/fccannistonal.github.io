@@ -75,6 +75,24 @@ const MembersPage = lazy(() =>
 const MemberDirectoryPage = lazy(() =>
   import('./pages/Members.page').then((module) => ({ default: module.MemberDirectoryPage }))
 );
+const MemberProfilePage = lazy(() =>
+  import('./pages/Members.page').then((module) => ({ default: module.MemberProfilePage }))
+);
+const MemberGroupsPage = lazy(() =>
+  import('./pages/Members.page').then((module) => ({ default: module.MemberGroupsPage }))
+);
+const MemberGroupPage = lazy(() =>
+  import('./pages/Members.page').then((module) => ({ default: module.MemberGroupPage }))
+);
+const MemberCalendarPage = lazy(() =>
+  import('./pages/Members.page').then((module) => ({ default: module.MemberCalendarPage }))
+);
+const MemberUpdatesPage = lazy(() =>
+  import('./pages/Members.page').then((module) => ({ default: module.MemberUpdatesPage }))
+);
+const MemberAdminPage = lazy(() =>
+  import('./pages/Members.page').then((module) => ({ default: module.MemberAdminPage }))
+);
 const MemberGivingStatementsPage = lazy(() =>
   import('./pages/Members.page').then((module) => ({
     default: module.MemberGivingStatementsPage,
@@ -232,7 +250,13 @@ export const routes: RouteObject[] = [
       { path: 'updates', element: withSuspense(<UpdatesPage />) },
       { path: 'updates/:slug', element: withSuspense(<PostPage />) },
       { path: 'members', element: withSuspense(<MembersPage />) },
+      { path: 'members/profile', element: withSuspense(<MemberProfilePage />) },
       { path: 'members/directory', element: withSuspense(<MemberDirectoryPage />) },
+      { path: 'members/groups', element: withSuspense(<MemberGroupsPage />) },
+      { path: 'members/groups/:groupId', element: withSuspense(<MemberGroupPage />) },
+      { path: 'members/calendar', element: withSuspense(<MemberCalendarPage />) },
+      { path: 'members/updates', element: withSuspense(<MemberUpdatesPage />) },
+      { path: 'members/admin', element: withSuspense(<MemberAdminPage />) },
       {
         path: 'members/giving-statements',
         element: withSuspense(<MemberGivingStatementsPage />),
@@ -288,7 +312,13 @@ export const routes: RouteObject[] = [
       { path: 'es/novedades', element: withSuspense(<UpdatesPage />) },
       { path: 'es/novedades/:slug', element: withSuspense(<PostPage />) },
       { path: 'es/miembros', element: withSuspense(<MembersPage />) },
+      { path: 'es/miembros/perfil', element: withSuspense(<MemberProfilePage />) },
       { path: 'es/miembros/directorio', element: withSuspense(<MemberDirectoryPage />) },
+      { path: 'es/miembros/grupos', element: withSuspense(<MemberGroupsPage />) },
+      { path: 'es/miembros/grupos/:groupId', element: withSuspense(<MemberGroupPage />) },
+      { path: 'es/miembros/calendario', element: withSuspense(<MemberCalendarPage />) },
+      { path: 'es/miembros/novedades', element: withSuspense(<MemberUpdatesPage />) },
+      { path: 'es/miembros/administracion', element: withSuspense(<MemberAdminPage />) },
       {
         path: 'es/miembros/comprobantes-de-donaciones',
         element: withSuspense(<MemberGivingStatementsPage />),

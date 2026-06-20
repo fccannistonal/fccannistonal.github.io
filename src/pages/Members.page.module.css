@@ -1,3 +1,39 @@
 .emailInput {
   min-width: min(100%, 22rem);
+  flex: 1;
+}
+
+.portalTabs {
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+}
+
+.portalTabs :global(.mantine-Tabs-list) {
+  flex-wrap: nowrap;
+  min-width: max-content;
+}
+
+.preserveLines {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.memberName {
+  min-width: 9rem;
+}
+
+.roleSelect {
+  flex: 1;
+  min-width: min(100%, 18rem);
+}
+
+@media (max-width: 48em) {
+  .portalTabs {
+    margin-inline: -1rem;
+    padding-inline: 1rem;
+  }
+
+  .emailInput {
+    min-width: 100%;
+  }
 }
