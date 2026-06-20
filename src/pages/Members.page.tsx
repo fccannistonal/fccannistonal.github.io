@@ -20,6 +20,7 @@ import {
   Alert,
   Avatar,
   Badge,
+  Box,
   Button,
   Center,
   Checkbox,
@@ -147,15 +148,30 @@ const copyByLocale = {
     signOut: 'Sign out',
     save: 'Save changes',
     saved: 'Changes saved.',
+    unsaved: 'You have unsaved changes',
     error: 'Something went wrong. Please try again.',
     loading: 'Loading member portal',
     empty: 'Nothing to show yet.',
     loadMore: 'Load more',
     preferredName: 'Preferred name',
+    preferredNameHelp: 'The name you would like people to use.',
     phone: 'Phone',
     pronouns: 'Pronouns',
     household: 'Household or family',
     interests: 'Ministry interests',
+    interestsHelp: 'Share the ministries, service opportunities, or groups you care about.',
+    profileHeading: 'Your profile',
+    profileIntro:
+      'Keep your contact details current and choose exactly what other members can see.',
+    personalDetails: 'Personal details',
+    personalDetailsHelp: 'This information helps church staff identify and contact you.',
+    privateEmailHelp: 'Your sign-in email is managed by your account and cannot be edited here.',
+    privacyHeading: 'Directory privacy',
+    privacyHelp: 'You are in control. Nothing appears in the directory until you opt in.',
+    directoryOnHelp: 'Your profile is visible to approved members. Choose the details to include.',
+    directoryOffHelp: 'Your profile is private and will not appear in the member directory.',
+    sharedDetails: 'Details visible to members',
+    noSharedDetails: 'No contact details selected yet.',
     directoryListed: 'Include me in the member directory',
     showEmail: 'Show my email',
     showPhone: 'Show my phone',
@@ -164,15 +180,31 @@ const copyByLocale = {
     showPhoto: 'Show my approved photo',
     photo: 'Profile photo',
     photoHelp: 'Photos are cropped to a small square WebP and require administrator approval.',
+    choosePhoto: 'Choose a new photo',
+    photoFormats: 'JPG, PNG, or WebP. Choose a clear, square image for the best result.',
     uploadPhoto: 'Upload photo',
+    replacePhoto: 'Save new photo',
     removePhoto: 'Remove photo',
+    removePhotoTitle: 'Remove your profile photo?',
+    removePhotoHelp: 'Your current photo will no longer be available in the member directory.',
+    cancel: 'Cancel',
     pendingPhoto: 'Your new photo is pending approval.',
+    accountOptions: 'Account options',
+    accountOptionsHelp: 'Access account-specific controls, including requesting profile deletion.',
     deletionTitle: 'Request profile deletion',
     deletionHelp:
       'This immediately blocks portal access while an administrator removes your profile and photo.',
     requestDeletion: 'Request deletion',
     confirmDeletion: 'Request deletion of your member profile?',
+    deletionModalHelp:
+      'This request signs you out of the member portal and blocks access while an administrator removes your profile and photo. This cannot be undone here.',
+    confirmationLabel: 'Type DELETE to confirm',
+    confirmationHelp: 'Enter DELETE exactly as shown.',
+    deletePhrase: 'DELETE',
     deleteAuth: 'Delete my sign-in account',
+    memberResources: 'Member resources',
+    givingDescription: 'View options for requesting or accessing your giving statements.',
+    openGiving: 'View giving statements',
     directoryHelp: 'Only information each member explicitly chose to share appears here.',
     groupsHelp: 'Church teams, leadership, ministries, committees, and small groups.',
     openGroup: 'Open group',
@@ -261,15 +293,32 @@ const copyByLocale = {
     signOut: 'Cerrar sesión',
     save: 'Guardar cambios',
     saved: 'Cambios guardados.',
+    unsaved: 'Tiene cambios sin guardar',
     error: 'Algo salió mal. Inténtelo de nuevo.',
     loading: 'Cargando el portal',
     empty: 'No hay contenido todavía.',
     loadMore: 'Cargar más',
     preferredName: 'Nombre preferido',
+    preferredNameHelp: 'El nombre que desea que usen los demás.',
     phone: 'Teléfono',
     pronouns: 'Pronombres',
     household: 'Hogar o familia',
     interests: 'Intereses ministeriales',
+    interestsHelp: 'Comparta los ministerios, oportunidades de servicio o grupos que le interesan.',
+    profileHeading: 'Su perfil',
+    profileIntro:
+      'Mantenga sus datos de contacto al día y elija exactamente qué pueden ver los demás miembros.',
+    personalDetails: 'Datos personales',
+    personalDetailsHelp:
+      'Esta información ayuda al personal de la iglesia a identificarle y contactarle.',
+    privateEmailHelp: 'El correo de acceso pertenece a su cuenta y no se puede editar aquí.',
+    privacyHeading: 'Privacidad del directorio',
+    privacyHelp: 'Usted tiene el control. Nada aparece en el directorio hasta que lo autorice.',
+    directoryOnHelp:
+      'Su perfil es visible para miembros aprobados. Elija los datos que desea incluir.',
+    directoryOffHelp: 'Su perfil es privado y no aparecerá en el directorio de miembros.',
+    sharedDetails: 'Datos visibles para miembros',
+    noSharedDetails: 'Aún no ha seleccionado datos de contacto.',
     directoryListed: 'Incluirme en el directorio',
     showEmail: 'Mostrar mi correo',
     showPhone: 'Mostrar mi teléfono',
@@ -278,14 +327,31 @@ const copyByLocale = {
     showPhoto: 'Mostrar mi foto aprobada',
     photo: 'Foto de perfil',
     photoHelp: 'Las fotos se recortan a un WebP cuadrado pequeño y requieren aprobación.',
+    choosePhoto: 'Elegir una foto nueva',
+    photoFormats: 'JPG, PNG o WebP. Elija una imagen clara y cuadrada para un mejor resultado.',
     uploadPhoto: 'Subir foto',
+    replacePhoto: 'Guardar foto nueva',
     removePhoto: 'Quitar foto',
+    removePhotoTitle: '¿Quitar su foto de perfil?',
+    removePhotoHelp: 'Su foto actual dejará de estar disponible en el directorio de miembros.',
+    cancel: 'Cancelar',
     pendingPhoto: 'Su foto nueva espera aprobación.',
+    accountOptions: 'Opciones de la cuenta',
+    accountOptionsHelp:
+      'Acceda a controles específicos de la cuenta, incluida la solicitud de eliminación del perfil.',
     deletionTitle: 'Solicitar eliminación del perfil',
     deletionHelp: 'Esto bloquea el acceso mientras un administrador elimina su perfil y foto.',
     requestDeletion: 'Solicitar eliminación',
     confirmDeletion: '¿Solicitar la eliminación de su perfil?',
+    deletionModalHelp:
+      'Esta solicitud cierra su sesión y bloquea el acceso mientras un administrador elimina su perfil y foto. No se puede deshacer desde aquí.',
+    confirmationLabel: 'Escriba ELIMINAR para confirmar',
+    confirmationHelp: 'Escriba ELIMINAR exactamente como aparece.',
+    deletePhrase: 'ELIMINAR',
     deleteAuth: 'Eliminar mi cuenta de acceso',
+    memberResources: 'Recursos para miembros',
+    givingDescription: 'Consulte cómo solicitar o acceder a sus comprobantes de donaciones.',
+    openGiving: 'Ver comprobantes',
     directoryHelp: 'Solo aparece la información que cada miembro decidió compartir.',
     groupsHelp: 'Equipos, liderazgo, ministerios, comités y grupos pequeños.',
     openGroup: 'Abrir grupo',
@@ -776,155 +842,339 @@ function ProfilePanel({
   refresh: () => Promise<void>;
   access: MemberAccess;
 }) {
+  const [savedProfile, setSavedProfile] = useState(profile);
+  const [deleteOpened, setDeleteOpened] = useState(false);
+  const [deleteConfirmation, setDeleteConfirmation] = useState('');
   const update = (next: Partial<DirectoryProfile>) => setProfile({ ...profile, ...next });
   const visibility = (key: keyof DirectoryProfile['visibility'], value: boolean) =>
     update({ visibility: { ...profile.visibility, [key]: value } });
+  const editableProfile = ({
+    createdAt: _createdAt,
+    updatedAt: _updatedAt,
+    ...value
+  }: DirectoryProfile) => value;
+  const hasChanges =
+    JSON.stringify(editableProfile(profile)) !== JSON.stringify(editableProfile(savedProfile));
+  const sharedDetails = [
+    profile.visibility.email && copy.showEmail,
+    profile.visibility.phone && copy.showPhone,
+    profile.visibility.pronouns && copy.showPronouns,
+    profile.visibility.household && copy.showHousehold,
+    profile.visibility.photo && copy.showPhoto,
+  ].filter(Boolean) as string[];
+
+  const saveProfile = () =>
+    run(async () => {
+      await saveOwnProfile(profile);
+      setSavedProfile(profile);
+      await refresh();
+    });
+  const closeDeleteModal = () => {
+    setDeleteOpened(false);
+    setDeleteConfirmation('');
+  };
+
   return (
-    <SimpleGrid cols={{ base: 1, lg: 2 }} spacing="lg">
-      <Paper withBorder p={{ base: 'lg', md: 'xl' }}>
-        <Title order={2}>{copy.profile}</Title>
-        <form
-          onSubmit={(event) => {
-            event.preventDefault();
-            run(async () => {
-              await saveOwnProfile(profile);
-              await refresh();
-            });
-          }}
-        >
-          <Stack mt="lg">
-            <TextInput
-              label={copy.displayName}
-              value={profile.displayName}
-              required
-              maxLength={100}
-              onChange={(event) => update({ displayName: event.currentTarget.value })}
-            />
-            <TextInput
-              label={copy.preferredName}
-              value={profile.preferredName}
-              maxLength={100}
-              onChange={(event) => update({ preferredName: event.currentTarget.value })}
-            />
-            <TextInput label={copy.email} value={profile.email} disabled />
-            <TextInput
-              label={copy.phone}
-              value={profile.phone}
-              maxLength={40}
-              onChange={(event) => update({ phone: event.currentTarget.value })}
-            />
-            <TextInput
-              label={copy.pronouns}
-              value={profile.pronouns}
-              maxLength={60}
-              onChange={(event) => update({ pronouns: event.currentTarget.value })}
-            />
-            <TextInput
-              label={copy.household}
-              value={profile.household}
-              maxLength={150}
-              onChange={(event) => update({ household: event.currentTarget.value })}
-            />
-            <Textarea
-              label={copy.interests}
-              value={profile.ministryInterests}
-              maxLength={500}
-              onChange={(event) => update({ ministryInterests: event.currentTarget.value })}
-            />
-            <Switch
-              label={copy.directoryListed}
-              checked={profile.visibility.listed}
-              onChange={(event) => visibility('listed', event.currentTarget.checked)}
-            />
-            <Group>
-              <Checkbox
-                label={copy.showEmail}
-                checked={profile.visibility.email}
-                disabled={!profile.visibility.listed}
-                onChange={(event) => visibility('email', event.currentTarget.checked)}
-              />
-              <Checkbox
-                label={copy.showPhone}
-                checked={profile.visibility.phone}
-                disabled={!profile.visibility.listed}
-                onChange={(event) => visibility('phone', event.currentTarget.checked)}
-              />
-              <Checkbox
-                label={copy.showPronouns}
-                checked={profile.visibility.pronouns}
-                disabled={!profile.visibility.listed}
-                onChange={(event) => visibility('pronouns', event.currentTarget.checked)}
-              />
-              <Checkbox
-                label={copy.showHousehold}
-                checked={profile.visibility.household}
-                disabled={!profile.visibility.listed}
-                onChange={(event) => visibility('household', event.currentTarget.checked)}
-              />
-              <Checkbox
-                label={copy.showPhoto}
-                checked={profile.visibility.photo}
-                disabled={!profile.visibility.listed}
-                onChange={(event) => visibility('photo', event.currentTarget.checked)}
-              />
-            </Group>
-            <Button type="submit" loading={busy} w="fit-content">
-              {copy.save}
-            </Button>
-          </Stack>
-        </form>
+    <Stack gap="lg" className={classes.profileWorkspace}>
+      <Paper className={classes.profileWelcome} p={{ base: 'lg', sm: 'xl' }}>
+        <Group justify="space-between" align="flex-start" wrap="wrap" gap="lg">
+          <Box>
+            <Text className={classes.sectionEyebrow}>{copy.profile}</Text>
+            <Title order={2}>{copy.profileHeading}</Title>
+            <Text c="dimmed" mt="xs" maw={620}>
+              {copy.profileIntro}
+            </Text>
+          </Box>
+          {hasChanges ? (
+            <Badge color="brand" variant="light" size="lg" className={classes.unsavedBadge}>
+              {copy.unsaved}
+            </Badge>
+          ) : (
+            <Badge
+              color="green"
+              variant="light"
+              size="lg"
+              leftSection={<IconCircleCheck size={14} />}
+            >
+              {copy.saved}
+            </Badge>
+          )}
+        </Group>
       </Paper>
-      <Stack>
-        <AvatarPanel uid={profile.uid} copy={copy} busy={busy} run={run} />
-        <Paper withBorder p="xl">
-          <Title order={3}>{copy.deletionTitle}</Title>
-          <Text c="dimmed" mt="sm">
-            {copy.deletionHelp}
+
+      <div className={classes.profileGrid}>
+        <Paper withBorder p={{ base: 'lg', md: 'xl' }} className={classes.profileCard}>
+          <div className={classes.cardHeader}>
+            <Title order={3}>{copy.personalDetails}</Title>
+            <Text c="dimmed" size="sm" mt={4}>
+              {copy.personalDetailsHelp}
+            </Text>
+          </div>
+          <form
+            id="member-profile-form"
+            onSubmit={(event) => {
+              event.preventDefault();
+              saveProfile();
+            }}
+          >
+            <Stack mt="xl" gap="lg">
+              <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
+                <TextInput
+                  label={copy.displayName}
+                  value={profile.displayName}
+                  required
+                  maxLength={100}
+                  autoComplete="name"
+                  onChange={(event) => update({ displayName: event.currentTarget.value })}
+                />
+                <TextInput
+                  label={copy.preferredName}
+                  description={copy.preferredNameHelp}
+                  value={profile.preferredName}
+                  maxLength={100}
+                  onChange={(event) => update({ preferredName: event.currentTarget.value })}
+                />
+              </SimpleGrid>
+              <TextInput
+                label={copy.email}
+                description={copy.privateEmailHelp}
+                value={profile.email}
+                type="email"
+                autoComplete="email"
+                readOnly
+                className={classes.readOnlyField}
+              />
+              <TextInput
+                label={copy.phone}
+                value={profile.phone}
+                type="tel"
+                autoComplete="tel"
+                maxLength={40}
+                onChange={(event) => update({ phone: event.currentTarget.value })}
+              />
+              <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
+                <TextInput
+                  label={copy.pronouns}
+                  value={profile.pronouns}
+                  maxLength={60}
+                  onChange={(event) => update({ pronouns: event.currentTarget.value })}
+                />
+                <TextInput
+                  label={copy.household}
+                  value={profile.household}
+                  autoComplete="organization"
+                  maxLength={150}
+                  onChange={(event) => update({ household: event.currentTarget.value })}
+                />
+              </SimpleGrid>
+              <Textarea
+                label={copy.interests}
+                description={copy.interestsHelp}
+                value={profile.ministryInterests}
+                maxLength={500}
+                minRows={3}
+                autosize
+                onChange={(event) => update({ ministryInterests: event.currentTarget.value })}
+              />
+            </Stack>
+          </form>
+        </Paper>
+
+        <Stack gap="lg" className={classes.profileSidebar}>
+          <AvatarPanel
+            uid={profile.uid}
+            name={profile.preferredName || profile.displayName}
+            copy={copy}
+            busy={busy}
+            run={run}
+          />
+          <Paper withBorder p="lg" className={classes.resourceCard}>
+            <Group wrap="nowrap" align="flex-start">
+              <Box className={classes.resourceIcon} aria-hidden="true">
+                <IconFileText size={22} />
+              </Box>
+              <Box>
+                <Title order={3} size="h4">
+                  {copy.memberResources}
+                </Title>
+                <Text c="dimmed" size="sm" mt={4}>
+                  {copy.givingDescription}
+                </Text>
+                <Button
+                  component={Link}
+                  to={getLocalizedPath('memberGivingStatements', useLocale())}
+                  variant="light"
+                  mt="md"
+                  size="sm"
+                >
+                  {copy.openGiving}
+                </Button>
+              </Box>
+            </Group>
+          </Paper>
+        </Stack>
+      </div>
+
+      <Paper withBorder p={{ base: 'lg', md: 'xl' }} className={classes.privacyCard}>
+        <div className={classes.cardHeader}>
+          <Title order={3}>{copy.privacyHeading}</Title>
+          <Text c="dimmed" size="sm" mt={4}>
+            {copy.privacyHelp}
           </Text>
+        </div>
+        <div
+          className={classes.directoryToggle}
+          data-enabled={profile.visibility.listed || undefined}
+        >
+          <Switch
+            size="lg"
+            label={copy.directoryListed}
+            description={profile.visibility.listed ? copy.directoryOnHelp : copy.directoryOffHelp}
+            checked={profile.visibility.listed}
+            onChange={(event) => visibility('listed', event.currentTarget.checked)}
+          />
+        </div>
+        {profile.visibility.listed ? (
+          <Box className={classes.sharingOptions}>
+            <Text fw={700} size="sm" mb="sm">
+              {copy.sharedDetails}
+            </Text>
+            <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="xs">
+              {(
+                [
+                  ['email', copy.showEmail],
+                  ['phone', copy.showPhone],
+                  ['pronouns', copy.showPronouns],
+                  ['household', copy.showHousehold],
+                  ['photo', copy.showPhoto],
+                ] as Array<[keyof DirectoryProfile['visibility'], string]>
+              ).map(([key, label]) => (
+                <Switch
+                  key={key}
+                  label={label}
+                  checked={profile.visibility[key]}
+                  onChange={(event) => visibility(key, event.currentTarget.checked)}
+                  className={classes.sharingSwitch}
+                />
+              ))}
+            </SimpleGrid>
+            <Text c="dimmed" size="xs" mt="md" aria-live="polite">
+              {sharedDetails.join(' · ') || copy.noSharedDetails}
+            </Text>
+          </Box>
+        ) : null}
+      </Paper>
+
+      <Group className={classes.saveBar} justify="space-between" wrap="wrap">
+        <Text
+          size="sm"
+          c={hasChanges ? 'brand.8' : 'dimmed'}
+          fw={hasChanges ? 700 : 500}
+          role="status"
+          aria-live="polite"
+        >
+          {hasChanges ? copy.unsaved : copy.saved}
+        </Text>
+        <Group gap="sm">
+          {hasChanges ? (
+            <Button variant="subtle" color="dark" onClick={() => setProfile(savedProfile)}>
+              {copy.cancel}
+            </Button>
+          ) : null}
+          <Button type="submit" form="member-profile-form" loading={busy} disabled={!hasChanges}>
+            {copy.save}
+          </Button>
+        </Group>
+      </Group>
+
+      <details className={classes.accountOptions}>
+        <summary>
+          <span>
+            <strong>{copy.accountOptions}</strong>
+            <small>{copy.accountOptionsHelp}</small>
+          </span>
+        </summary>
+        <div className={classes.dangerContent}>
+          <Box>
+            <Text fw={700}>{copy.deletionTitle}</Text>
+            <Text c="dimmed" size="sm" mt={4} maw={680}>
+              {copy.deletionHelp}
+            </Text>
+          </Box>
           <Button
             color="red"
             variant="light"
-            mt="lg"
             leftSection={<IconTrash size={18} />}
-            loading={busy}
             onClick={() => {
-              if (window.confirm(copy.confirmDeletion)) {
-                run(async () => {
-                  await requestProfileDeletion(access);
-                  await refresh();
-                });
-              }
+              setDeleteConfirmation('');
+              setDeleteOpened(true);
             }}
           >
             {copy.requestDeletion}
           </Button>
-        </Paper>
-        <Button
-          component={Link}
-          to={getLocalizedPath('memberGivingStatements', useLocale())}
-          variant="subtle"
-          leftSection={<IconFileText size={18} />}
-        >
-          {copy.giving}
-        </Button>
-      </Stack>
-    </SimpleGrid>
+        </div>
+      </details>
+
+      <Modal
+        opened={deleteOpened}
+        onClose={closeDeleteModal}
+        title={copy.deletionTitle}
+        centered
+        size="md"
+      >
+        <Stack>
+          <Alert color="red" icon={<IconAlertCircle size={18} />}>
+            {copy.deletionModalHelp}
+          </Alert>
+          <TextInput
+            label={copy.confirmationLabel}
+            description={copy.confirmationHelp}
+            value={deleteConfirmation}
+            autoComplete="off"
+            data-autofocus
+            onChange={(event) => setDeleteConfirmation(event.currentTarget.value)}
+          />
+          <Group justify="flex-end" mt="sm">
+            <Button variant="default" onClick={closeDeleteModal}>
+              {copy.cancel}
+            </Button>
+            <Button
+              color="red"
+              leftSection={<IconTrash size={18} />}
+              loading={busy}
+              disabled={deleteConfirmation !== copy.deletePhrase}
+              onClick={() =>
+                run(async () => {
+                  await requestProfileDeletion(access);
+                  await refresh();
+                })
+              }
+            >
+              {copy.requestDeletion}
+            </Button>
+          </Group>
+        </Stack>
+      </Modal>
+    </Stack>
   );
 }
 
 function AvatarPanel({
   uid,
+  name,
   copy,
   busy,
   run,
 }: {
   uid: string;
+  name: string;
   copy: typeof copyByLocale.en;
   busy: boolean;
   run: (work: () => Promise<void>, success?: string) => Promise<void>;
 }) {
   const [url, setUrl] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
+  const [removeOpened, setRemoveOpened] = useState(false);
   useEffect(() => {
     if (isPhotoWorkerConfigured()) {
       fetchAvatar(uid, 'pending')
@@ -933,19 +1183,22 @@ function AvatarPanel({
     }
   }, [uid]);
   return (
-    <Paper withBorder p="xl">
+    <Paper withBorder p={{ base: 'lg', md: 'xl' }} className={classes.photoCard}>
       <Title order={3}>{copy.photo}</Title>
-      <Text c="dimmed" mt="sm">
+      <Text c="dimmed" mt={4} size="sm">
         {copy.photoHelp}
       </Text>
-      <Group mt="lg" align="end">
-        <Avatar src={url} name={uid} size={88} />
+      <Group mt="xl" align="center" wrap="nowrap" className={classes.photoPicker}>
+        <Avatar src={url} name={name} size={96} radius="xl" className={classes.profileAvatar} />
         <FileInput
           accept="image/jpeg,image/png,image/webp"
-          label={copy.photo}
+          label={copy.choosePhoto}
+          description={copy.photoFormats}
           value={file}
           onChange={setFile}
           leftSection={<IconCamera size={16} />}
+          clearable
+          className={classes.photoInput}
         />
       </Group>
       {isPhotoWorkerConfigured() ? (
@@ -963,27 +1216,48 @@ function AvatarPanel({
               }, copy.pendingPhoto)
             }
           >
-            {copy.uploadPhoto}
+            {url ? copy.replacePhoto : copy.uploadPhoto}
           </Button>
-          <Button
-            color="red"
-            variant="light"
-            loading={busy}
-            onClick={() =>
-              run(async () => {
-                await deleteMyAvatar();
-                setUrl(null);
-              })
-            }
-          >
-            {copy.removePhoto}
-          </Button>
+          {url ? (
+            <Button color="red" variant="subtle" onClick={() => setRemoveOpened(true)}>
+              {copy.removePhoto}
+            </Button>
+          ) : null}
         </Group>
       ) : (
         <Alert color="moss" mt="lg">
           {copy.setupTitle}
         </Alert>
       )}
+      <Modal
+        opened={removeOpened}
+        onClose={() => setRemoveOpened(false)}
+        title={copy.removePhotoTitle}
+        centered
+        size="sm"
+      >
+        <Text c="dimmed" size="sm">
+          {copy.removePhotoHelp}
+        </Text>
+        <Group justify="flex-end" mt="xl">
+          <Button variant="default" onClick={() => setRemoveOpened(false)}>
+            {copy.cancel}
+          </Button>
+          <Button
+            color="red"
+            loading={busy}
+            onClick={() =>
+              run(async () => {
+                await deleteMyAvatar();
+                setUrl(null);
+                setRemoveOpened(false);
+              })
+            }
+          >
+            {copy.removePhoto}
+          </Button>
+        </Group>
+      </Modal>
     </Paper>
   );
 }
