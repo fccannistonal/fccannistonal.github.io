@@ -300,7 +300,7 @@
       "path": "/members",
       "alternatePath": "/es/miembros",
       "title": "Member Area | First Christian Church Anniston",
-      "description": "Create or sign in to an account, set up a private profile, and request trusted access to the First Christian Church Anniston member area.",
+      "description": "View current events, announcements, celebrations, groups, and profile resources in the First Christian Church Anniston member area.",
       "robots": "noindex, follow"
     },
     {
@@ -309,7 +309,7 @@
       "path": "/es/miembros",
       "alternatePath": "/members",
       "title": "Área de miembros | Primera Iglesia Cristiana de Anniston",
-      "description": "Cree una cuenta o inicie sesión, configure un perfil privado y solicite acceso de confianza al área de miembros de la Primera Iglesia Cristiana de Anniston.",
+      "description": "Vea eventos, anuncios, celebraciones, grupos y recursos de perfil en el área de miembros de la Primera Iglesia Cristiana de Anniston.",
       "robots": "noindex, follow"
     },
     {
@@ -380,8 +380,8 @@
       "locale": "en",
       "path": "/members/updates",
       "alternatePath": "/es/miembros/novedades",
-      "title": "Member Updates | First Christian Church Anniston",
-      "description": "Read private announcements from your church groups.",
+      "title": "Member Announcements | First Christian Church Anniston",
+      "description": "Read active church-wide and group announcements.",
       "robots": "noindex, follow"
     },
     {
@@ -389,8 +389,8 @@
       "locale": "es",
       "path": "/es/miembros/novedades",
       "alternatePath": "/members/updates",
-      "title": "Novedades de miembros | Primera Iglesia Cristiana de Anniston",
-      "description": "Lea anuncios privados de sus grupos de la iglesia.",
+      "title": "Anuncios para miembros | Primera Iglesia Cristiana de Anniston",
+      "description": "Lea anuncios activos para toda la iglesia y sus grupos.",
       "robots": "noindex, follow"
     },
     {

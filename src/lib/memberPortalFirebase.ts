@@ -34,6 +34,8 @@ import {
   type DocumentData,
   type DocumentSnapshot,
   type Firestore,
+  type QuerySnapshot,
+  type WriteBatch,
 } from 'firebase/firestore';
 import {
   clearAllPortalCaches,
@@ -95,7 +97,7 @@ export type MemberConnection =
   | 'ministryOrVolunteer'
   | 'other';
 export type GroupRole = 'owner' | 'leader' | 'groupAdmin' | 'editor' | 'calendarManager';
-export type GroupStatus = 'draft' | 'active' | 'hidden' | 'archived';
+export type GroupStatus = 'draft' | 'active' | 'hidden' | 'archived' | 'deleted';
 export type GroupVisibility = 'allApproved' | 'groupMembers' | 'adminOnly';
 export type GroupCategory =
   | 'staff'
@@ -111,6 +113,16 @@ export type GroupCategory =
   | 'other';
 export type EventStatus = 'scheduled' | 'canceled' | 'archived';
 export type UpdateStatus = 'draft' | 'published' | 'archived' | 'removed';
+export type RelationshipType =
+  | 'spouse'
+  | 'partner'
+  | 'parent'
+  | 'child'
+  | 'sibling'
+  | 'familyMember'
+  | 'householdMember'
+  | 'other';
+export type RelationshipAudience = 'linkedOnly' | 'allApproved';
 
 export type MemberAccess = {
   uid: string;
@@ -167,6 +179,8 @@ export type GroupEvent = {
   visibility: GroupVisibility;
   status: EventStatus;
   createdBy: string;
+  createdAt?: Date;
+  updatedAt?: Date;
 };
 
 export type GroupUpdate = {
@@ -174,6 +188,7 @@ export type GroupUpdate = {
   groupId: string;
   groupName: string;
   title: string;
+  summary: string;
   body: string;
   visibility: GroupVisibility;
   status: UpdateStatus;
@@ -181,8 +196,56 @@ export type GroupUpdate = {
   important: boolean;
   createdBy: string;
   publishedAt?: Date;
+  expiresAt?: Date;
   updatedAt?: Date;
 };
+
+export type Household = {
+  id: string;
+  name: string;
+  memberUids: string[];
+  memberNames: string[];
+  status: 'active' | 'deleted';
+  createdBy: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+};
+
+export type MemberRelationship = {
+  id: string;
+  memberUids: [string, string];
+  memberNames: [string, string];
+  typeAtoB: RelationshipType;
+  typeBtoA: RelationshipType;
+  householdId: string;
+  audience: RelationshipAudience;
+  anniversary: MonthDay | null;
+  status: 'active' | 'deleted';
+  createdBy: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+};
+
+export type RelationshipDirectoryEntry = Omit<
+  MemberRelationship,
+  'householdId' | 'status' | 'createdBy' | 'createdAt' | 'updatedAt'
+>;
+
+export type HouseholdDirectoryEntry = {
+  uid: string;
+  displayName: string;
+  householdId: string;
+};
+
+export type BirthdaySummary = {
+  uid: string;
+  displayName: string;
+  preferredName: string;
+  birthday: MonthDay;
+  nextDate: Date;
+};
+
+export type AnniversarySummary = RelationshipDirectoryEntry & { nextDate: Date };
 
 export type AvatarMetadata = {
   uid: string;
@@ -455,6 +518,8 @@ function mapProfile(uid: string, data: DocumentData): DirectoryProfile {
       address: visibility.address === true,
       birthday: visibility.birthday === true,
       household: visibility.household === true,
+      relationships: visibility.relationships === true,
+      anniversary: visibility.anniversary === true,
       ministryInterests: visibility.ministryInterests === true,
       photo: visibility.photo === true,
       churchStatus: visibility.churchStatus !== false,
@@ -476,6 +541,9 @@ function mapDirectoryEntry(uid: string, data: DocumentData): DirectoryEntry {
     birthday: mapBirthday(data.birthday),
     address: data.address ? mapAddress(data.address) : null,
     household: stringValue(data.household),
+    shareHousehold: data.shareHousehold === true,
+    shareRelationships: data.shareRelationships === true,
+    shareAnniversary: data.shareAnniversary === true,
     ministryInterests: ministryInterests(data.ministryInterests),
     otherMinistryInterest:
       stringValue(data.otherMinistryInterest) || stringValue(data.ministryInterests),
@@ -547,6 +615,8 @@ function mapEvent(snapshot: DocumentSnapshot<DocumentData>): GroupEvent {
     visibility: (data.visibility || 'groupMembers') as GroupVisibility,
     status: (data.status || 'scheduled') as EventStatus,
     createdBy: stringValue(data.createdBy),
+    createdAt: dateValue(data.createdAt),
+    updatedAt: dateValue(data.updatedAt),
   };
 }
 
@@ -557,6 +627,7 @@ function mapUpdate(snapshot: DocumentSnapshot<DocumentData>): GroupUpdate {
     groupId: stringValue(data.groupId),
     groupName: stringValue(data.groupName),
     title: stringValue(data.title),
+    summary: stringValue(data.summary),
     body: stringValue(data.body),
     visibility: (data.visibility || 'groupMembers') as GroupVisibility,
     status: (data.status || 'published') as UpdateStatus,
@@ -564,7 +635,75 @@ function mapUpdate(snapshot: DocumentSnapshot<DocumentData>): GroupUpdate {
     important: data.important === true,
     createdBy: stringValue(data.createdBy),
     publishedAt: dateValue(data.publishedAt),
+    expiresAt: dateValue(data.expiresAt),
     updatedAt: dateValue(data.updatedAt),
+  };
+}
+
+function mapHousehold(snapshot: DocumentSnapshot<DocumentData>): Household {
+  const data = snapshot.data() ?? {};
+  return {
+    id: snapshot.id,
+    name: stringValue(data.name),
+    memberUids: Array.isArray(data.memberUids)
+      ? data.memberUids.filter((item): item is string => typeof item === 'string')
+      : [],
+    memberNames: Array.isArray(data.memberNames)
+      ? data.memberNames.filter((item): item is string => typeof item === 'string')
+      : [],
+    status: data.status === 'deleted' ? 'deleted' : 'active',
+    createdBy: stringValue(data.createdBy),
+    createdAt: dateValue(data.createdAt),
+    updatedAt: dateValue(data.updatedAt),
+  };
+}
+
+function relationshipType(value: unknown): RelationshipType {
+  const allowed: RelationshipType[] = [
+    'spouse',
+    'partner',
+    'parent',
+    'child',
+    'sibling',
+    'familyMember',
+    'householdMember',
+    'other',
+  ];
+  return allowed.includes(value as RelationshipType) ? (value as RelationshipType) : 'other';
+}
+
+function mapRelationship(snapshot: DocumentSnapshot<DocumentData>): MemberRelationship {
+  const data = snapshot.data() ?? {};
+  const uids = Array.isArray(data.memberUids) ? data.memberUids : [];
+  const names = Array.isArray(data.memberNames) ? data.memberNames : [];
+  return {
+    id: snapshot.id,
+    memberUids: [stringValue(uids[0]), stringValue(uids[1])],
+    memberNames: [stringValue(names[0]), stringValue(names[1])],
+    typeAtoB: relationshipType(data.typeAtoB),
+    typeBtoA: relationshipType(data.typeBtoA),
+    householdId: stringValue(data.householdId),
+    audience: data.audience === 'allApproved' ? 'allApproved' : 'linkedOnly',
+    anniversary: mapBirthday(data.anniversary),
+    status: data.status === 'deleted' ? 'deleted' : 'active',
+    createdBy: stringValue(data.createdBy),
+    createdAt: dateValue(data.createdAt),
+    updatedAt: dateValue(data.updatedAt),
+  };
+}
+
+function mapRelationshipDirectory(
+  snapshot: DocumentSnapshot<DocumentData>
+): RelationshipDirectoryEntry {
+  const relationship = mapRelationship(snapshot);
+  return {
+    id: relationship.id,
+    memberUids: relationship.memberUids,
+    memberNames: relationship.memberNames,
+    typeAtoB: relationship.typeAtoB,
+    typeBtoA: relationship.typeBtoA,
+    audience: relationship.audience,
+    anniversary: relationship.anniversary,
   };
 }
 
@@ -841,6 +980,82 @@ function directoryProjection(profile: DirectoryProfile, church: ChurchMetadata) 
   };
 }
 
+async function syncConnectionProjections(
+  db: Firestore,
+  batch: WriteBatch,
+  profile: DirectoryProfile,
+  directoryEnabled: boolean
+) {
+  if (!directoryEnabled) {
+    batch.delete(doc(db, 'householdDirectoryEntries', profile.uid));
+    return;
+  }
+  const [households, relationships] = await Promise.all([
+    getDocs(
+      query(
+        collection(db, 'households'),
+        where('memberUids', 'array-contains', profile.uid),
+        where('status', '==', 'active'),
+        limit(1)
+      )
+    ),
+    getDocs(
+      query(
+        collection(db, 'memberRelationships'),
+        where('memberUids', 'array-contains', profile.uid),
+        where('status', '==', 'active'),
+        limit(100)
+      )
+    ),
+  ]);
+
+  const household = households.docs[0];
+  const householdEntry = doc(db, 'householdDirectoryEntries', profile.uid);
+  if (directoryEnabled && profile.visibility.listed && profile.visibility.household && household) {
+    batch.set(householdEntry, {
+      uid: profile.uid,
+      displayName: profile.displayName,
+      householdId: household.id,
+      updatedAt: serverTimestamp(),
+    });
+  } else {
+    batch.delete(householdEntry);
+  }
+
+  await Promise.all(
+    relationships.docs.map(async (relationshipSnapshot) => {
+      const relationship = mapRelationship(relationshipSnapshot);
+      const entryRef = doc(db, 'relationshipDirectoryEntries', relationship.id);
+      const otherUid = relationship.memberUids.find((uid) => uid !== profile.uid) ?? '';
+      const otherEntry = otherUid ? await getDoc(doc(db, 'directoryEntries', otherUid)) : null;
+      const canShareRelationship =
+        directoryEnabled &&
+        profile.visibility.listed &&
+        profile.visibility.relationships &&
+        relationship.audience === 'allApproved' &&
+        otherEntry?.exists() === true &&
+        otherEntry.data().shareRelationships === true;
+
+      if (!canShareRelationship) {
+        batch.delete(entryRef);
+        return;
+      }
+      const canShareAnniversary =
+        profile.visibility.anniversary && otherEntry?.data().shareAnniversary === true;
+      batch.set(entryRef, {
+        id: relationship.id,
+        memberUids: relationship.memberUids,
+        memberNames: relationship.memberNames,
+        typeAtoB: relationship.typeAtoB,
+        typeBtoA: relationship.typeBtoA,
+        audience: relationship.audience,
+        anniversary: canShareAnniversary ? relationship.anniversary : null,
+        updatedAt: serverTimestamp(),
+      });
+    })
+  );
+}
+
 export async function saveOwnProfile(profile: DirectoryProfile, directoryEnabled = true) {
   const { db } = getServices();
   const normalized = normalizeDirectoryProfile(profile);
@@ -867,8 +1082,9 @@ export async function saveOwnProfile(profile: DirectoryProfile, directoryEnabled
   } else {
     batch.delete(entryRef);
   }
+  await syncConnectionProjections(db, batch, { ...normalized, visibility }, directoryEnabled);
   await batch.commit();
-  invalidateCurrent(['profile:', 'directory:']);
+  invalidateCurrent(['profile:', 'directory:', 'household:', 'relationships:', 'anniversaries:']);
   writePortalCache(
     normalized.uid,
     `profile:${normalized.uid}`,
@@ -910,9 +1126,17 @@ export async function saveMemberProfile(actor: MemberAccess, profile: DirectoryP
   } else {
     batch.delete(entryRef);
   }
+  await syncConnectionProjections(db, batch, normalized, true);
   batch.set(audit.ref, audit.data);
   await batch.commit();
-  invalidateCurrent(['profile:', 'directory:', 'admin:']);
+  invalidateCurrent([
+    'profile:',
+    'directory:',
+    'household:',
+    'relationships:',
+    'anniversaries:',
+    'admin:',
+  ]);
 }
 
 export async function saveChurchMetadata(actor: MemberAccess, metadata: ChurchMetadata) {
@@ -1093,6 +1317,59 @@ export async function loadDirectoryPage(
   });
 }
 
+export async function loadDirectoryConnections(uids: string[]) {
+  if (uids.length === 0) {
+    return {
+      households: [] as HouseholdDirectoryEntry[],
+      relationships: [] as RelationshipDirectoryEntry[],
+    };
+  }
+  const key = `directory:connections:${[...uids].sort().join(',')}`;
+  return cachedRead(key, CACHE_TTL.directory, async () => {
+    const chunks = Array.from({ length: Math.ceil(uids.length / 30) }, (_, index) =>
+      uids.slice(index * 30, index * 30 + 30)
+    );
+    const [householdSnapshots, relationshipSnapshots] = await Promise.all([
+      Promise.all(
+        chunks.map((ids) =>
+          getDocs(
+            query(
+              collection(getServices().db, 'householdDirectoryEntries'),
+              where('uid', 'in', ids)
+            )
+          )
+        )
+      ),
+      Promise.all(
+        chunks.map((ids) =>
+          getDocs(
+            query(
+              collection(getServices().db, 'relationshipDirectoryEntries'),
+              where('memberUids', 'array-contains-any', ids),
+              limit(100)
+            )
+          )
+        )
+      ),
+    ]);
+    const households = new Map<string, HouseholdDirectoryEntry>();
+    householdSnapshots.forEach((snapshot) =>
+      snapshot.docs.forEach((item) =>
+        households.set(item.id, {
+          uid: item.id,
+          displayName: stringValue(item.data().displayName),
+          householdId: stringValue(item.data().householdId),
+        })
+      )
+    );
+    const relationships = new Map<string, RelationshipDirectoryEntry>();
+    relationshipSnapshots.forEach((snapshot) =>
+      snapshot.docs.forEach((item) => relationships.set(item.id, mapRelationshipDirectory(item)))
+    );
+    return { households: [...households.values()], relationships: [...relationships.values()] };
+  });
+}
+
 export async function loadMyGroups(uid: string) {
   const result = await cachedRead(`groups:member:${uid}`, CACHE_TTL.groups, async () => {
     const { db } = getServices();
@@ -1147,7 +1424,9 @@ export async function loadMyGroups(uid: string) {
     memberGroups.forEach((snapshot) => {
       snapshot.docs.forEach((item) => groups.set(item.id, mapGroup(item)));
     });
-    return [...groups.values()].sort((left, right) => left.name.localeCompare(right.name));
+    return [...groups.values()]
+      .filter((group) => group.status === 'active')
+      .sort((left, right) => left.name.localeCompare(right.name));
   });
   result.forEach((group) => writePortalCache(uid, `group:${group.id}`, group, CACHE_TTL.groups));
   return result;
@@ -1333,6 +1612,467 @@ export async function removeGroupMembership(
   ]);
 }
 
+export async function loadMembershipGroupIds(uid: string) {
+  return cachedRead(`groups:membership-ids:${uid}`, CACHE_TTL.groups, async () => {
+    const memberships = await getDocs(
+      query(collectionGroup(getServices().db, 'members'), where('uid', '==', uid), limit(50))
+    );
+    return memberships.docs
+      .map((membership) => membership.ref.parent.parent?.id)
+      .filter((groupId): groupId is string => Boolean(groupId));
+  });
+}
+
+export async function loadMyMembershipGroups(uid: string) {
+  const ids = await loadMembershipGroupIds(uid);
+  if (ids.length === 0) {
+    return [];
+  }
+  const snapshots = await Promise.all(
+    Array.from({ length: Math.ceil(ids.length / 30) }, (_, index) =>
+      getDocs(
+        query(
+          collection(getServices().db, 'groups'),
+          where(documentId(), 'in', ids.slice(index * 30, index * 30 + 30))
+        )
+      )
+    )
+  );
+  return snapshots
+    .flatMap((snapshot) => snapshot.docs.map(mapGroup))
+    .filter((group) => group.status === 'active')
+    .sort((left, right) => left.name.localeCompare(right.name));
+}
+
+export async function loadAdminHouseholds() {
+  return cachedRead('admin:households', CACHE_TTL.admin, async () => {
+    const snapshot = await getDocs(
+      query(collection(getServices().db, 'households'), orderBy('name'), limit(100))
+    );
+    return snapshot.docs.map(mapHousehold);
+  });
+}
+
+export async function loadHouseholdForMember(uid: string) {
+  return cachedRead(`household:member:${uid}`, CACHE_TTL.profile, async () => {
+    const snapshot = await getDocs(
+      query(
+        collection(getServices().db, 'households'),
+        where('memberUids', 'array-contains', uid),
+        where('status', '==', 'active'),
+        limit(1)
+      )
+    );
+    return snapshot.docs[0] ? mapHousehold(snapshot.docs[0]) : null;
+  });
+}
+
+export async function loadRelationshipsForMember(uid: string) {
+  return cachedRead(`relationships:member:${uid}`, CACHE_TTL.profile, async () => {
+    const snapshot = await getDocs(
+      query(
+        collection(getServices().db, 'memberRelationships'),
+        where('memberUids', 'array-contains', uid),
+        where('status', '==', 'active'),
+        limit(100)
+      )
+    );
+    return snapshot.docs.map(mapRelationship);
+  });
+}
+
+export async function loadAdminRelationships() {
+  return cachedRead('admin:relationships', CACHE_TTL.admin, async () => {
+    const snapshot = await getDocs(
+      query(
+        collection(getServices().db, 'memberRelationships'),
+        orderBy('updatedAt', 'desc'),
+        limit(100)
+      )
+    );
+    return snapshot.docs.map(mapRelationship);
+  });
+}
+
+export function inverseRelationshipType(type: RelationshipType): RelationshipType {
+  if (type === 'parent') {
+    return 'child';
+  }
+  if (type === 'child') {
+    return 'parent';
+  }
+  return type;
+}
+
+export async function saveHousehold(
+  actor: MemberAccess,
+  household: Omit<Household, 'createdBy' | 'createdAt' | 'updatedAt'>
+) {
+  const { db } = getServices();
+  const ref = household.id
+    ? doc(db, 'households', household.id)
+    : doc(collection(db, 'households'));
+  const existing = await getDocs(
+    query(collection(db, 'households'), where('status', '==', 'active'), limit(100))
+  );
+  const duplicate = existing.docs
+    .filter((item) => item.id !== ref.id)
+    .map(mapHousehold)
+    .find((item) => item.memberUids.some((uid) => household.memberUids.includes(uid)));
+  if (duplicate) {
+    throw new Error('Each member can belong to only one active household.');
+  }
+  const audit = createAudit(
+    db,
+    actor,
+    household.id ? 'household.updated' : 'household.created',
+    'household',
+    ref.id,
+    household.name
+  );
+  const previousEntries = household.id
+    ? await getDocs(
+        query(
+          collection(db, 'householdDirectoryEntries'),
+          where('householdId', '==', ref.id),
+          limit(100)
+        )
+      )
+    : null;
+  const memberEntries = await Promise.all(
+    household.memberUids.map((uid) => getDoc(doc(db, 'directoryEntries', uid)))
+  );
+  const batch = writeBatch(db);
+  batch.set(
+    ref,
+    {
+      id: ref.id,
+      name: household.name.trim(),
+      memberUids: household.memberUids,
+      memberNames: household.memberNames,
+      status: household.status,
+      createdBy: actor.uid,
+      ...(!household.id ? { createdAt: serverTimestamp() } : {}),
+      updatedAt: serverTimestamp(),
+      lastAuditId: audit.ref.id,
+    },
+    { merge: true }
+  );
+  previousEntries?.docs.forEach((entry) => batch.delete(entry.ref));
+  memberEntries.forEach((entry, index) => {
+    if (household.status === 'active' && entry.exists() && entry.data().shareHousehold === true) {
+      batch.set(doc(db, 'householdDirectoryEntries', household.memberUids[index]), {
+        uid: household.memberUids[index],
+        displayName: household.memberNames[index] ?? entry.data().displayName,
+        householdId: ref.id,
+        updatedAt: serverTimestamp(),
+      });
+    }
+  });
+  batch.set(audit.ref, audit.data);
+  await batch.commit();
+  invalidateCurrent(['household:', 'admin:', 'directory:', 'audit:']);
+  return ref.id;
+}
+
+export async function saveRelationship(
+  actor: MemberAccess,
+  relationship: Omit<MemberRelationship, 'createdBy' | 'createdAt' | 'updatedAt'>
+) {
+  const { db } = getServices();
+  const ref = relationship.id
+    ? doc(db, 'memberRelationships', relationship.id)
+    : doc(collection(db, 'memberRelationships'));
+  const audit = createAudit(
+    db,
+    actor,
+    relationship.id ? 'relationship.updated' : 'relationship.created',
+    'relationship',
+    ref.id,
+    relationship.memberNames.join(' and ')
+  );
+  const directoryEntries = await Promise.all(
+    relationship.memberUids.map((uid) => getDoc(doc(db, 'directoryEntries', uid)))
+  );
+  const canShare =
+    relationship.status === 'active' &&
+    relationship.audience === 'allApproved' &&
+    directoryEntries.every((entry) => entry.exists() && entry.data().shareRelationships === true);
+  const canShareAnniversary =
+    canShare &&
+    directoryEntries.every((entry) => entry.exists() && entry.data().shareAnniversary === true);
+  const batch = writeBatch(db);
+  batch.set(
+    ref,
+    {
+      ...relationship,
+      id: ref.id,
+      createdBy: actor.uid,
+      ...(!relationship.id ? { createdAt: serverTimestamp() } : {}),
+      updatedAt: serverTimestamp(),
+      lastAuditId: audit.ref.id,
+    },
+    { merge: true }
+  );
+  const projection = doc(db, 'relationshipDirectoryEntries', ref.id);
+  if (canShare) {
+    batch.set(projection, {
+      id: ref.id,
+      memberUids: relationship.memberUids,
+      memberNames: relationship.memberNames,
+      typeAtoB: relationship.typeAtoB,
+      typeBtoA: relationship.typeBtoA,
+      audience: relationship.audience,
+      anniversary: canShareAnniversary ? relationship.anniversary : null,
+      updatedAt: serverTimestamp(),
+    });
+  } else {
+    batch.delete(projection);
+  }
+  batch.set(audit.ref, audit.data);
+  await batch.commit();
+  invalidateCurrent(['relationships:', 'anniversaries:', 'admin:', 'directory:', 'audit:']);
+  return ref.id;
+}
+
+export function nextMonthDayOccurrence(value: MonthDay, from = new Date()) {
+  const occurrence = new Date(from.getFullYear(), value.month - 1, value.day, 12, 0, 0, 0);
+  const today = new Date(from.getFullYear(), from.getMonth(), from.getDate(), 0, 0, 0, 0);
+  if (occurrence.getTime() < today.getTime()) {
+    occurrence.setFullYear(occurrence.getFullYear() + 1);
+  }
+  return occurrence;
+}
+
+function monthsInRange(from: Date, days: number) {
+  const end = new Date(from);
+  end.setDate(end.getDate() + days);
+  const months: number[] = [];
+  const cursor = new Date(from.getFullYear(), from.getMonth(), 1);
+  while (cursor <= end) {
+    const month = cursor.getMonth() + 1;
+    if (!months.includes(month)) {
+      months.push(month);
+    }
+    cursor.setMonth(cursor.getMonth() + 1);
+  }
+  return months;
+}
+
+export async function loadUpcomingBirthdays(from = new Date(), days = 30, count = 8) {
+  const key = `birthdays:${from.toISOString().slice(0, 10)}:${days}:${count}`;
+  return cachedRead(key, CACHE_TTL.updates, async () => {
+    const snapshots = await Promise.all(
+      monthsInRange(from, days).map((month) =>
+        getDocs(
+          query(
+            collection(getServices().db, 'directoryEntries'),
+            where('birthday.month', '==', month),
+            orderBy('birthday.day'),
+            limit(40)
+          )
+        )
+      )
+    );
+    const end = new Date(from);
+    end.setDate(end.getDate() + days);
+    return snapshots
+      .flatMap((snapshot) => snapshot.docs.map((item) => mapDirectoryEntry(item.id, item.data())))
+      .filter((entry): entry is DirectoryEntry & { birthday: MonthDay } => Boolean(entry.birthday))
+      .map((entry) => ({
+        uid: entry.uid,
+        displayName: entry.displayName,
+        preferredName: entry.preferredName,
+        birthday: entry.birthday,
+        nextDate: nextMonthDayOccurrence(entry.birthday, from),
+      }))
+      .filter((entry) => entry.nextDate <= end)
+      .sort((left, right) => left.nextDate.getTime() - right.nextDate.getTime())
+      .slice(0, count);
+  });
+}
+
+export async function loadUpcomingAnniversaries(
+  uid: string,
+  from = new Date(),
+  days = 30,
+  count = 8
+) {
+  const key = `anniversaries:${uid}:${from.toISOString().slice(0, 10)}:${days}:${count}`;
+  return cachedRead(key, CACHE_TTL.updates, async () => {
+    const [publicSnapshots, linked] = await Promise.all([
+      Promise.all(
+        monthsInRange(from, days).map((month) =>
+          getDocs(
+            query(
+              collection(getServices().db, 'relationshipDirectoryEntries'),
+              where('anniversary.month', '==', month),
+              orderBy('anniversary.day'),
+              limit(40)
+            )
+          )
+        )
+      ),
+      loadRelationshipsForMember(uid),
+    ]);
+    const values = new Map<string, RelationshipDirectoryEntry>();
+    publicSnapshots.forEach((snapshot) =>
+      snapshot.docs.forEach((item) => values.set(item.id, mapRelationshipDirectory(item)))
+    );
+    linked.forEach((relationship) => {
+      if (relationship.anniversary) {
+        values.set(relationship.id, {
+          id: relationship.id,
+          memberUids: relationship.memberUids,
+          memberNames: relationship.memberNames,
+          typeAtoB: relationship.typeAtoB,
+          typeBtoA: relationship.typeBtoA,
+          audience: relationship.audience,
+          anniversary: relationship.anniversary,
+        });
+      }
+    });
+    const end = new Date(from);
+    end.setDate(end.getDate() + days);
+    return [...values.values()]
+      .filter((entry): entry is RelationshipDirectoryEntry & { anniversary: MonthDay } =>
+        Boolean(entry.anniversary)
+      )
+      .map((entry) => ({
+        ...entry,
+        nextDate: nextMonthDayOccurrence(entry.anniversary, from),
+      }))
+      .filter((entry) => entry.nextDate <= end)
+      .sort((left, right) => left.nextDate.getTime() - right.nextDate.getTime())
+      .slice(0, count);
+  });
+}
+
+export async function loadAccessibleEvents(
+  access: MemberAccess,
+  memberGroupIds: string[],
+  from: Date,
+  to: Date,
+  count = 100
+) {
+  const key = `events:accessible:${access.role}:${memberGroupIds.sort().join(',')}:${from.toISOString()}:${to.toISOString()}:${count}`;
+  return cachedRead(key, CACHE_TTL.events, async () => {
+    const constraints = [
+      where('status', 'in', ['scheduled', 'canceled']),
+      where('startsAt', '>=', Timestamp.fromDate(from)),
+      where('startsAt', '<', Timestamp.fromDate(to)),
+      orderBy('startsAt'),
+      limit(count),
+    ];
+    const reads: Array<Promise<QuerySnapshot<DocumentData>>> = [];
+    if (access.role === 'admin') {
+      reads.push(getDocs(query(collection(getServices().db, 'groupEvents'), ...constraints)));
+    } else {
+      reads.push(
+        getDocs(
+          query(
+            collection(getServices().db, 'groupEvents'),
+            where('visibility', '==', 'allApproved'),
+            ...constraints
+          )
+        )
+      );
+      for (let index = 0; index < memberGroupIds.length; index += 30) {
+        reads.push(
+          getDocs(
+            query(
+              collection(getServices().db, 'groupEvents'),
+              where('groupId', 'in', memberGroupIds.slice(index, index + 30)),
+              where('visibility', '==', 'groupMembers'),
+              ...constraints
+            )
+          )
+        );
+      }
+    }
+    const snapshots = await Promise.all(reads);
+    const events = new Map<string, GroupEvent>();
+    snapshots.forEach((snapshot) =>
+      snapshot.docs.forEach((item) => events.set(item.id, mapEvent(item)))
+    );
+    return [...events.values()]
+      .sort((left, right) => left.startsAt.getTime() - right.startsAt.getTime())
+      .slice(0, count);
+  });
+}
+
+export async function loadAccessibleUpdates(
+  access: MemberAccess,
+  memberGroupIds: string[],
+  count = 30,
+  now = new Date()
+) {
+  const key = `updates:accessible:${access.role}:${memberGroupIds.sort().join(',')}:${now.toISOString().slice(0, 13)}:${count}`;
+  return cachedRead(key, CACHE_TTL.updates, async () => {
+    const constraints = [
+      where('status', '==', 'published'),
+      where('publishedAt', '<=', Timestamp.fromDate(now)),
+      orderBy('publishedAt', 'desc'),
+      limit(Math.max(count, 30)),
+    ];
+    const reads = [];
+    if (access.role === 'admin') {
+      reads.push(getDocs(query(collection(getServices().db, 'groupUpdates'), ...constraints)));
+    } else {
+      reads.push(
+        getDocs(
+          query(
+            collection(getServices().db, 'groupUpdates'),
+            where('visibility', '==', 'allApproved'),
+            ...constraints
+          )
+        )
+      );
+      for (let index = 0; index < memberGroupIds.length; index += 30) {
+        reads.push(
+          getDocs(
+            query(
+              collection(getServices().db, 'groupUpdates'),
+              where('groupId', 'in', memberGroupIds.slice(index, index + 30)),
+              where('visibility', '==', 'groupMembers'),
+              ...constraints
+            )
+          )
+        );
+      }
+    }
+    const snapshots = await Promise.all(reads);
+    const updates = new Map<string, GroupUpdate>();
+    snapshots.forEach((snapshot) =>
+      snapshot.docs.forEach((item) => updates.set(item.id, mapUpdate(item)))
+    );
+    return [...updates.values()]
+      .filter((item) => !item.expiresAt || item.expiresAt > now)
+      .sort((left, right) => {
+        const priority =
+          Number(right.pinned) - Number(left.pinned) ||
+          Number(right.important) - Number(left.important);
+        return priority || (right.publishedAt?.getTime() ?? 0) - (left.publishedAt?.getTime() ?? 0);
+      })
+      .slice(0, count);
+  });
+}
+
+export async function loadAdminUpdates(count = 100) {
+  return cachedRead(`updates:admin:${count}`, CACHE_TTL.updates, async () => {
+    const snapshot = await getDocs(
+      query(
+        collection(getServices().db, 'groupUpdates'),
+        orderBy('updatedAt', 'desc'),
+        limit(count)
+      )
+    );
+    return snapshot.docs
+      .map(mapUpdate)
+      .filter((item) => !['archived', 'removed'].includes(item.status));
+  });
+}
+
 export async function loadEvents(groupIds: string[], from: Date, to: Date) {
   if (groupIds.length === 0) {
     return [];
@@ -1349,6 +2089,7 @@ export async function loadEvents(groupIds: string[], from: Date, to: Date) {
           query(
             collection(getServices().db, 'groupEvents'),
             where('groupId', 'in', ids),
+            where('status', 'in', ['scheduled', 'canceled']),
             where('startsAt', '>=', Timestamp.fromDate(from)),
             where('startsAt', '<', Timestamp.fromDate(to)),
             orderBy('startsAt'),
@@ -1365,7 +2106,7 @@ export async function loadEvents(groupIds: string[], from: Date, to: Date) {
 
 export async function saveEvent(
   actor: MemberAccess,
-  event: Omit<GroupEvent, 'id' | 'createdBy'> & { id?: string }
+  event: Omit<GroupEvent, 'id' | 'createdBy' | 'createdAt' | 'updatedAt'> & { id?: string }
 ) {
   const { db } = getServices();
   const ref = event.id ? doc(db, 'groupEvents', event.id) : doc(collection(db, 'groupEvents'));
@@ -1421,15 +2162,17 @@ export async function loadUpdates(groupIds: string[]) {
         )
       )
     );
+    const now = new Date();
     return snapshots
       .flatMap((snapshot) => snapshot.docs.map(mapUpdate))
+      .filter((item) => !item.expiresAt || item.expiresAt > now)
       .sort((a, b) => (b.publishedAt?.getTime() ?? 0) - (a.publishedAt?.getTime() ?? 0));
   });
 }
 
 export async function saveUpdate(
   actor: MemberAccess,
-  update: Omit<GroupUpdate, 'id' | 'createdBy' | 'publishedAt' | 'updatedAt'> & { id?: string }
+  update: Omit<GroupUpdate, 'id' | 'createdBy' | 'updatedAt'> & { id?: string }
 ) {
   const { db } = getServices();
   const ref = update.id ? doc(db, 'groupUpdates', update.id) : doc(collection(db, 'groupUpdates'));
@@ -1448,7 +2191,13 @@ export async function saveUpdate(
       ...update,
       id: ref.id,
       createdBy: actor.uid,
-      publishedAt: update.status === 'published' ? serverTimestamp() : null,
+      publishedAt:
+        update.status === 'published'
+          ? update.publishedAt
+            ? Timestamp.fromDate(update.publishedAt)
+            : serverTimestamp()
+          : null,
+      expiresAt: update.expiresAt ? Timestamp.fromDate(update.expiresAt) : null,
       ...(!update.id ? { createdAt: serverTimestamp() } : {}),
       updatedAt: serverTimestamp(),
       lastAuditId: audit.ref.id,
@@ -1458,6 +2207,73 @@ export async function saveUpdate(
   batch.set(audit.ref, audit.data);
   await batch.commit();
   invalidateCurrent(['updates:', `group:${update.groupId}`, 'admin:', 'audit:']);
+}
+
+export async function deleteEvent(actor: MemberAccess, event: GroupEvent) {
+  const { db } = getServices();
+  const audit = createAudit(db, actor, 'event.deleted', 'groupEvent', event.id, event.title);
+  const batch = writeBatch(db);
+  batch.update(doc(db, 'groupEvents', event.id), {
+    status: 'archived',
+    updatedAt: serverTimestamp(),
+    lastAuditId: audit.ref.id,
+  });
+  batch.set(audit.ref, audit.data);
+  await batch.commit();
+  invalidateCurrent(['events:', `group:${event.groupId}`, 'admin:', 'audit:']);
+}
+
+export async function deleteUpdate(actor: MemberAccess, update: GroupUpdate) {
+  const { db } = getServices();
+  const audit = createAudit(db, actor, 'update.deleted', 'groupUpdate', update.id, update.title);
+  const batch = writeBatch(db);
+  batch.update(doc(db, 'groupUpdates', update.id), {
+    status: 'removed',
+    updatedAt: serverTimestamp(),
+    lastAuditId: audit.ref.id,
+  });
+  batch.set(audit.ref, audit.data);
+  await batch.commit();
+  invalidateCurrent(['updates:', `group:${update.groupId}`, 'admin:', 'audit:']);
+}
+
+export async function deleteGroup(actor: MemberAccess, group: PortalGroup) {
+  const { db } = getServices();
+  const [events, updates] = await Promise.all([
+    getDocs(query(collection(db, 'groupEvents'), where('groupId', '==', group.id))),
+    getDocs(query(collection(db, 'groupUpdates'), where('groupId', '==', group.id))),
+  ]);
+  const audit = createAudit(db, actor, 'group.deleted', 'group', group.id, group.name);
+  await (async () => {
+    const batch = writeBatch(db);
+    batch.set(audit.ref, audit.data);
+    await batch.commit();
+  })();
+  const children = [
+    ...events.docs.map((item) => ({ ref: item.ref, status: 'archived' })),
+    ...updates.docs.map((item) => ({ ref: item.ref, status: 'removed' })),
+  ];
+  for (let index = 0; index < children.length; index += 400) {
+    const batch = writeBatch(db);
+    children.slice(index, index + 400).forEach((item) =>
+      batch.update(item.ref, {
+        status: item.status,
+        deletedWithGroup: true,
+        updatedAt: serverTimestamp(),
+        lastAuditId: audit.ref.id,
+      })
+    );
+    await batch.commit();
+  }
+  const finalBatch = writeBatch(db);
+  finalBatch.update(doc(db, 'groups', group.id), {
+    status: 'deleted',
+    updatedAt: serverTimestamp(),
+    lastAuditId: audit.ref.id,
+  });
+  await finalBatch.commit();
+  invalidateCurrent(['groups:', `group:${group.id}`, 'events:', 'updates:', 'admin:', 'audit:']);
+  return { events: events.size, updates: updates.size };
 }
 
 export async function requestProfileDeletion(access: MemberAccess) {

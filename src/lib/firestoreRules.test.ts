@@ -56,4 +56,15 @@ describe('member portal Firestore rules', () => {
     expect(rules).toContain('match /taxDocuments/{document=**}');
     expect(rules).toContain('allow read, write: if false;');
   });
+
+  it('protects household and relationship records and supports church-wide content', () => {
+    expect(rules).toContain('match /households/{householdId}');
+    expect(rules).toContain('match /memberRelationships/{relationshipId}');
+    expect(rules).toContain('match /relationshipDirectoryEntries/{relationshipId}');
+    expect(rules).toContain("groupId == '' ? isPortalAdmin()");
+    expect(rules).toContain("groupData(data.groupId).status == 'active'");
+    expect(rules).toContain(
+      "request.resource.data.status in ['draft', 'active', 'hidden', 'archived', 'deleted']"
+    );
+  });
 });

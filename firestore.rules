@@ -88,7 +88,7 @@ service cloud.firestore {
       return request.resource.data.visibility.keys().hasOnly([
         'listed', 'preferredName', 'email', 'phone', 'pronouns', 'address',
         'birthday', 'household', 'ministryInterests', 'photo',
-        'churchStatus', 'churchRoles'
+        'relationships', 'anniversary', 'churchStatus', 'churchRoles'
       ]) &&
         request.resource.data.visibility.listed is bool &&
         request.resource.data.visibility.preferredName is bool &&
@@ -98,6 +98,8 @@ service cloud.firestore {
         request.resource.data.visibility.address is bool &&
         request.resource.data.visibility.birthday is bool &&
         request.resource.data.visibility.household is bool &&
+        request.resource.data.visibility.relationships is bool &&
+        request.resource.data.visibility.anniversary is bool &&
         request.resource.data.visibility.ministryInterests is bool &&
         request.resource.data.visibility.photo is bool &&
         request.resource.data.visibility.churchStatus is bool &&
@@ -226,6 +228,7 @@ service cloud.firestore {
       return request.resource.data.keys().hasOnly([
           'uid', 'displayName', 'preferredName', 'email', 'phone', 'pronouns',
           'birthday', 'address', 'household', 'ministryInterests',
+          'shareHousehold', 'shareRelationships', 'shareAnniversary',
           'otherMinistryInterest', 'churchStatus', 'churchRoles', 'showPhoto',
           'listed', 'schemaVersion', 'updatedAt'
         ]) &&
@@ -241,6 +244,9 @@ service cloud.firestore {
         request.resource.data.birthday == (profile.visibility.birthday == true ? profile.birthday : null) &&
         request.resource.data.address == (profile.visibility.address == true ? profile.address : null) &&
         request.resource.data.household == (profile.visibility.household == true ? profile.household : '') &&
+        request.resource.data.shareHousehold == profile.visibility.household &&
+        request.resource.data.shareRelationships == profile.visibility.relationships &&
+        request.resource.data.shareAnniversary == profile.visibility.anniversary &&
         request.resource.data.ministryInterests == (profile.visibility.ministryInterests == true ? profile.ministryInterests : []) &&
         request.resource.data.otherMinistryInterest == (profile.visibility.ministryInterests == true ? profile.otherMinistryInterest : '') &&
         request.resource.data.showPhoto == profile.visibility.photo &&
@@ -291,6 +297,14 @@ service cloud.firestore {
       return canManageGroup(groupId) || hasGroupRole(groupId, 'calendarManager');
     }
 
+    function canEditCalendarFor(groupId) {
+      return groupId == '' ? isPortalAdmin() : canEditCalendar(groupId);
+    }
+
+    function canEditUpdatesFor(groupId) {
+      return groupId == '' ? isPortalAdmin() : canEditUpdates(groupId);
+    }
+
     function groupData(groupId) {
       return get(/databases/$(database)/documents/groups/$(groupId)).data;
     }
@@ -298,7 +312,7 @@ service cloud.firestore {
     function canViewGroup(groupId) {
       let group = groupData(groupId);
       return isPortalAdmin() ||
-        (isApprovedMember() && membershipExists(groupId, request.auth.uid)) ||
+        (isApprovedMember() && group.status != 'deleted' && membershipExists(groupId, request.auth.uid)) ||
         (isApprovedMember() && group.status == 'active' && group.visibility == 'allApproved');
     }
 
@@ -334,7 +348,7 @@ service cloud.firestore {
           'staff', 'leadership', 'elders', 'deacons', 'worship', 'volunteer',
           'smallGroup', 'eventTeam', 'committee', 'ministry', 'other'
         ] &&
-        request.resource.data.status in ['draft', 'active', 'hidden', 'archived'] &&
+        request.resource.data.status in ['draft', 'active', 'hidden', 'archived', 'deleted'] &&
         request.resource.data.visibility in ['allApproved', 'groupMembers', 'adminOnly'] &&
         request.resource.data.contactUid is string && request.resource.data.contactDisplayName is string &&
         validGroupAudit(groupId);
@@ -347,16 +361,29 @@ service cloud.firestore {
     }
 
     function eventAudienceAllowed(groupId) {
-      let groupVisibility = groupData(groupId).visibility;
-      return request.resource.data.visibility == 'adminOnly' ||
-        (request.resource.data.visibility == 'groupMembers' && groupVisibility != 'adminOnly') ||
-        (request.resource.data.visibility == 'allApproved' && groupVisibility == 'allApproved');
+      return (groupId == '' && request.resource.data.visibility in ['allApproved', 'adminOnly']) ||
+        (groupId != '' && (
+          request.resource.data.visibility == 'adminOnly' ||
+          (request.resource.data.visibility == 'groupMembers' && groupData(groupId).visibility != 'adminOnly') ||
+          (request.resource.data.visibility == 'allApproved' && groupData(groupId).visibility == 'allApproved')
+        ));
     }
 
     function canViewContent(data) {
       return isPortalAdmin() ||
-        (isApprovedMember() && data.visibility == 'allApproved') ||
-        (isApprovedMember() && data.visibility == 'groupMembers' && membershipExists(data.groupId, request.auth.uid));
+        (isApprovedMember() && data.groupId == '' && data.visibility == 'allApproved') ||
+        (isApprovedMember() && data.groupId != '' && groupData(data.groupId).status == 'active' &&
+          data.visibility == 'allApproved') ||
+        (isApprovedMember() && data.groupId != '' && groupData(data.groupId).status == 'active' &&
+          data.visibility == 'groupMembers' && membershipExists(data.groupId, request.auth.uid));
+    }
+
+    function validGroupCascadeAudit(groupId) {
+      return request.resource.data.lastAuditId is string &&
+        exists(/databases/$(database)/documents/auditLogs/$(request.resource.data.lastAuditId)) &&
+        get(/databases/$(database)/documents/auditLogs/$(request.resource.data.lastAuditId)).data.actorUid == request.auth.uid &&
+        get(/databases/$(database)/documents/auditLogs/$(request.resource.data.lastAuditId)).data.action == 'group.deleted' &&
+        get(/databases/$(database)/documents/auditLogs/$(request.resource.data.lastAuditId)).data.targetId == groupId;
     }
 
     match /memberAccess/{uid} {
@@ -443,8 +470,9 @@ service cloud.firestore {
       allow update: if validGroupDocument(groupId) &&
         (
           isPortalAdmin() ||
-          (canManageGroup(groupId) && request.resource.data.status == resource.data.status) ||
-          canArchiveGroup(groupId)
+          (request.resource.data.status != 'deleted' &&
+            ((canManageGroup(groupId) && request.resource.data.status == resource.data.status) ||
+              canArchiveGroup(groupId)))
         );
       allow delete: if false;
 
@@ -481,29 +509,114 @@ service cloud.firestore {
     }
 
     match /groupEvents/{eventId} {
-      allow read: if canViewContent(resource.data);
-      allow create, update: if canEditCalendar(request.resource.data.groupId) &&
+      allow read: if (
+          resource.data.status in ['scheduled', 'canceled'] && canViewContent(resource.data)
+        ) || isPortalAdmin() ||
+        (resource.data.groupId != '' && canEditCalendar(resource.data.groupId));
+      allow create, update: if canEditCalendarFor(request.resource.data.groupId) &&
         request.resource.data.title is string && request.resource.data.title.size() > 0 && request.resource.data.title.size() <= 160 &&
         request.resource.data.description is string && request.resource.data.description.size() <= 4000 &&
         request.resource.data.location is string && request.resource.data.location.size() <= 300 &&
         request.resource.data.status in ['scheduled', 'canceled', 'archived'] &&
         request.resource.data.endsAt > request.resource.data.startsAt &&
         eventAudienceAllowed(request.resource.data.groupId) &&
-        validAuditReference('groupEvent', eventId);
+        (validAuditReference('groupEvent', eventId) ||
+          (isPortalAdmin() && request.resource.data.groupId != '' &&
+            validGroupCascadeAudit(request.resource.data.groupId)));
       allow delete: if false;
     }
 
     match /groupUpdates/{updateId} {
       allow read: if (resource.data.status == 'published' && canViewContent(resource.data)) ||
-        isPortalAdmin() || canEditUpdates(resource.data.groupId);
-      allow create, update: if canEditUpdates(request.resource.data.groupId) &&
+        isPortalAdmin() ||
+        (resource.data.groupId != '' && canEditUpdates(resource.data.groupId));
+      allow create, update: if canEditUpdatesFor(request.resource.data.groupId) &&
         request.resource.data.title is string && request.resource.data.title.size() > 0 && request.resource.data.title.size() <= 160 &&
+        (!('summary' in request.resource.data) ||
+          (request.resource.data.summary is string && request.resource.data.summary.size() <= 300)) &&
         request.resource.data.body is string && request.resource.data.body.size() <= 8000 &&
         request.resource.data.status in ['draft', 'published', 'archived', 'removed'] &&
         request.resource.data.pinned is bool && request.resource.data.important is bool &&
         eventAudienceAllowed(request.resource.data.groupId) &&
-        validAuditReference('groupUpdate', updateId);
+        (validAuditReference('groupUpdate', updateId) ||
+          (isPortalAdmin() && request.resource.data.groupId != '' &&
+            validGroupCascadeAudit(request.resource.data.groupId)));
       allow delete: if false;
+    }
+
+    match /households/{householdId} {
+      allow read: if isPortalAdmin() ||
+        (isApprovedMember() && request.auth.uid in resource.data.memberUids &&
+          resource.data.status == 'active');
+      allow create, update: if isPortalAdmin() &&
+        request.resource.data.name is string &&
+        request.resource.data.name.size() > 0 && request.resource.data.name.size() <= 120 &&
+        request.resource.data.memberUids is list && request.resource.data.memberUids.size() <= 20 &&
+        request.resource.data.memberNames is list &&
+        request.resource.data.memberNames.size() == request.resource.data.memberUids.size() &&
+        request.resource.data.status in ['active', 'deleted'] &&
+        validAuditReference('household', householdId);
+      allow delete: if false;
+    }
+
+    match /householdDirectoryEntries/{uid} {
+      allow read: if isApprovedMember();
+      allow create, update: if (isSelf(uid) || isPortalAdmin()) &&
+        request.resource.data.uid == uid &&
+        request.resource.data.displayName is string &&
+        request.resource.data.householdId is string &&
+        existsAfter(/databases/$(database)/documents/households/$(request.resource.data.householdId)) &&
+        uid in getAfter(/databases/$(database)/documents/households/$(request.resource.data.householdId)).data.memberUids &&
+        profileAfter(uid).visibility.listed == true &&
+        profileAfter(uid).visibility.household == true;
+      allow delete: if isSelf(uid) || isPortalAdmin();
+    }
+
+    match /memberRelationships/{relationshipId} {
+      allow read: if isPortalAdmin() ||
+        (isApprovedMember() && request.auth.uid in resource.data.memberUids &&
+          resource.data.status == 'active');
+      allow create, update: if isPortalAdmin() &&
+        request.resource.data.memberUids is list && request.resource.data.memberUids.size() == 2 &&
+        request.resource.data.memberNames is list && request.resource.data.memberNames.size() == 2 &&
+        request.resource.data.typeAtoB in [
+          'spouse', 'partner', 'parent', 'child', 'sibling', 'familyMember',
+          'householdMember', 'other'
+        ] &&
+        request.resource.data.typeBtoA in [
+          'spouse', 'partner', 'parent', 'child', 'sibling', 'familyMember',
+          'householdMember', 'other'
+        ] &&
+        request.resource.data.audience in ['linkedOnly', 'allApproved'] &&
+        validBirthday(request.resource.data.anniversary) &&
+        request.resource.data.status in ['active', 'deleted'] &&
+        validAuditReference('relationship', relationshipId);
+      allow delete: if false;
+    }
+
+    match /relationshipDirectoryEntries/{relationshipId} {
+      allow read: if isApprovedMember();
+      allow create, update: if (isPortalAdmin() ||
+          (isApprovedMember() && request.auth.uid in request.resource.data.memberUids)) &&
+        existsAfter(/databases/$(database)/documents/memberRelationships/$(relationshipId)) &&
+        getAfter(/databases/$(database)/documents/memberRelationships/$(relationshipId)).data.status == 'active' &&
+        getAfter(/databases/$(database)/documents/memberRelationships/$(relationshipId)).data.audience == 'allApproved' &&
+        request.resource.data.memberUids == getAfter(/databases/$(database)/documents/memberRelationships/$(relationshipId)).data.memberUids &&
+        request.resource.data.memberNames == getAfter(/databases/$(database)/documents/memberRelationships/$(relationshipId)).data.memberNames &&
+        request.resource.data.typeAtoB == getAfter(/databases/$(database)/documents/memberRelationships/$(relationshipId)).data.typeAtoB &&
+        request.resource.data.typeBtoA == getAfter(/databases/$(database)/documents/memberRelationships/$(relationshipId)).data.typeBtoA &&
+        getAfter(/databases/$(database)/documents/directoryEntries/$(request.resource.data.memberUids[0])).data.shareRelationships == true &&
+        getAfter(/databases/$(database)/documents/directoryEntries/$(request.resource.data.memberUids[1])).data.shareRelationships == true &&
+        (
+          request.resource.data.anniversary == null ||
+          (
+            request.resource.data.anniversary == getAfter(/databases/$(database)/documents/memberRelationships/$(relationshipId)).data.anniversary &&
+            getAfter(/databases/$(database)/documents/directoryEntries/$(request.resource.data.memberUids[0])).data.shareAnniversary == true &&
+            getAfter(/databases/$(database)/documents/directoryEntries/$(request.resource.data.memberUids[1])).data.shareAnniversary == true
+          )
+        );
+      allow delete: if isPortalAdmin() ||
+        (isApprovedMember() && request.auth.uid in resource.data.memberUids);
     }
 
     match /deletionRequests/{uid} {

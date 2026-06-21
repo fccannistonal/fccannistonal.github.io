@@ -98,6 +98,77 @@
   box-shadow: 0 16px 48px rgb(60 43 28 / 7%);
 }
 
+.memberHomeWelcome {
+  border: 1px solid rgb(168 93 33 / 14%);
+  background:
+    radial-gradient(circle at 88% 18%, rgb(84 121 59 / 14%), transparent 30%),
+    linear-gradient(135deg, rgb(255 253 249 / 98%), rgb(249 241 231 / 96%));
+  box-shadow: 0 16px 48px rgb(60 43 28 / 7%);
+}
+
+.quickLink {
+  min-height: 3.5rem;
+  justify-content: flex-start;
+}
+
+.calendarGrid {
+  display: grid;
+  overflow: hidden;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  border: 1px solid rgb(83 59 39 / 12%);
+  border-radius: 1rem;
+  background: rgb(255 253 249 / 88%);
+}
+
+.calendarDay {
+  min-height: 8.5rem;
+  min-width: 0;
+  padding: 0.6rem;
+  border-right: 1px solid rgb(83 59 39 / 9%);
+  border-bottom: 1px solid rgb(83 59 39 / 9%);
+}
+
+.calendarWeekday {
+  padding: 0.55rem;
+  border-right: 1px solid rgb(83 59 39 / 9%);
+  border-bottom: 1px solid rgb(83 59 39 / 9%);
+  color: var(--mantine-color-dark-6);
+  background: var(--mantine-color-gray-0);
+  font-size: var(--mantine-font-size-xs);
+  font-weight: 800;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.calendarDay[data-outside] {
+  color: var(--mantine-color-gray-5);
+  background: var(--mantine-color-gray-0);
+}
+
+.calendarEvent {
+  display: block;
+  overflow: hidden;
+  width: 100%;
+  padding-inline: 0.4rem;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.calendarAgenda {
+  display: none;
+}
+
+@media (max-width: 48em) {
+  .calendarGrid {
+    display: none;
+  }
+
+  .calendarAgenda {
+    display: flex;
+  }
+}
+
 .sectionEyebrow {
   margin-bottom: 0.35rem;
   color: var(--mantine-color-brand-8);

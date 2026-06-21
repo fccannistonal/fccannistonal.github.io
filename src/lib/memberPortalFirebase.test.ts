@@ -1,4 +1,9 @@
-import { createIcs, type GroupEvent } from './memberPortalFirebase';
+import {
+  createIcs,
+  inverseRelationshipType,
+  nextMonthDayOccurrence,
+  type GroupEvent,
+} from './memberPortalFirebase';
 
 describe('member portal data helpers', () => {
   it('generates an escaped downloadable calendar event', () => {
@@ -23,5 +28,13 @@ describe('member portal data helpers', () => {
     expect(result).toContain('DTSTART:20260701T230000Z');
     expect(result).toContain('SUMMARY:Practice\\, setup');
     expect(result).toContain('DESCRIPTION:Bring music\\; arrive early');
+  });
+
+  it('maps directional relationships and rolls month/day celebrations into the next year', () => {
+    expect(inverseRelationshipType('parent')).toBe('child');
+    expect(inverseRelationshipType('spouse')).toBe('spouse');
+    expect(nextMonthDayOccurrence({ month: 1, day: 2 }, new Date(2026, 11, 31))).toEqual(
+      new Date(2027, 0, 2, 12)
+    );
   });
 });

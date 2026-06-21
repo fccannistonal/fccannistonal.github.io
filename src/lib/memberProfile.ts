@@ -41,6 +41,8 @@ export type DirectoryVisibility = {
   address: boolean;
   birthday: boolean;
   household: boolean;
+  relationships: boolean;
+  anniversary: boolean;
   ministryInterests: boolean;
   photo: boolean;
   churchStatus: boolean;
@@ -96,6 +98,9 @@ export type DirectoryEntry = {
   birthday: MonthDay | null;
   address: MailingAddress | null;
   household: string;
+  shareHousehold: boolean;
+  shareRelationships: boolean;
+  shareAnniversary: boolean;
   ministryInterests: MinistryInterestId[];
   otherMinistryInterest: string;
   churchStatus: ChurchStatus | null;
@@ -165,6 +170,8 @@ export const defaultDirectoryVisibility = (): DirectoryVisibility => ({
   address: false,
   birthday: false,
   household: false,
+  relationships: false,
+  anniversary: false,
   ministryInterests: false,
   photo: false,
   churchStatus: true,
@@ -405,6 +412,9 @@ export function projectDirectoryEntry(profile: DirectoryProfile, church: ChurchM
     birthday: profile.visibility.birthday ? profile.birthday : null,
     address: profile.visibility.address ? profile.address : null,
     household: profile.visibility.household ? profile.household : '',
+    shareHousehold: profile.visibility.household,
+    shareRelationships: profile.visibility.relationships,
+    shareAnniversary: profile.visibility.anniversary,
     ministryInterests: profile.visibility.ministryInterests ? profile.ministryInterests : [],
     otherMinistryInterest: profile.visibility.ministryInterests
       ? profile.otherMinistryInterest

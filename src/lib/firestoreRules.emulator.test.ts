@@ -43,6 +43,8 @@ const profileDocument = (uid: string, email: string, displayName = '') => ({
     address: false,
     birthday: false,
     household: false,
+    relationships: false,
+    anniversary: false,
     ministryInterests: false,
     photo: false,
     churchStatus: true,
@@ -63,6 +65,9 @@ const directoryDocument = (uid: string, displayName: string) => ({
   birthday: null,
   address: null,
   household: '',
+  shareHousehold: false,
+  shareRelationships: false,
+  shareAnniversary: false,
   ministryInterests: [],
   otherMinistryInterest: '',
   churchStatus: null,
@@ -105,6 +110,20 @@ async function seed() {
         role: 'member',
         status: 'approved',
       }),
+      setDoc(doc(db, 'memberAccess/member-two'), {
+        uid: 'member-two',
+        email: 'two@example.com',
+        displayName: 'Member Two',
+        role: 'member',
+        status: 'approved',
+      }),
+      setDoc(doc(db, 'memberAccess/outsider'), {
+        uid: 'outsider',
+        email: 'outsider@example.com',
+        displayName: 'Outsider',
+        role: 'member',
+        status: 'approved',
+      }),
       setDoc(doc(db, 'memberAccess/pending'), {
         uid: 'pending',
         email: 'pending@example.com',
@@ -121,9 +140,36 @@ async function seed() {
       }),
       setDoc(doc(db, 'directoryProfiles/member'), {
         ...profileDocument('member', 'member@example.com', 'Member'),
-        visibility: { ...profileDocument('member', '').visibility, listed: true },
+        visibility: {
+          ...profileDocument('member', '').visibility,
+          listed: true,
+          household: true,
+          relationships: true,
+          anniversary: true,
+        },
       }),
-      setDoc(doc(db, 'directoryEntries/member'), directoryDocument('member', 'Member')),
+      setDoc(doc(db, 'directoryProfiles/member-two'), {
+        ...profileDocument('member-two', 'two@example.com', 'Member Two'),
+        visibility: {
+          ...profileDocument('member-two', '').visibility,
+          listed: true,
+          household: true,
+          relationships: true,
+          anniversary: true,
+        },
+      }),
+      setDoc(doc(db, 'directoryEntries/member'), {
+        ...directoryDocument('member', 'Member'),
+        shareHousehold: true,
+        shareRelationships: true,
+        shareAnniversary: true,
+      }),
+      setDoc(doc(db, 'directoryEntries/member-two'), {
+        ...directoryDocument('member-two', 'Member Two'),
+        shareHousehold: true,
+        shareRelationships: true,
+        shareAnniversary: true,
+      }),
       setDoc(doc(db, 'groups/group-one'), {
         id: 'group-one',
         name: 'Worship Team',
@@ -348,6 +394,7 @@ describe('member portal Firestore rules in the emulator', () => {
       groupId: 'group-one',
       groupName: 'Worship Team',
       title: 'Practice',
+      summary: '',
       body: 'Thursday',
       visibility: 'groupMembers',
       status: 'published',
@@ -457,7 +504,156 @@ describe('member portal Firestore rules in the emulator', () => {
       })
     );
     await assertSucceeds(
-      setDoc(doc(db, 'directoryEntries/member'), directoryDocument('member', 'Member'))
+      setDoc(doc(db, 'directoryEntries/member'), {
+        ...directoryDocument('member', 'Member'),
+        shareHousehold: true,
+        shareRelationships: true,
+        shareAnniversary: true,
+      })
     );
+  });
+
+  it('protects canonical households while allowing consented directory projections', async () => {
+    await seed();
+    const adminDb = environment
+      .authenticatedContext('admin', { email: 'admin@example.com' })
+      .firestore();
+    const batch = writeBatch(adminDb);
+    batch.set(doc(adminDb, 'auditLogs/household-one'), {
+      actorUid: 'admin',
+      actorDisplayName: 'Admin',
+      action: 'household.created',
+      entityType: 'household',
+      targetId: 'household-one',
+      summary: 'Member household',
+    });
+    batch.set(doc(adminDb, 'households/household-one'), {
+      id: 'household-one',
+      name: 'Member household',
+      memberUids: ['member', 'member-two'],
+      memberNames: ['Member', 'Member Two'],
+      status: 'active',
+      createdBy: 'admin',
+      lastAuditId: 'household-one',
+    });
+    batch.set(doc(adminDb, 'householdDirectoryEntries/member'), {
+      uid: 'member',
+      displayName: 'Member',
+      householdId: 'household-one',
+      updatedAt: new Date(),
+    });
+    await assertSucceeds(batch.commit());
+
+    const memberDb = environment
+      .authenticatedContext('member', { email: 'member@example.com' })
+      .firestore();
+    const outsiderDb = environment
+      .authenticatedContext('outsider', { email: 'outsider@example.com' })
+      .firestore();
+    await assertSucceeds(getDoc(doc(memberDb, 'households/household-one')));
+    await assertFails(getDoc(doc(outsiderDb, 'households/household-one')));
+    await assertSucceeds(getDoc(doc(outsiderDb, 'householdDirectoryEntries/member')));
+  });
+
+  it('publishes relationships and anniversaries only through the consented projection', async () => {
+    await seed();
+    const adminDb = environment
+      .authenticatedContext('admin', { email: 'admin@example.com' })
+      .firestore();
+    const batch = writeBatch(adminDb);
+    batch.set(doc(adminDb, 'auditLogs/relationship-one'), {
+      actorUid: 'admin',
+      actorDisplayName: 'Admin',
+      action: 'relationship.created',
+      entityType: 'relationship',
+      targetId: 'relationship-one',
+      summary: 'Member and Member Two',
+    });
+    batch.set(doc(adminDb, 'memberRelationships/relationship-one'), {
+      id: 'relationship-one',
+      memberUids: ['member', 'member-two'],
+      memberNames: ['Member', 'Member Two'],
+      typeAtoB: 'spouse',
+      typeBtoA: 'spouse',
+      householdId: '',
+      audience: 'allApproved',
+      anniversary: { month: 6, day: 20 },
+      status: 'active',
+      createdBy: 'admin',
+      lastAuditId: 'relationship-one',
+    });
+    batch.set(doc(adminDb, 'relationshipDirectoryEntries/relationship-one'), {
+      id: 'relationship-one',
+      memberUids: ['member', 'member-two'],
+      memberNames: ['Member', 'Member Two'],
+      typeAtoB: 'spouse',
+      typeBtoA: 'spouse',
+      audience: 'allApproved',
+      anniversary: { month: 6, day: 20 },
+      updatedAt: new Date(),
+    });
+    await assertSucceeds(batch.commit());
+
+    const outsiderDb = environment
+      .authenticatedContext('outsider', { email: 'outsider@example.com' })
+      .firestore();
+    await assertFails(getDoc(doc(outsiderDb, 'memberRelationships/relationship-one')));
+    await assertSucceeds(getDoc(doc(outsiderDb, 'relationshipDirectoryEntries/relationship-one')));
+  });
+
+  it('allows audited church-wide events and denies content under a deleted group', async () => {
+    await seed();
+    const adminDb = environment
+      .authenticatedContext('admin', { email: 'admin@example.com' })
+      .firestore();
+    const batch = writeBatch(adminDb);
+    batch.set(doc(adminDb, 'auditLogs/church-event'), {
+      actorUid: 'admin',
+      actorDisplayName: 'Admin',
+      action: 'event.created',
+      entityType: 'groupEvent',
+      targetId: 'church-event',
+      summary: 'Church event',
+    });
+    batch.set(doc(adminDb, 'groupEvents/church-event'), {
+      id: 'church-event',
+      groupId: '',
+      groupName: '',
+      title: 'Church event',
+      description: '',
+      location: '',
+      startsAt: new Date('2026-07-01T15:00:00Z'),
+      endsAt: new Date('2026-07-01T16:00:00Z'),
+      allDay: false,
+      visibility: 'allApproved',
+      status: 'scheduled',
+      createdBy: 'admin',
+      lastAuditId: 'church-event',
+    });
+    await assertSucceeds(batch.commit());
+
+    await environment.withSecurityRulesDisabled(async (context) => {
+      const db = context.firestore();
+      await setDoc(doc(db, 'groups/group-one'), { status: 'deleted' }, { merge: true });
+      await setDoc(doc(db, 'groupEvents/deleted-group-event'), {
+        id: 'deleted-group-event',
+        groupId: 'group-one',
+        groupName: 'Worship Team',
+        title: 'Hidden event',
+        description: '',
+        location: '',
+        startsAt: new Date('2026-07-01T15:00:00Z'),
+        endsAt: new Date('2026-07-01T16:00:00Z'),
+        allDay: false,
+        visibility: 'groupMembers',
+        status: 'scheduled',
+        createdBy: 'admin',
+      });
+    });
+    const memberDb = environment
+      .authenticatedContext('member', { email: 'member@example.com' })
+      .firestore();
+    await assertSucceeds(getDoc(doc(memberDb, 'groupEvents/church-event')));
+    await assertFails(getDoc(doc(memberDb, 'groupEvents/deleted-group-event')));
   });
 });

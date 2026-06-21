@@ -1,6 +1,6 @@
 import { MemoryRouter } from 'react-router-dom';
 import { render, screen, userEvent, waitFor, within } from '@/test-utils';
-import { MemberAdminPage, MembersPage } from './Members.page';
+import { MemberAdminPage, MemberProfilePage, MembersPage } from './Members.page';
 
 const memberMocks = vi.hoisted(() => ({
   authenticated: false,
@@ -11,6 +11,11 @@ const memberMocks = vi.hoisted(() => ({
   requestMemberAreaAccess: vi.fn(),
   changePortalAccessStatus: vi.fn(),
   saveOwnProfile: vi.fn(),
+  loadAccessibleEvents: vi.fn(),
+  loadAccessibleUpdates: vi.fn(),
+  loadUpcomingBirthdays: vi.fn(),
+  loadUpcomingAnniversaries: vi.fn(),
+  loadMyMembershipGroups: vi.fn(),
 }));
 
 const notifyMemberAccessRequest = vi.hoisted(() => vi.fn());
@@ -72,6 +77,8 @@ vi.mock('../lib/memberPortalFirebase', async (importOriginal) => {
         address: false,
         birthday: false,
         household: false,
+        relationships: false,
+        anniversary: false,
         ministryInterests: false,
         photo: false,
         churchStatus: true,
@@ -84,6 +91,16 @@ vi.mock('../lib/memberPortalFirebase', async (importOriginal) => {
       churchRoles: ['staff'],
       dateJoined: '2020-01-01',
     }),
+    loadHouseholdForMember: vi.fn().mockResolvedValue(null),
+    loadRelationshipsForMember: vi.fn().mockResolvedValue([]),
+    loadAdminHouseholds: vi.fn().mockResolvedValue([]),
+    loadAdminRelationships: vi.fn().mockResolvedValue([]),
+    loadMembershipGroupIds: vi.fn().mockResolvedValue([]),
+    loadMyMembershipGroups: memberMocks.loadMyMembershipGroups,
+    loadAccessibleEvents: memberMocks.loadAccessibleEvents,
+    loadAccessibleUpdates: memberMocks.loadAccessibleUpdates,
+    loadUpcomingBirthdays: memberMocks.loadUpcomingBirthdays,
+    loadUpcomingAnniversaries: memberMocks.loadUpcomingAnniversaries,
     requestProfileDeletion: memberMocks.requestProfileDeletion,
     requestMemberAreaAccess: memberMocks.requestMemberAreaAccess,
     changePortalAccessStatus: memberMocks.changePortalAccessStatus,
@@ -141,6 +158,8 @@ vi.mock('../lib/memberPortalFirebase', async (importOriginal) => {
             address: false,
             birthday: false,
             household: false,
+            relationships: false,
+            anniversary: false,
             ministryInterests: false,
             photo: false,
             churchStatus: true,
@@ -168,6 +187,11 @@ describe('MembersPage', () => {
     memberMocks.requestMemberAreaAccess.mockReset();
     memberMocks.changePortalAccessStatus.mockReset();
     memberMocks.saveOwnProfile.mockReset();
+    memberMocks.loadAccessibleEvents.mockReset().mockResolvedValue([]);
+    memberMocks.loadAccessibleUpdates.mockReset().mockResolvedValue([]);
+    memberMocks.loadUpcomingBirthdays.mockReset().mockResolvedValue([]);
+    memberMocks.loadUpcomingAnniversaries.mockReset().mockResolvedValue([]);
+    memberMocks.loadMyMembershipGroups.mockReset().mockResolvedValue([]);
     notifyMemberAccessRequest.mockReset();
     notifyMemberAccessRequest.mockResolvedValue(undefined);
   });
@@ -183,6 +207,89 @@ describe('MembersPage', () => {
     await waitFor(() => expect(screen.getByLabelText(/email address/i)).toBeInTheDocument());
     expect(screen.queryByRole('tab', { name: /admin/i })).not.toBeInTheDocument();
     expect(screen.queryByText(/audit history/i)).not.toBeInTheDocument();
+  });
+
+  it('shows a useful signed-in home and hides empty summary sections', async () => {
+    memberMocks.authenticated = true;
+    render(
+      <MemoryRouter initialEntries={['/members']}>
+        <MembersPage />
+      </MemoryRouter>
+    );
+
+    expect(await screen.findByRole('heading', { name: /welcome, alex/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /calendar/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /announcements/i })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: /upcoming events/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: /celebrations/i })).not.toBeInTheDocument();
+  });
+
+  it('renders bounded home events, announcements, and visible celebrations', async () => {
+    memberMocks.authenticated = true;
+    const now = new Date();
+    memberMocks.loadAccessibleEvents.mockResolvedValue([
+      {
+        id: 'event-1',
+        groupId: '',
+        groupName: '',
+        title: 'Sunday worship',
+        description: '',
+        location: 'Sanctuary',
+        startsAt: now,
+        endsAt: new Date(now.getTime() + 3600000),
+        allDay: false,
+        visibility: 'allApproved',
+        status: 'scheduled',
+        createdBy: 'admin',
+      },
+    ]);
+    memberMocks.loadAccessibleUpdates.mockResolvedValue([
+      {
+        id: 'update-1',
+        groupId: '',
+        groupName: '',
+        title: 'Church supper',
+        summary: 'Wednesday evening',
+        body: 'Details',
+        visibility: 'allApproved',
+        status: 'published',
+        pinned: false,
+        important: true,
+        createdBy: 'admin',
+        publishedAt: now,
+      },
+    ]);
+    memberMocks.loadUpcomingBirthdays.mockResolvedValue([
+      {
+        uid: 'member-2',
+        displayName: 'Jamie Lee',
+        preferredName: 'Jamie',
+        birthday: { month: 6, day: 22 },
+        nextDate: now,
+      },
+    ]);
+    memberMocks.loadUpcomingAnniversaries.mockResolvedValue([
+      {
+        id: 'relationship-1',
+        memberUids: ['a', 'b'],
+        memberNames: ['Pat', 'Sam'],
+        typeAtoB: 'spouse',
+        typeBtoA: 'spouse',
+        audience: 'allApproved',
+        anniversary: { month: 6, day: 25 },
+        nextDate: now,
+      },
+    ]);
+    render(
+      <MemoryRouter initialEntries={['/members']}>
+        <MembersPage />
+      </MemoryRouter>
+    );
+
+    expect(await screen.findByText('Sunday worship')).toBeInTheDocument();
+    expect(screen.getByText('Church supper')).toBeInTheDocument();
+    expect(screen.getByText(/Jamie · June 22/)).toBeInTheDocument();
+    expect(screen.getByText(/Pat & Sam · June 25/)).toBeInTheDocument();
   });
 
   it('asks for the original address when an email link opens in another browser', async () => {
@@ -217,7 +324,7 @@ describe('MembersPage', () => {
     const user = userEvent.setup();
     render(
       <MemoryRouter initialEntries={['/members/profile']}>
-        <MembersPage />
+        <MemberProfilePage />
       </MemoryRouter>
     );
 
@@ -300,7 +407,7 @@ describe('MembersPage', () => {
 
     render(
       <MemoryRouter initialEntries={['/members/profile']}>
-        <MembersPage />
+        <MemberProfilePage />
       </MemoryRouter>
     );
 
@@ -337,7 +444,7 @@ describe('MembersPage', () => {
     const user = userEvent.setup();
     render(
       <MemoryRouter initialEntries={['/members/profile']}>
-        <MembersPage />
+        <MemberProfilePage />
       </MemoryRouter>
     );
 
@@ -371,7 +478,7 @@ describe('MembersPage', () => {
     const user = userEvent.setup();
     render(
       <MemoryRouter initialEntries={['/members/profile']}>
-        <MembersPage />
+        <MemberProfilePage />
       </MemoryRouter>
     );
 

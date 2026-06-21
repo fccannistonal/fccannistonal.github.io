@@ -3,9 +3,15 @@ import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import {
   IconAddressBook,
   IconAlertCircle,
+  IconCake,
   IconCalendar,
+  IconChevronLeft,
+  IconChevronRight,
   IconCircleCheck,
+  IconEdit,
   IconFileText,
+  IconHeart,
+  IconHome,
   IconLock,
   IconLogout,
   IconMessage,
@@ -53,24 +59,39 @@ import {
   completeEmailLinkSignIn,
   createIcs,
   deleteCurrentAuthAccount,
+  deleteEvent,
+  deleteGroup,
+  deleteUpdate,
   ensureMemberOnboardingAccount,
   getMissingFirebaseConfigKeys,
   isMemberPortalConfigured,
+  loadAccessibleEvents,
+  loadAccessibleUpdates,
   loadAdminGroups,
+  loadAdminHouseholds,
   loadAdminMemberRecords,
+  loadAdminRelationships,
+  loadAdminUpdates,
   loadAuditLogs,
   loadAvatarModeration,
+  loadDirectoryConnections,
   loadDirectoryPage,
   loadEvents,
   loadGroup,
   loadGroupMembers,
   loadGroupMembership,
+  loadHouseholdForMember,
   loadMemberAccess,
   loadMemberAdminNotes,
   loadMembersByStatus,
+  loadMembershipGroupIds,
   loadMyGroups,
+  loadMyMembershipGroups,
   loadOwnChurchMetadata,
   loadOwnProfile,
+  loadRelationshipsForMember,
+  loadUpcomingAnniversaries,
+  loadUpcomingBirthdays,
   loadUpdates,
   migrateLegacyDirectoryEntry,
   processDeletion,
@@ -81,9 +102,11 @@ import {
   saveEvent,
   saveGroup,
   saveGroupMembership,
+  saveHousehold,
   saveMemberAdminNotes,
   saveMemberProfile,
   saveOwnProfile,
+  saveRelationship,
   saveUpdate,
   sendMemberSignInLink,
   signOutMember,
@@ -100,11 +123,17 @@ import {
   type GroupMembership,
   type GroupRole,
   type GroupUpdate,
+  type Household,
+  type HouseholdDirectoryEntry,
   type MemberAccess,
   type MemberAdminNotes,
   type MemberConnection,
+  type MemberRelationship,
   type PortalAccessStatus,
   type PortalGroup,
+  type RelationshipAudience,
+  type RelationshipDirectoryEntry,
+  type RelationshipType,
 } from '../lib/memberPortalFirebase';
 import {
   deleteMyAvatar,
@@ -141,6 +170,7 @@ import { getLocalizedPath, type RouteId } from '../lib/routing';
 import classes from './Members.page.module.css';
 
 type PortalSection =
+  | 'home'
   | 'profile'
   | 'directory'
   | 'groups'
@@ -199,11 +229,20 @@ const copyByLocale = {
     banned: 'Your portal access is blocked.',
     deletionRequested: 'Your deletion request is being processed.',
     deleted: 'Your portal profile has been deleted.',
+    home: 'Home',
+    welcome: 'Welcome',
+    quickLinks: 'Member links',
+    viewAll: 'View all',
+    upcomingEvents: 'Upcoming events',
+    celebrations: 'Celebrations',
+    birthdays: 'Birthdays',
+    anniversaries: 'Anniversaries',
+    yourGroups: 'Your groups',
     profile: 'Profile',
     directory: 'Directory',
     groups: 'Groups',
     calendar: 'Calendar',
-    updates: 'Updates',
+    updates: 'Announcements',
     admin: 'Admin',
     giving: 'Giving statements',
     signOut: 'Sign out',
@@ -280,6 +319,8 @@ const copyByLocale = {
     showAddress: 'Show my address',
     showBirthday: 'Show my birthday',
     showHousehold: 'Show my household',
+    showRelationships: 'Show my relationships',
+    showAnniversary: 'Show my anniversary',
     showInterests: 'Show my ministry interests',
     showChurchStatus: 'Show my church status',
     showChurchRoles: 'Show my church roles',
@@ -327,6 +368,8 @@ const copyByLocale = {
     statusLabel: 'Status',
     create: 'Create',
     archive: 'Archive group',
+    deleteGroup: 'Delete group',
+    deleteGroupConfirm: 'Delete this group and deactivate all of its events and announcements?',
     groupSettings: 'Group settings',
     members: 'Members',
     addMember: 'Add member',
@@ -336,6 +379,8 @@ const copyByLocale = {
     add: 'Add',
     events: 'Events',
     newEvent: 'New event',
+    editEvent: 'Edit event',
+    deleteEventConfirm: 'Delete this event?',
     titleLabel: 'Title',
     location: 'Location',
     starts: 'Starts',
@@ -345,11 +390,37 @@ const copyByLocale = {
     addCalendar: 'Download .ics',
     canceled: 'Canceled',
     announcements: 'Announcements',
-    newUpdate: 'New update',
+    newUpdate: 'New announcement',
+    editUpdate: 'Edit announcement',
+    deleteUpdateConfirm: 'Delete this announcement?',
+    summary: 'Summary',
+    publishDate: 'Publish date',
+    expires: 'Expires (optional)',
     body: 'Message',
     important: 'Important',
     pinned: 'Pinned',
-    publish: 'Publish update',
+    publish: 'Save announcement',
+    churchWide: 'Church-wide',
+    previousMonth: 'Previous month',
+    nextMonth: 'Next month',
+    today: 'Today',
+    edit: 'Edit',
+    deleteAction: 'Delete',
+    householdRelationships: 'Household and relationships',
+    householdRelationshipsHelp:
+      'Church staff maintain these connections. Your privacy choices control what other members see.',
+    noHousehold: 'No household is connected to your profile.',
+    householdsAdmin: 'Households & relationships',
+    householdsAdminHelp: 'Manage household membership, relationships, and anniversary dates.',
+    newHousehold: 'New household',
+    newRelationship: 'New relationship',
+    householdName: 'Household name',
+    relationshipType: 'Relationship',
+    relationshipAudience: 'Audience',
+    linkedOnly: 'Linked people only',
+    personA: 'First person',
+    personB: 'Second person',
+    anniversary: 'Anniversary',
     adminHelp: 'Moderate member access, roles, photos, and audit history.',
     reviewRequest: 'Review request',
     requestDetails: 'Access request details',
@@ -441,11 +512,20 @@ const copyByLocale = {
     banned: 'Su acceso al portal está bloqueado.',
     deletionRequested: 'Su solicitud de eliminación está en proceso.',
     deleted: 'Su perfil del portal fue eliminado.',
+    home: 'Inicio',
+    welcome: 'Bienvenido',
+    quickLinks: 'Enlaces para miembros',
+    viewAll: 'Ver todo',
+    upcomingEvents: 'Próximos eventos',
+    celebrations: 'Celebraciones',
+    birthdays: 'Cumpleaños',
+    anniversaries: 'Aniversarios',
+    yourGroups: 'Sus grupos',
     profile: 'Perfil',
     directory: 'Directorio',
     groups: 'Grupos',
     calendar: 'Calendario',
-    updates: 'Novedades',
+    updates: 'Anuncios',
     admin: 'Administración',
     giving: 'Comprobantes',
     signOut: 'Cerrar sesión',
@@ -527,6 +607,8 @@ const copyByLocale = {
     showAddress: 'Mostrar mi dirección',
     showBirthday: 'Mostrar mi cumpleaños',
     showHousehold: 'Mostrar mi hogar',
+    showRelationships: 'Mostrar mis relaciones',
+    showAnniversary: 'Mostrar mi aniversario',
     showInterests: 'Mostrar mis intereses ministeriales',
     showChurchStatus: 'Mostrar mi estado en la iglesia',
     showChurchRoles: 'Mostrar mis funciones en la iglesia',
@@ -573,6 +655,8 @@ const copyByLocale = {
     statusLabel: 'Estado',
     create: 'Crear',
     archive: 'Archivar grupo',
+    deleteGroup: 'Eliminar grupo',
+    deleteGroupConfirm: '¿Eliminar este grupo y desactivar todos sus eventos y anuncios?',
     groupSettings: 'Configuración del grupo',
     members: 'Miembros',
     addMember: 'Agregar miembro',
@@ -582,6 +666,8 @@ const copyByLocale = {
     add: 'Agregar',
     events: 'Eventos',
     newEvent: 'Nuevo evento',
+    editEvent: 'Editar evento',
+    deleteEventConfirm: '¿Eliminar este evento?',
     titleLabel: 'Título',
     location: 'Lugar',
     starts: 'Comienza',
@@ -591,11 +677,37 @@ const copyByLocale = {
     addCalendar: 'Descargar .ics',
     canceled: 'Cancelado',
     announcements: 'Anuncios',
-    newUpdate: 'Nueva novedad',
+    newUpdate: 'Nuevo anuncio',
+    editUpdate: 'Editar anuncio',
+    deleteUpdateConfirm: '¿Eliminar este anuncio?',
+    summary: 'Resumen',
+    publishDate: 'Fecha de publicación',
+    expires: 'Vence (opcional)',
     body: 'Mensaje',
     important: 'Importante',
     pinned: 'Fijado',
-    publish: 'Publicar',
+    publish: 'Guardar anuncio',
+    churchWide: 'Toda la iglesia',
+    previousMonth: 'Mes anterior',
+    nextMonth: 'Mes siguiente',
+    today: 'Hoy',
+    edit: 'Editar',
+    deleteAction: 'Eliminar',
+    householdRelationships: 'Hogar y relaciones',
+    householdRelationshipsHelp:
+      'El personal mantiene estas conexiones. Sus opciones de privacidad controlan lo que ven los demás.',
+    noHousehold: 'No hay un hogar conectado a su perfil.',
+    householdsAdmin: 'Hogares y relaciones',
+    householdsAdminHelp: 'Administre hogares, relaciones y fechas de aniversario.',
+    newHousehold: 'Nuevo hogar',
+    newRelationship: 'Nueva relación',
+    householdName: 'Nombre del hogar',
+    relationshipType: 'Relación',
+    relationshipAudience: 'Audiencia',
+    linkedOnly: 'Solo personas relacionadas',
+    personA: 'Primera persona',
+    personB: 'Segunda persona',
+    anniversary: 'Aniversario',
     adminHelp: 'Modere acceso, funciones, fotos e historial.',
     reviewRequest: 'Revisar solicitud',
     requestDetails: 'Detalles de la solicitud de acceso',
@@ -654,7 +766,7 @@ const connectionLabel = (copy: typeof copyByLocale.en, connection?: MemberConnec
   connectionOptions(copy).find((option) => option.value === connection)?.label ?? copy.empty;
 
 export function MembersPage() {
-  return <MemberPortalPage section="profile" />;
+  return <MemberPortalPage section="home" />;
 }
 export function MemberProfilePage() {
   return <MemberPortalPage section="profile" />;
@@ -1165,6 +1277,7 @@ function PortalShell({
 }) {
   const navigate = useNavigate();
   const routeFor: Record<Exclude<PortalSection, 'group'>, RouteId> = {
+    home: 'members',
     profile: 'memberProfile',
     directory: 'memberDirectory',
     groups: 'memberGroups',
@@ -1178,6 +1291,7 @@ function PortalShell({
     label: string;
     icon: ReactNode;
   }> = [
+    { value: 'home', label: copy.home, icon: <IconHome size={17} /> },
     { value: 'profile', label: copy.profile, icon: <IconUser size={17} /> },
     { value: 'directory', label: copy.directory, icon: <IconAddressBook size={17} /> },
     { value: 'groups', label: copy.groups, icon: <IconUsers size={17} /> },
@@ -1209,6 +1323,7 @@ function PortalShell({
           {...{ profile, church, setProfile, copy, busy, run, refresh, access, locale }}
         />
       ) : null}
+      {section === 'home' ? <MemberHomePanel {...{ copy, access, profile, locale }} /> : null}
       {section === 'directory' ? <DirectoryPanel copy={copy} /> : null}
       {section === 'groups' ? (
         <GroupsPanel copy={copy} access={access} locale={locale} busy={busy} run={run} />
@@ -1227,6 +1342,270 @@ function PortalShell({
       ) : null}
       {section === 'giving' ? <GivingPanel copy={copy} locale={locale} /> : null}
     </Stack>
+  );
+}
+
+function MemberHomePanel({
+  copy,
+  access,
+  profile,
+  locale,
+}: {
+  copy: typeof copyByLocale.en;
+  access: MemberAccess;
+  profile: DirectoryProfile;
+  locale: 'en' | 'es';
+}) {
+  const [loading, setLoading] = useState(true);
+  const [events, setEvents] = useState<GroupEvent[]>([]);
+  const [updates, setUpdates] = useState<GroupUpdate[]>([]);
+  const [groups, setGroups] = useState<PortalGroup[]>([]);
+  const [birthdays, setBirthdays] = useState<Awaited<ReturnType<typeof loadUpcomingBirthdays>>>([]);
+  const [anniversaries, setAnniversaries] = useState<
+    Awaited<ReturnType<typeof loadUpcomingAnniversaries>>
+  >([]);
+
+  useEffect(() => {
+    const from = new Date();
+    const to = new Date(from);
+    to.setDate(to.getDate() + 60);
+    Promise.all([loadMembershipGroupIds(access.uid), loadMyMembershipGroups(access.uid)])
+      .then(async ([groupIds, memberGroups]) => {
+        const [nextEvents, nextUpdates, nextBirthdays, nextAnniversaries] = await Promise.all([
+          loadAccessibleEvents(access, groupIds, from, to, 12),
+          loadAccessibleUpdates(access, groupIds, 12),
+          loadUpcomingBirthdays(from, 30, 8),
+          loadUpcomingAnniversaries(access.uid, from, 30, 8),
+        ]);
+        setGroups(memberGroups);
+        setEvents(nextEvents.filter((event) => event.status === 'scheduled').slice(0, 5));
+        setUpdates(nextUpdates.slice(0, 5));
+        setBirthdays(nextBirthdays);
+        setAnniversaries(nextAnniversaries);
+      })
+      .finally(() => setLoading(false));
+  }, [access.uid, access.role]);
+
+  const name = profile.preferredName || profile.displayName || access.displayName;
+  const links: Array<{ route: RouteId; label: string; icon: ReactNode }> = [
+    { route: 'memberCalendar', label: copy.calendar, icon: <IconCalendar size={20} /> },
+    { route: 'memberUpdates', label: copy.announcements, icon: <IconMessage size={20} /> },
+    { route: 'memberGroups', label: copy.groups, icon: <IconUsers size={20} /> },
+    { route: 'memberProfile', label: copy.profile, icon: <IconUser size={20} /> },
+  ];
+
+  return (
+    <Stack gap="lg">
+      <Paper className={classes.memberHomeWelcome} p={{ base: 'lg', md: 'xl' }}>
+        <Text className={classes.sectionEyebrow}>{copy.home}</Text>
+        <Title order={2}>
+          {copy.welcome}
+          {name ? `, ${name}` : ''}
+        </Title>
+        <Text c="dimmed" mt="xs">
+          {copy.description}
+        </Text>
+      </Paper>
+
+      <SimpleGrid cols={{ base: 2, md: 4 }}>
+        {links.map((link) => (
+          <Button
+            key={link.route}
+            component={Link}
+            to={getLocalizedPath(link.route, locale)}
+            variant="light"
+            leftSection={link.icon}
+            className={classes.quickLink}
+          >
+            {link.label}
+          </Button>
+        ))}
+      </SimpleGrid>
+
+      {loading ? (
+        <Center py="xl">
+          <Loader />
+        </Center>
+      ) : (
+        <>
+          {events.length ? (
+            <HomeSection
+              title={copy.upcomingEvents}
+              link={getLocalizedPath('memberCalendar', locale)}
+              copy={copy}
+            >
+              <SimpleGrid cols={{ base: 1, md: 2 }}>
+                {events.map((event) => (
+                  <Paper key={event.id} withBorder p="md">
+                    <Text fw={800}>{event.title}</Text>
+                    <Text size="sm" c="dimmed">
+                      {event.startsAt.toLocaleString(locale === 'es' ? 'es-US' : 'en-US')}
+                    </Text>
+                    {event.location ? <Text size="sm">{event.location}</Text> : null}
+                    {event.groupName ? (
+                      <Badge mt="xs" variant="light">
+                        {event.groupName}
+                      </Badge>
+                    ) : null}
+                  </Paper>
+                ))}
+              </SimpleGrid>
+            </HomeSection>
+          ) : null}
+
+          {updates.length ? (
+            <HomeSection
+              title={copy.announcements}
+              link={getLocalizedPath('memberUpdates', locale)}
+              copy={copy}
+            >
+              <Stack gap="sm">
+                {updates.map((update) => (
+                  <Paper key={update.id} withBorder p="md">
+                    <Group gap="xs">
+                      {update.important ? <Badge color="red">{copy.important}</Badge> : null}
+                      {update.groupName ? <Badge variant="light">{update.groupName}</Badge> : null}
+                    </Group>
+                    <Text fw={800} mt={update.important || update.groupName ? 'xs' : 0}>
+                      {update.title}
+                    </Text>
+                    <Text size="sm" c="dimmed" lineClamp={2}>
+                      {update.summary || update.body}
+                    </Text>
+                  </Paper>
+                ))}
+              </Stack>
+            </HomeSection>
+          ) : null}
+
+          {birthdays.length || anniversaries.length ? (
+            <HomeSection title={copy.celebrations} copy={copy}>
+              <SimpleGrid cols={{ base: 1, md: 2 }}>
+                {birthdays.length ? (
+                  <Stack gap="xs">
+                    <Group gap="xs">
+                      <IconCake size={20} />
+                      <Title order={3}>{copy.birthdays}</Title>
+                    </Group>
+                    {birthdays.map((birthday) => (
+                      <Text key={birthday.uid}>
+                        {birthday.preferredName || birthday.displayName} ·{' '}
+                        {formatBirthday(birthday.birthday, locale)}
+                      </Text>
+                    ))}
+                  </Stack>
+                ) : null}
+                {anniversaries.length ? (
+                  <Stack gap="xs">
+                    <Group gap="xs">
+                      <IconHeart size={20} />
+                      <Title order={3}>{copy.anniversaries}</Title>
+                    </Group>
+                    {anniversaries.map((anniversary) => (
+                      <Text key={anniversary.id}>
+                        {anniversary.memberNames.join(' & ')} ·{' '}
+                        {formatBirthday(anniversary.anniversary, locale)}
+                      </Text>
+                    ))}
+                  </Stack>
+                ) : null}
+              </SimpleGrid>
+            </HomeSection>
+          ) : null}
+
+          {groups.length ? (
+            <HomeSection
+              title={copy.yourGroups}
+              link={getLocalizedPath('memberGroups', locale)}
+              copy={copy}
+            >
+              <Group>
+                {groups.map((group) => (
+                  <Button
+                    key={group.id}
+                    component={Link}
+                    to={`${getLocalizedPath('memberGroups', locale)}/${group.id}`}
+                    variant="light"
+                  >
+                    {group.name}
+                  </Button>
+                ))}
+              </Group>
+            </HomeSection>
+          ) : null}
+        </>
+      )}
+    </Stack>
+  );
+}
+
+function HomeSection({
+  title,
+  link,
+  copy,
+  children,
+}: {
+  title: string;
+  link?: string;
+  copy: typeof copyByLocale.en;
+  children: ReactNode;
+}) {
+  return (
+    <Paper withBorder p={{ base: 'lg', md: 'xl' }}>
+      <Group justify="space-between" mb="md">
+        <Title order={2}>{title}</Title>
+        {link ? (
+          <Button component={Link} to={link} variant="subtle">
+            {copy.viewAll}
+          </Button>
+        ) : null}
+      </Group>
+      {children}
+    </Paper>
+  );
+}
+
+function MemberConnectionsCard({ uid, copy }: { uid: string; copy: typeof copyByLocale.en }) {
+  const locale = useLocale();
+  const [household, setHousehold] = useState<Household | null>(null);
+  const [relationships, setRelationships] = useState<MemberRelationship[]>([]);
+  useEffect(() => {
+    Promise.all([loadHouseholdForMember(uid), loadRelationshipsForMember(uid)]).then(
+      ([nextHousehold, nextRelationships]) => {
+        setHousehold(nextHousehold);
+        setRelationships(nextRelationships);
+      }
+    );
+  }, [uid]);
+  return (
+    <Paper withBorder p={{ base: 'lg', md: 'xl' }} className={classes.profileCard}>
+      <Title order={3}>{copy.householdRelationships}</Title>
+      <Text c="dimmed" size="sm" mt="xs">
+        {copy.householdRelationshipsHelp}
+      </Text>
+      {household ? (
+        <Box mt="md">
+          <Text fw={700}>{household.name}</Text>
+          <Text size="sm">{household.memberNames.join(', ')}</Text>
+        </Box>
+      ) : (
+        <Text c="dimmed" mt="md">
+          {copy.noHousehold}
+        </Text>
+      )}
+      {relationships.length ? (
+        <Stack gap="xs" mt="md">
+          {relationships.map((relationship) => (
+            <Text key={relationship.id} size="sm">
+              {relationship.memberNames.join(' · ')}
+              {relationship.anniversary
+                ? ` — ${copy.anniversary}: ${formatBirthday(relationship.anniversary, locale)}`
+                : ''}
+            </Text>
+          ))}
+        </Stack>
+      ) : null}
+    </Paper>
   );
 }
 
@@ -1275,6 +1654,8 @@ function ProfilePanel({
     profile.visibility.address && copy.showAddress,
     profile.visibility.birthday && copy.showBirthday,
     profile.visibility.household && copy.showHousehold,
+    profile.visibility.relationships && copy.showRelationships,
+    profile.visibility.anniversary && copy.showAnniversary,
     profile.visibility.ministryInterests && copy.showInterests,
     profile.visibility.photo && copy.showPhoto,
     profile.visibility.churchStatus && copy.showChurchStatus,
@@ -1677,6 +2058,8 @@ function ProfilePanel({
         ) : null}
       </div>
 
+      {!restricted ? <MemberConnectionsCard uid={profile.uid} copy={copy} /> : null}
+
       {!restricted ? (
         <Paper withBorder p={{ base: 'lg', md: 'xl' }} className={classes.privacyCard}>
           <div className={classes.cardHeader}>
@@ -1712,6 +2095,8 @@ function ProfilePanel({
                     ['address', copy.showAddress],
                     ['birthday', copy.showBirthday],
                     ['household', copy.showHousehold],
+                    ['relationships', copy.showRelationships],
+                    ['anniversary', copy.showAnniversary],
                     ['ministryInterests', copy.showInterests],
                     ['photo', copy.showPhoto],
                     ['churchStatus', copy.showChurchStatus],
@@ -1967,6 +2352,8 @@ function AvatarPanel({
 
 function DirectoryPanel({ copy }: { copy: typeof copyByLocale.en }) {
   const [entries, setEntries] = useState<DirectoryEntry[]>([]);
+  const [households, setHouseholds] = useState<HouseholdDirectoryEntry[]>([]);
+  const [relationships, setRelationships] = useState<RelationshipDirectoryEntry[]>([]);
   const [cursor, setCursor] =
     useState<Awaited<ReturnType<typeof loadDirectoryPage>>['cursor']>(null);
   const [loading, setLoading] = useState(true);
@@ -1974,7 +2361,15 @@ function DirectoryPanel({ copy }: { copy: typeof copyByLocale.en }) {
   const load = async (next = false) => {
     setLoading(true);
     const result = await loadDirectoryPage(next ? cursor : null);
+    const connections = await loadDirectoryConnections(result.items.map((item) => item.uid));
     setEntries((current) => (next ? [...current, ...result.items] : result.items));
+    setHouseholds((current) =>
+      next ? [...current, ...connections.households] : connections.households
+    );
+    setRelationships((current) => {
+      const values = next ? [...current, ...connections.relationships] : connections.relationships;
+      return [...new Map(values.map((item) => [item.id, item])).values()];
+    });
     setCursor(result.cursor);
     setDone(result.items.length < 24);
     setLoading(false);
@@ -1999,7 +2394,19 @@ function DirectoryPanel({ copy }: { copy: typeof copyByLocale.en }) {
       ) : (
         <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} mt="lg">
           {entries.map((entry) => (
-            <MemberCard key={entry.uid} entry={entry} />
+            <MemberCard
+              key={entry.uid}
+              entry={entry}
+              householdMembers={(() => {
+                const householdId = households.find((item) => item.uid === entry.uid)?.householdId;
+                return householdId
+                  ? households.filter(
+                      (item) => item.householdId === householdId && item.uid !== entry.uid
+                    )
+                  : [];
+              })()}
+              relationships={relationships.filter((item) => item.memberUids.includes(entry.uid))}
+            />
           ))}
         </SimpleGrid>
       )}
@@ -2012,7 +2419,15 @@ function DirectoryPanel({ copy }: { copy: typeof copyByLocale.en }) {
   );
 }
 
-function MemberCard({ entry }: { entry: DirectoryEntry }) {
+function MemberCard({
+  entry,
+  householdMembers,
+  relationships,
+}: {
+  entry: DirectoryEntry;
+  householdMembers: HouseholdDirectoryEntry[];
+  relationships: RelationshipDirectoryEntry[];
+}) {
   const locale = useLocale();
   const [url, setUrl] = useState<string | null>(null);
   useEffect(() => {
@@ -2074,6 +2489,18 @@ function MemberCard({ entry }: { entry: DirectoryEntry }) {
             {entry.household}
           </Text>
         ) : null}
+        {householdMembers.length ? (
+          <Text size="sm">{householdMembers.map((member) => member.displayName).join(', ')}</Text>
+        ) : null}
+        {relationships.map((relationship) => {
+          const index = relationship.memberUids[0] === entry.uid ? 0 : 1;
+          return (
+            <Text key={relationship.id} size="sm">
+              {relationship.memberNames[index === 0 ? 1 : 0]} ·{' '}
+              {index === 0 ? relationship.typeAtoB : relationship.typeBtoA}
+            </Text>
+          );
+        })}
         {entry.ministryInterests.length ? (
           <Text size="sm" c="dimmed" mt="xs">
             {entry.ministryInterests
@@ -2111,7 +2538,9 @@ function GroupsPanel({
   const [category, setCategory] = useState('ministry');
   const [visibility, setVisibility] = useState('allApproved');
   const reload = () =>
-    (access.role === 'admin' ? loadAdminGroups() : loadMyGroups(access.uid)).then(setGroups);
+    (access.role === 'admin' ? loadAdminGroups() : loadMyGroups(access.uid)).then((items) =>
+      setGroups(items.filter((item) => item.status !== 'deleted'))
+    );
   useEffect(() => {
     reload();
   }, [access.uid]);
@@ -2224,6 +2653,7 @@ function GroupsPanel({
 function GroupPanel({
   copy,
   access,
+  locale,
   busy,
   run,
 }: {
@@ -2234,6 +2664,7 @@ function GroupPanel({
   run: (work: () => Promise<void>, success?: string) => Promise<void>;
 }) {
   const { groupId = '' } = useParams();
+  const navigate = useNavigate();
   const [portalGroup, setPortalGroup] = useState<PortalGroup | null>(null);
   const [membership, setMembership] = useState<GroupMembership | null>(null);
   const [members, setMembers] = useState<GroupMembership[]>([]);
@@ -2308,6 +2739,22 @@ function GroupPanel({
               }}
             >
               {copy.archive}
+            </Button>
+          ) : null}
+          {access.role === 'admin' && portalGroup.status !== 'deleted' ? (
+            <Button
+              color="red"
+              leftSection={<IconTrash size={16} />}
+              onClick={() => {
+                if (window.confirm(copy.deleteGroupConfirm)) {
+                  run(async () => {
+                    await deleteGroup(access, portalGroup);
+                    navigate(getLocalizedPath('memberGroups', locale));
+                  });
+                }
+              }}
+            >
+              {copy.deleteGroup}
             </Button>
           ) : null}
         </Group>
@@ -2605,6 +3052,8 @@ function EventList({
   reload: () => Promise<void>;
 }) {
   const [opened, setOpened] = useState(false);
+  const [editing, setEditing] = useState<GroupEvent | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<GroupEvent | null>(null);
   const [title, setTitle] = useState('');
   const [location, setLocation] = useState('');
   const [description, setDescription] = useState('');
@@ -2616,7 +3065,19 @@ function EventList({
       <Group justify="space-between">
         <Title order={3}>{copy.events}</Title>
         {canEdit ? (
-          <Button size="xs" onClick={() => setOpened(true)}>
+          <Button
+            size="xs"
+            onClick={() => {
+              setEditing(null);
+              setTitle('');
+              setDescription('');
+              setLocation('');
+              setStarts(toInputDate(new Date()));
+              setEnds(toInputDate(new Date(Date.now() + 3600000)));
+              setAllDay(false);
+              setOpened(true);
+            }}
+          >
             {copy.newEvent}
           </Button>
         ) : null}
@@ -2634,16 +3095,53 @@ function EventList({
             <Button variant="subtle" size="xs" mt="xs" onClick={() => downloadIcs(item)}>
               {copy.addCalendar}
             </Button>
+            {canEdit ? (
+              <Group gap="xs" mt="xs">
+                <Button
+                  variant="subtle"
+                  size="xs"
+                  leftSection={<IconEdit size={14} />}
+                  onClick={() => {
+                    setEditing(item);
+                    setTitle(item.title);
+                    setDescription(item.description);
+                    setLocation(item.location);
+                    setStarts(toInputDate(item.startsAt));
+                    setEnds(toInputDate(item.endsAt));
+                    setAllDay(item.allDay);
+                    setOpened(true);
+                  }}
+                >
+                  {copy.edit}
+                </Button>
+                <Button
+                  color="red"
+                  variant="subtle"
+                  size="xs"
+                  onClick={() => setDeleteTarget(item)}
+                >
+                  {copy.deleteAction}
+                </Button>
+              </Group>
+            ) : null}
           </Paper>
         ))}
         {events.length === 0 ? <Text c="dimmed">{copy.empty}</Text> : null}
       </Stack>
-      <Modal opened={opened} onClose={() => setOpened(false)} title={copy.newEvent}>
+      <Modal
+        opened={opened}
+        onClose={() => {
+          setOpened(false);
+          setEditing(null);
+        }}
+        title={editing ? copy.editEvent : copy.newEvent}
+      >
         <form
           onSubmit={(event) => {
             event.preventDefault();
             run(async () => {
               await saveEvent(access, {
+                id: editing?.id,
                 groupId: portalGroup.id,
                 groupName: portalGroup.name,
                 title,
@@ -2657,6 +3155,7 @@ function EventList({
               });
               await reload();
               setOpened(false);
+              setEditing(null);
             });
           }}
         >
@@ -2700,6 +3199,35 @@ function EventList({
           </Stack>
         </form>
       </Modal>
+      <Modal
+        opened={Boolean(deleteTarget)}
+        onClose={() => setDeleteTarget(null)}
+        title={copy.deleteAction}
+      >
+        <Stack>
+          <Text>{copy.deleteEventConfirm}</Text>
+          <Group justify="flex-end">
+            <Button variant="default" onClick={() => setDeleteTarget(null)}>
+              {copy.cancel}
+            </Button>
+            <Button
+              color="red"
+              loading={busy}
+              onClick={() =>
+                run(async () => {
+                  if (deleteTarget) {
+                    await deleteEvent(access, deleteTarget);
+                  }
+                  setDeleteTarget(null);
+                  await reload();
+                })
+              }
+            >
+              {copy.deleteAction}
+            </Button>
+          </Group>
+        </Stack>
+      </Modal>
     </Paper>
   );
 }
@@ -2724,16 +3252,43 @@ function UpdateList({
   reload: () => Promise<void>;
 }) {
   const [opened, setOpened] = useState(false);
+  const [editing, setEditing] = useState<GroupUpdate | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<GroupUpdate | null>(null);
   const [title, setTitle] = useState('');
+  const [summary, setSummary] = useState('');
   const [body, setBody] = useState('');
+  const [publishedAt, setPublishedAt] = useState(toInputDate(new Date()));
+  const [expiresAt, setExpiresAt] = useState('');
   const [important, setImportant] = useState(false);
   const [pinned, setPinned] = useState(false);
+  const openNew = () => {
+    setEditing(null);
+    setTitle('');
+    setSummary('');
+    setBody('');
+    setPublishedAt(toInputDate(new Date()));
+    setExpiresAt('');
+    setImportant(false);
+    setPinned(false);
+    setOpened(true);
+  };
+  const openEdit = (item: GroupUpdate) => {
+    setEditing(item);
+    setTitle(item.title);
+    setSummary(item.summary);
+    setBody(item.body);
+    setPublishedAt(toInputDate(item.publishedAt ?? new Date()));
+    setExpiresAt(item.expiresAt ? toInputDate(item.expiresAt) : '');
+    setImportant(item.important);
+    setPinned(item.pinned);
+    setOpened(true);
+  };
   return (
     <Paper withBorder p="xl">
       <Group justify="space-between">
         <Title order={3}>{copy.announcements}</Title>
         {canEdit ? (
-          <Button size="xs" onClick={() => setOpened(true)}>
+          <Button size="xs" onClick={openNew}>
             {copy.newUpdate}
           </Button>
         ) : null}
@@ -2751,27 +3306,54 @@ function UpdateList({
             <Text className={classes.preserveLines} mt="xs">
               {item.body}
             </Text>
+            {canEdit ? (
+              <Group gap="xs" mt="xs">
+                <Button variant="subtle" size="xs" onClick={() => openEdit(item)}>
+                  {copy.edit}
+                </Button>
+                <Button
+                  color="red"
+                  variant="subtle"
+                  size="xs"
+                  onClick={() => setDeleteTarget(item)}
+                >
+                  {copy.deleteAction}
+                </Button>
+              </Group>
+            ) : null}
           </Paper>
         ))}
         {updates.length === 0 ? <Text c="dimmed">{copy.empty}</Text> : null}
       </Stack>
-      <Modal opened={opened} onClose={() => setOpened(false)} title={copy.newUpdate}>
+      <Modal
+        opened={opened}
+        onClose={() => {
+          setOpened(false);
+          setEditing(null);
+        }}
+        title={editing ? copy.editUpdate : copy.newUpdate}
+      >
         <form
           onSubmit={(event) => {
             event.preventDefault();
             run(async () => {
               await saveUpdate(access, {
+                id: editing?.id,
                 groupId: portalGroup.id,
                 groupName: portalGroup.name,
                 title,
+                summary,
                 body,
                 visibility: portalGroup.visibility,
                 status: 'published',
                 pinned,
                 important,
+                publishedAt: new Date(publishedAt),
+                expiresAt: expiresAt ? new Date(expiresAt) : undefined,
               });
               await reload();
               setOpened(false);
+              setEditing(null);
             });
           }}
         >
@@ -2783,10 +3365,29 @@ function UpdateList({
               onChange={(event) => setTitle(event.currentTarget.value)}
             />
             <Textarea
+              label={copy.summary}
+              value={summary}
+              maxLength={300}
+              onChange={(event) => setSummary(event.currentTarget.value)}
+            />
+            <Textarea
               label={copy.body}
               minRows={5}
               value={body}
               onChange={(event) => setBody(event.currentTarget.value)}
+            />
+            <TextInput
+              type="datetime-local"
+              label={copy.publishDate}
+              required
+              value={publishedAt}
+              onChange={(event) => setPublishedAt(event.currentTarget.value)}
+            />
+            <TextInput
+              type="datetime-local"
+              label={copy.expires}
+              value={expiresAt}
+              onChange={(event) => setExpiresAt(event.currentTarget.value)}
             />
             <Checkbox
               label={copy.important}
@@ -2804,77 +3405,460 @@ function UpdateList({
           </Stack>
         </form>
       </Modal>
+      <Modal
+        opened={Boolean(deleteTarget)}
+        onClose={() => setDeleteTarget(null)}
+        title={copy.deleteAction}
+      >
+        <Stack>
+          <Text>{copy.deleteUpdateConfirm}</Text>
+          <Group justify="flex-end">
+            <Button variant="default" onClick={() => setDeleteTarget(null)}>
+              {copy.cancel}
+            </Button>
+            <Button
+              color="red"
+              loading={busy}
+              onClick={() =>
+                run(async () => {
+                  if (deleteTarget) {
+                    await deleteUpdate(access, deleteTarget);
+                  }
+                  setDeleteTarget(null);
+                  await reload();
+                })
+              }
+            >
+              {copy.deleteAction}
+            </Button>
+          </Group>
+        </Stack>
+      </Modal>
     </Paper>
   );
 }
 
 function CalendarPanel({ copy, access }: { copy: typeof copyByLocale.en; access: MemberAccess }) {
   const [events, setEvents] = useState<GroupEvent[]>([]);
+  const [groups, setGroups] = useState<PortalGroup[]>([]);
   const [loading, setLoading] = useState(true);
+  const [month, setMonth] = useState(
+    () => new Date(new Date().getFullYear(), new Date().getMonth(), 1)
+  );
+  const [groupFilter, setGroupFilter] = useState('all');
+  const [opened, setOpened] = useState(false);
+  const [editing, setEditing] = useState<GroupEvent | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<GroupEvent | null>(null);
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [location, setLocation] = useState('');
+  const [starts, setStarts] = useState(toInputDate(new Date()));
+  const [ends, setEnds] = useState(toInputDate(new Date(Date.now() + 3600000)));
+  const [allDay, setAllDay] = useState(false);
+  const [eventGroupId, setEventGroupId] = useState('');
+  const [busy, setBusy] = useState(false);
   const range = useMemo(() => {
-    const from = new Date();
-    from.setDate(1);
-    from.setHours(0, 0, 0, 0);
-    const to = new Date(from);
-    to.setMonth(to.getMonth() + 3);
+    const from = new Date(month);
+    const to = new Date(month);
+    to.setMonth(to.getMonth() + 1);
     return { from, to };
-  }, []);
+  }, [month]);
+  const reload = async () => {
+    setLoading(true);
+    const [groupIds, nextGroups] = await Promise.all([
+      loadMembershipGroupIds(access.uid),
+      access.role === 'admin' ? loadAdminGroups() : loadMyGroups(access.uid),
+    ]);
+    const nextEvents = await loadAccessibleEvents(access, groupIds, range.from, range.to, 100);
+    setGroups(nextGroups.filter((group) => group.status === 'active'));
+    setEvents(nextEvents);
+    setLoading(false);
+  };
   useEffect(() => {
-    loadMyGroups(access.uid)
-      .then((groups) =>
-        loadEvents(
-          groups.map((item) => item.id),
-          range.from,
-          range.to
-        )
-      )
-      .then(setEvents)
-      .finally(() => setLoading(false));
-  }, [access.uid]);
+    reload();
+  }, [access.uid, access.role, range.from.getTime()]);
+  const visibleEvents = events.filter(
+    (event) => groupFilter === 'all' || event.groupId === groupFilter
+  );
+  const startOffset = range.from.getDay();
+  const gridStart = new Date(range.from);
+  gridStart.setDate(gridStart.getDate() - startOffset);
+  const days = Array.from({ length: 42 }, (_, index) => {
+    const day = new Date(gridStart);
+    day.setDate(day.getDate() + index);
+    return day;
+  });
+  const openNew = (date = new Date()) => {
+    const start = new Date(date);
+    start.setHours(9, 0, 0, 0);
+    setEditing(null);
+    setTitle('');
+    setDescription('');
+    setLocation('');
+    setStarts(toInputDate(start));
+    setEnds(toInputDate(new Date(start.getTime() + 3600000)));
+    setAllDay(false);
+    setEventGroupId('');
+    setOpened(true);
+  };
+  const openEdit = (event: GroupEvent) => {
+    setEditing(event);
+    setTitle(event.title);
+    setDescription(event.description);
+    setLocation(event.location);
+    setStarts(toInputDate(event.startsAt));
+    setEnds(toInputDate(event.endsAt));
+    setAllDay(event.allDay);
+    setEventGroupId(event.groupId);
+    setOpened(true);
+  };
+  const saveCalendarEvent = async () => {
+    const selectedGroup = groups.find((group) => group.id === eventGroupId);
+    setBusy(true);
+    try {
+      await saveEvent(access, {
+        id: editing?.id,
+        groupId: eventGroupId,
+        groupName: selectedGroup?.name ?? '',
+        title,
+        description,
+        location,
+        startsAt: new Date(starts),
+        endsAt: new Date(ends),
+        allDay,
+        visibility: selectedGroup?.visibility ?? 'allApproved',
+        status: editing?.status ?? 'scheduled',
+      });
+      setOpened(false);
+      setEditing(null);
+      await reload();
+    } finally {
+      setBusy(false);
+    }
+  };
   return (
-    <Paper withBorder p="xl">
-      <Title order={2}>{copy.calendar}</Title>
+    <Stack>
+      <Paper withBorder p={{ base: 'lg', md: 'xl' }}>
+        <Group justify="space-between" align="flex-end">
+          <Box>
+            <Title order={2}>{copy.calendar}</Title>
+            <Text c="dimmed">
+              {month.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}
+            </Text>
+          </Box>
+          <Group>
+            {access.role === 'admin' ? (
+              <Button onClick={() => openNew()}>{copy.newEvent}</Button>
+            ) : null}
+            <Button
+              variant="default"
+              aria-label={copy.previousMonth}
+              onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() - 1, 1))}
+            >
+              <IconChevronLeft size={18} />
+            </Button>
+            <Button
+              variant="light"
+              onClick={() => setMonth(new Date(new Date().getFullYear(), new Date().getMonth(), 1))}
+            >
+              {copy.today}
+            </Button>
+            <Button
+              variant="default"
+              aria-label={copy.nextMonth}
+              onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() + 1, 1))}
+            >
+              <IconChevronRight size={18} />
+            </Button>
+          </Group>
+        </Group>
+        <Select
+          mt="md"
+          label={copy.groups}
+          value={groupFilter}
+          allowDeselect={false}
+          data={[
+            { value: 'all', label: copy.allOptions },
+            { value: '', label: copy.churchWide },
+            ...groups.map((group) => ({ value: group.id, label: group.name })),
+          ]}
+          onChange={(value) => setGroupFilter(value ?? 'all')}
+        />
+      </Paper>
       {loading ? (
         <Center py="xl">
           <Loader />
         </Center>
       ) : (
-        <Stack mt="lg">
-          {events.map((event) => (
-            <Paper key={event.id} withBorder p="lg">
-              <Group justify="space-between">
-                <div>
-                  <Text fw={800}>{event.title}</Text>
-                  <Text size="sm" c="dimmed">
-                    {event.groupName} · {event.startsAt.toLocaleString()}
-                  </Text>
-                  <Text size="sm">{event.location}</Text>
+        <>
+          <div className={classes.calendarGrid} role="grid" aria-label={copy.calendar}>
+            {Array.from({ length: 7 }, (_, index) => {
+              const date = new Date(2026, 0, 4 + index);
+              return (
+                <Text key={index} role="columnheader" className={classes.calendarWeekday}>
+                  {date.toLocaleDateString(undefined, { weekday: 'short' })}
+                </Text>
+              );
+            })}
+            {days.map((day) => {
+              const dayEvents = visibleEvents.filter(
+                (event) => event.startsAt.toDateString() === day.toDateString()
+              );
+              return (
+                <div
+                  key={day.toISOString()}
+                  className={classes.calendarDay}
+                  data-outside={day.getMonth() !== month.getMonth() || undefined}
+                  role="gridcell"
+                >
+                  <Group justify="space-between">
+                    <Text fw={700} size="sm">
+                      {day.getDate()}
+                    </Text>
+                    {access.role === 'admin' && day.getMonth() === month.getMonth() ? (
+                      <Button
+                        variant="subtle"
+                        size="compact-xs"
+                        aria-label={`${copy.newEvent} ${day.toLocaleDateString()}`}
+                        onClick={() => openNew(day)}
+                      >
+                        +
+                      </Button>
+                    ) : null}
+                  </Group>
+                  <Stack gap={4} mt={4}>
+                    {dayEvents.map((event) => (
+                      <Button
+                        key={event.id}
+                        variant="light"
+                        size="compact-xs"
+                        className={classes.calendarEvent}
+                        onClick={() => (access.role === 'admin' ? openEdit(event) : undefined)}
+                      >
+                        {event.allDay
+                          ? ''
+                          : event.startsAt.toLocaleTimeString([], {
+                              hour: 'numeric',
+                              minute: '2-digit',
+                            })}{' '}
+                        {event.title}
+                      </Button>
+                    ))}
+                  </Stack>
                 </div>
-                <Button variant="light" onClick={() => downloadIcs(event)}>
-                  {copy.addCalendar}
-                </Button>
-              </Group>
-            </Paper>
-          ))}
-          {events.length === 0 ? <Text c="dimmed">{copy.empty}</Text> : null}
-        </Stack>
+              );
+            })}
+          </div>
+          <Stack className={classes.calendarAgenda}>
+            {visibleEvents.map((event) => (
+              <Paper key={event.id} withBorder p="md">
+                <Text fw={800}>{event.title}</Text>
+                <Text size="sm" c="dimmed">
+                  {event.startsAt.toLocaleString()}
+                </Text>
+                {event.groupName ? <Badge mt="xs">{event.groupName}</Badge> : null}
+                <Group mt="xs">
+                  <Button size="xs" variant="subtle" onClick={() => downloadIcs(event)}>
+                    {copy.addCalendar}
+                  </Button>
+                  {access.role === 'admin' ? (
+                    <Button size="xs" variant="subtle" onClick={() => openEdit(event)}>
+                      {copy.edit}
+                    </Button>
+                  ) : null}
+                </Group>
+              </Paper>
+            ))}
+            {visibleEvents.length === 0 ? <Text c="dimmed">{copy.empty}</Text> : null}
+          </Stack>
+        </>
       )}
-    </Paper>
+      <Modal
+        opened={opened}
+        onClose={() => setOpened(false)}
+        title={editing ? copy.editEvent : copy.newEvent}
+      >
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            void saveCalendarEvent();
+          }}
+        >
+          <Stack>
+            <Select
+              label={copy.groups}
+              value={eventGroupId}
+              allowDeselect={false}
+              data={[
+                { value: '', label: copy.churchWide },
+                ...groups.map((group) => ({ value: group.id, label: group.name })),
+              ]}
+              onChange={(value) => setEventGroupId(value ?? '')}
+            />
+            <TextInput
+              label={copy.titleLabel}
+              required
+              value={title}
+              onChange={(event) => setTitle(event.currentTarget.value)}
+            />
+            <Textarea
+              label={copy.descriptionLabel}
+              value={description}
+              onChange={(event) => setDescription(event.currentTarget.value)}
+            />
+            <TextInput
+              label={copy.location}
+              value={location}
+              onChange={(event) => setLocation(event.currentTarget.value)}
+            />
+            <TextInput
+              type="datetime-local"
+              label={copy.starts}
+              required
+              value={starts}
+              onChange={(event) => setStarts(event.currentTarget.value)}
+            />
+            <TextInput
+              type="datetime-local"
+              label={copy.ends}
+              required
+              value={ends}
+              onChange={(event) => setEnds(event.currentTarget.value)}
+            />
+            <Checkbox
+              label={copy.allDay}
+              checked={allDay}
+              onChange={(event) => setAllDay(event.currentTarget.checked)}
+            />
+            <Button type="submit" loading={busy}>
+              {copy.publishEvent}
+            </Button>
+            {editing ? (
+              <Button
+                color="red"
+                variant="light"
+                onClick={() => {
+                  setOpened(false);
+                  setDeleteTarget(editing);
+                }}
+              >
+                {copy.deleteAction}
+              </Button>
+            ) : null}
+          </Stack>
+        </form>
+      </Modal>
+      <Modal
+        opened={Boolean(deleteTarget)}
+        onClose={() => setDeleteTarget(null)}
+        title={copy.deleteAction}
+      >
+        <Stack>
+          <Text>{copy.deleteEventConfirm}</Text>
+          <Button
+            color="red"
+            loading={busy}
+            onClick={async () => {
+              if (!deleteTarget) {
+                return;
+              }
+              setBusy(true);
+              try {
+                await deleteEvent(access, deleteTarget);
+                setDeleteTarget(null);
+                await reload();
+              } finally {
+                setBusy(false);
+              }
+            }}
+          >
+            {copy.deleteAction}
+          </Button>
+        </Stack>
+      </Modal>
+    </Stack>
   );
 }
 
 function UpdatesPanel({ copy, access }: { copy: typeof copyByLocale.en; access: MemberAccess }) {
   const [updates, setUpdates] = useState<GroupUpdate[]>([]);
+  const [groups, setGroups] = useState<PortalGroup[]>([]);
   const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [opened, setOpened] = useState(false);
+  const [editing, setEditing] = useState<GroupUpdate | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<GroupUpdate | null>(null);
+  const [groupId, setGroupId] = useState('');
+  const [title, setTitle] = useState('');
+  const [summary, setSummary] = useState('');
+  const [body, setBody] = useState('');
+  const [important, setImportant] = useState(false);
+  const [pinned, setPinned] = useState(false);
+  const [publishedAt, setPublishedAt] = useState(toInputDate(new Date()));
+  const [expiresAt, setExpiresAt] = useState('');
+  const reload = async () => {
+    setLoading(true);
+    const [ids, nextGroups] = await Promise.all([
+      loadMembershipGroupIds(access.uid),
+      access.role === 'admin' ? loadAdminGroups() : loadMyGroups(access.uid),
+    ]);
+    setGroups(nextGroups.filter((group) => group.status === 'active'));
+    setUpdates(
+      access.role === 'admin'
+        ? await loadAdminUpdates(100)
+        : await loadAccessibleUpdates(access, ids, 50)
+    );
+    setLoading(false);
+  };
   useEffect(() => {
-    loadMyGroups(access.uid)
-      .then((groups) => loadUpdates(groups.map((item) => item.id)))
-      .then(setUpdates)
-      .finally(() => setLoading(false));
-  }, [access.uid]);
+    reload();
+  }, [access.uid, access.role]);
+  const openEditor = (item?: GroupUpdate) => {
+    setEditing(item ?? null);
+    setGroupId(item?.groupId ?? '');
+    setTitle(item?.title ?? '');
+    setSummary(item?.summary ?? '');
+    setBody(item?.body ?? '');
+    setImportant(item?.important ?? false);
+    setPinned(item?.pinned ?? false);
+    setPublishedAt(toInputDate(item?.publishedAt ?? new Date()));
+    setExpiresAt(item?.expiresAt ? toInputDate(item.expiresAt) : '');
+    setOpened(true);
+  };
+  const saveAnnouncement = async () => {
+    const group = groups.find((item) => item.id === groupId);
+    setBusy(true);
+    try {
+      await saveUpdate(access, {
+        id: editing?.id,
+        groupId,
+        groupName: group?.name ?? '',
+        title,
+        summary,
+        body,
+        visibility: group?.visibility ?? 'allApproved',
+        status: 'published',
+        important,
+        pinned,
+        publishedAt: new Date(publishedAt),
+        expiresAt: expiresAt ? new Date(expiresAt) : undefined,
+      });
+      setOpened(false);
+      await reload();
+    } finally {
+      setBusy(false);
+    }
+  };
   return (
-    <Paper withBorder p="xl">
-      <Title order={2}>{copy.updates}</Title>
+    <Stack>
+      <Paper withBorder p="xl">
+        <Group justify="space-between">
+          <Title order={2}>{copy.updates}</Title>
+          {access.role === 'admin' ? (
+            <Button onClick={() => openEditor()}>{copy.newUpdate}</Button>
+          ) : null}
+        </Group>
+      </Paper>
       {loading ? (
         <Center py="xl">
           <Loader />
@@ -2884,7 +3868,7 @@ function UpdatesPanel({ copy, access }: { copy: typeof copyByLocale.en; access: 
           {updates.map((item) => (
             <Paper key={item.id} withBorder p="lg">
               <Group>
-                <Badge>{item.groupName}</Badge>
+                <Badge>{item.groupName || copy.churchWide}</Badge>
                 {item.important ? <Badge color="red">{copy.important}</Badge> : null}
                 {item.pinned ? <Badge variant="light">{copy.pinned}</Badge> : null}
               </Group>
@@ -2894,12 +3878,125 @@ function UpdatesPanel({ copy, access }: { copy: typeof copyByLocale.en; access: 
               <Text className={classes.preserveLines} mt="sm">
                 {item.body}
               </Text>
+              {access.role === 'admin' ? (
+                <Group mt="md">
+                  <Button variant="subtle" size="xs" onClick={() => openEditor(item)}>
+                    {copy.edit}
+                  </Button>
+                  <Button
+                    color="red"
+                    variant="subtle"
+                    size="xs"
+                    onClick={() => setDeleteTarget(item)}
+                  >
+                    {copy.deleteAction}
+                  </Button>
+                </Group>
+              ) : null}
             </Paper>
           ))}
           {updates.length === 0 ? <Text c="dimmed">{copy.empty}</Text> : null}
         </Stack>
       )}
-    </Paper>
+      <Modal
+        opened={opened}
+        onClose={() => setOpened(false)}
+        title={editing ? copy.editUpdate : copy.newUpdate}
+      >
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            void saveAnnouncement();
+          }}
+        >
+          <Stack>
+            <Select
+              label={copy.groups}
+              value={groupId}
+              allowDeselect={false}
+              data={[
+                { value: '', label: copy.churchWide },
+                ...groups.map((group) => ({ value: group.id, label: group.name })),
+              ]}
+              onChange={(value) => setGroupId(value ?? '')}
+            />
+            <TextInput
+              label={copy.titleLabel}
+              required
+              value={title}
+              onChange={(event) => setTitle(event.currentTarget.value)}
+            />
+            <Textarea
+              label={copy.summary}
+              maxLength={300}
+              value={summary}
+              onChange={(event) => setSummary(event.currentTarget.value)}
+            />
+            <Textarea
+              label={copy.body}
+              required
+              minRows={6}
+              value={body}
+              onChange={(event) => setBody(event.currentTarget.value)}
+            />
+            <TextInput
+              type="datetime-local"
+              label={copy.publishDate}
+              required
+              value={publishedAt}
+              onChange={(event) => setPublishedAt(event.currentTarget.value)}
+            />
+            <TextInput
+              type="datetime-local"
+              label={copy.expires}
+              value={expiresAt}
+              onChange={(event) => setExpiresAt(event.currentTarget.value)}
+            />
+            <Checkbox
+              label={copy.important}
+              checked={important}
+              onChange={(event) => setImportant(event.currentTarget.checked)}
+            />
+            <Checkbox
+              label={copy.pinned}
+              checked={pinned}
+              onChange={(event) => setPinned(event.currentTarget.checked)}
+            />
+            <Button type="submit" loading={busy}>
+              {copy.publish}
+            </Button>
+          </Stack>
+        </form>
+      </Modal>
+      <Modal
+        opened={Boolean(deleteTarget)}
+        onClose={() => setDeleteTarget(null)}
+        title={copy.deleteAction}
+      >
+        <Stack>
+          <Text>{copy.deleteUpdateConfirm}</Text>
+          <Button
+            color="red"
+            loading={busy}
+            onClick={async () => {
+              if (!deleteTarget) {
+                return;
+              }
+              setBusy(true);
+              try {
+                await deleteUpdate(access, deleteTarget);
+                setDeleteTarget(null);
+                await reload();
+              } finally {
+                setBusy(false);
+              }
+            }}
+          >
+            {copy.deleteAction}
+          </Button>
+        </Stack>
+      </Modal>
+    </Stack>
   );
 }
 
@@ -2959,6 +4056,7 @@ function AdminPanel({
       <Tabs value={tab} onChange={(value) => setTab(value || 'members')}>
         <Tabs.List>
           <Tabs.Tab value="members">{copy.members}</Tabs.Tab>
+          <Tabs.Tab value="households">{copy.householdsAdmin}</Tabs.Tab>
           <Tabs.Tab value="photos">{copy.photos}</Tabs.Tab>
           <Tabs.Tab value="audit">{copy.audit}</Tabs.Tab>
         </Tabs.List>
@@ -3034,6 +4132,9 @@ function AdminPanel({
             {members.length === 0 ? <Text c="dimmed">{copy.empty}</Text> : null}
           </Stack>
         </Tabs.Panel>
+        <Tabs.Panel value="households" pt="lg">
+          <HouseholdsAdminPanel {...{ copy, access, busy, run }} />
+        </Tabs.Panel>
         <Tabs.Panel value="photos" pt="lg">
           <Stack>
             {photos.map((photo) => (
@@ -3093,6 +4194,307 @@ function AdminPanel({
           </Stack>
         </Tabs.Panel>
       </Tabs>
+    </Stack>
+  );
+}
+
+function HouseholdsAdminPanel({
+  copy,
+  access,
+  busy,
+  run,
+}: {
+  copy: typeof copyByLocale.en;
+  access: MemberAccess;
+  busy: boolean;
+  run: (work: () => Promise<void>, success?: string) => Promise<void>;
+}) {
+  const locale = useLocale();
+  const [households, setHouseholds] = useState<Household[]>([]);
+  const [relationships, setRelationships] = useState<MemberRelationship[]>([]);
+  const [records, setRecords] = useState<AdminMemberRecord[]>([]);
+  const [householdOpened, setHouseholdOpened] = useState(false);
+  const [relationshipOpened, setRelationshipOpened] = useState(false);
+  const [editingHousehold, setEditingHousehold] = useState<Household | null>(null);
+  const [editingRelationship, setEditingRelationship] = useState<MemberRelationship | null>(null);
+  const [householdName, setHouseholdName] = useState('');
+  const [householdMembers, setHouseholdMembers] = useState<string[]>([]);
+  const [personA, setPersonA] = useState('');
+  const [personB, setPersonB] = useState('');
+  const [relationshipTypeValue, setRelationshipTypeValue] = useState<RelationshipType>('spouse');
+  const [relationshipAudience, setRelationshipAudience] =
+    useState<RelationshipAudience>('linkedOnly');
+  const [relationshipHouseholdId, setRelationshipHouseholdId] = useState('');
+  const [anniversaryMonth, setAnniversaryMonth] = useState('');
+  const [anniversaryDay, setAnniversaryDay] = useState('');
+  const reload = async () => {
+    const [nextHouseholds, nextRelationships, nextRecords] = await Promise.all([
+      loadAdminHouseholds(),
+      loadAdminRelationships(),
+      loadAdminMemberRecords(),
+    ]);
+    setHouseholds(nextHouseholds);
+    setRelationships(nextRelationships);
+    setRecords(nextRecords.filter((record) => record.access.status === 'approved'));
+  };
+  useEffect(() => {
+    void reload();
+  }, []);
+  const memberOptions = records.map((record) => ({
+    value: record.access.uid,
+    label: record.profile.displayName || record.access.displayName,
+  }));
+  const memberName = (uid: string) =>
+    memberOptions.find((option) => option.value === uid)?.label ?? '';
+  const openHousehold = (household?: Household) => {
+    setEditingHousehold(household ?? null);
+    setHouseholdName(household?.name ?? '');
+    setHouseholdMembers(household?.memberUids ?? []);
+    setHouseholdOpened(true);
+  };
+  const openRelationship = (relationship?: MemberRelationship) => {
+    setEditingRelationship(relationship ?? null);
+    setPersonA(relationship?.memberUids[0] ?? '');
+    setPersonB(relationship?.memberUids[1] ?? '');
+    setRelationshipTypeValue(relationship?.typeAtoB ?? 'spouse');
+    setRelationshipAudience(relationship?.audience ?? 'linkedOnly');
+    setRelationshipHouseholdId(relationship?.householdId ?? '');
+    setAnniversaryMonth(relationship?.anniversary ? String(relationship.anniversary.month) : '');
+    setAnniversaryDay(relationship?.anniversary ? String(relationship.anniversary.day) : '');
+    setRelationshipOpened(true);
+  };
+  return (
+    <Stack>
+      <Text c="dimmed">{copy.householdsAdminHelp}</Text>
+      <Group>
+        <Button onClick={() => openHousehold()}>{copy.newHousehold}</Button>
+        <Button variant="light" onClick={() => openRelationship()}>
+          {copy.newRelationship}
+        </Button>
+      </Group>
+      <SimpleGrid cols={{ base: 1, lg: 2 }}>
+        <Stack>
+          <Title order={3}>{copy.household}</Title>
+          {households
+            .filter((item) => item.status === 'active')
+            .map((household) => (
+              <Paper key={household.id} withBorder p="md">
+                <Text fw={800}>{household.name}</Text>
+                <Text size="sm">{household.memberNames.join(', ')}</Text>
+                <Group mt="xs">
+                  <Button size="xs" variant="subtle" onClick={() => openHousehold(household)}>
+                    {copy.edit}
+                  </Button>
+                  <Button
+                    size="xs"
+                    color="red"
+                    variant="subtle"
+                    onClick={() =>
+                      run(async () => {
+                        await saveHousehold(access, { ...household, status: 'deleted' });
+                        await reload();
+                      })
+                    }
+                  >
+                    {copy.deleteAction}
+                  </Button>
+                </Group>
+              </Paper>
+            ))}
+        </Stack>
+        <Stack>
+          <Title order={3}>{copy.relationshipType}</Title>
+          {relationships
+            .filter((item) => item.status === 'active')
+            .map((relationship) => (
+              <Paper key={relationship.id} withBorder p="md">
+                <Text fw={800}>{relationship.memberNames.join(' · ')}</Text>
+                <Text size="sm">{relationship.typeAtoB}</Text>
+                {relationship.anniversary ? (
+                  <Text size="sm">
+                    {copy.anniversary}: {formatBirthday(relationship.anniversary, locale)}
+                  </Text>
+                ) : null}
+                <Group mt="xs">
+                  <Button size="xs" variant="subtle" onClick={() => openRelationship(relationship)}>
+                    {copy.edit}
+                  </Button>
+                  <Button
+                    size="xs"
+                    color="red"
+                    variant="subtle"
+                    onClick={() =>
+                      run(async () => {
+                        await saveRelationship(access, { ...relationship, status: 'deleted' });
+                        await reload();
+                      })
+                    }
+                  >
+                    {copy.deleteAction}
+                  </Button>
+                </Group>
+              </Paper>
+            ))}
+        </Stack>
+      </SimpleGrid>
+
+      <Modal
+        opened={householdOpened}
+        onClose={() => setHouseholdOpened(false)}
+        title={editingHousehold ? copy.edit : copy.newHousehold}
+      >
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            void run(async () => {
+              await saveHousehold(access, {
+                id: editingHousehold?.id ?? '',
+                name: householdName,
+                memberUids: householdMembers,
+                memberNames: householdMembers.map(memberName),
+                status: 'active',
+              });
+              setHouseholdOpened(false);
+              await reload();
+            });
+          }}
+        >
+          <Stack>
+            <TextInput
+              label={copy.householdName}
+              required
+              value={householdName}
+              onChange={(event) => setHouseholdName(event.currentTarget.value)}
+            />
+            <MultiSelect
+              label={copy.members}
+              required
+              searchable
+              data={memberOptions}
+              value={householdMembers}
+              onChange={setHouseholdMembers}
+            />
+            <Button type="submit" loading={busy}>
+              {copy.save}
+            </Button>
+          </Stack>
+        </form>
+      </Modal>
+
+      <Modal
+        opened={relationshipOpened}
+        onClose={() => setRelationshipOpened(false)}
+        title={editingRelationship ? copy.edit : copy.newRelationship}
+      >
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            void run(async () => {
+              const anniversary =
+                anniversaryMonth && anniversaryDay
+                  ? { month: Number(anniversaryMonth), day: Number(anniversaryDay) }
+                  : null;
+              await saveRelationship(access, {
+                id: editingRelationship?.id ?? '',
+                memberUids: [personA, personB],
+                memberNames: [memberName(personA), memberName(personB)],
+                typeAtoB: relationshipTypeValue,
+                typeBtoA:
+                  relationshipTypeValue === 'parent'
+                    ? 'child'
+                    : relationshipTypeValue === 'child'
+                      ? 'parent'
+                      : relationshipTypeValue,
+                householdId: relationshipHouseholdId,
+                audience: relationshipAudience,
+                anniversary,
+                status: 'active',
+              });
+              setRelationshipOpened(false);
+              await reload();
+            });
+          }}
+        >
+          <Stack>
+            <Select
+              label={copy.personA}
+              required
+              searchable
+              data={memberOptions}
+              value={personA}
+              onChange={(value) => setPersonA(value ?? '')}
+            />
+            <Select
+              label={copy.personB}
+              required
+              searchable
+              data={memberOptions.filter((option) => option.value !== personA)}
+              value={personB}
+              onChange={(value) => setPersonB(value ?? '')}
+            />
+            <Select
+              label={copy.relationshipType}
+              value={relationshipTypeValue}
+              allowDeselect={false}
+              data={[
+                'spouse',
+                'partner',
+                'parent',
+                'child',
+                'sibling',
+                'familyMember',
+                'householdMember',
+                'other',
+              ]}
+              onChange={(value) => setRelationshipTypeValue((value ?? 'other') as RelationshipType)}
+            />
+            <Select
+              label={copy.relationshipAudience}
+              value={relationshipAudience}
+              allowDeselect={false}
+              data={[
+                { value: 'linkedOnly', label: copy.linkedOnly },
+                { value: 'allApproved', label: copy.allOptions },
+              ]}
+              onChange={(value) =>
+                setRelationshipAudience((value ?? 'linkedOnly') as RelationshipAudience)
+              }
+            />
+            <Select
+              label={copy.household}
+              clearable
+              data={households
+                .filter((household) => household.status === 'active')
+                .map((household) => ({ value: household.id, label: household.name }))}
+              value={relationshipHouseholdId}
+              onChange={(value) => setRelationshipHouseholdId(value ?? '')}
+            />
+            <SimpleGrid cols={2}>
+              <Select
+                label={`${copy.anniversary} ${copy.month}`}
+                clearable
+                data={Array.from({ length: 12 }, (_, index) => String(index + 1))}
+                value={anniversaryMonth}
+                onChange={(value) => setAnniversaryMonth(value ?? '')}
+              />
+              <Select
+                label={`${copy.anniversary} ${copy.day}`}
+                clearable
+                data={Array.from({ length: 31 }, (_, index) => String(index + 1))}
+                value={anniversaryDay}
+                onChange={(value) => setAnniversaryDay(value ?? '')}
+              />
+            </SimpleGrid>
+            <Button
+              type="submit"
+              loading={busy}
+              disabled={!personA || !personB || personA === personB}
+            >
+              {copy.save}
+            </Button>
+          </Stack>
+        </form>
+      </Modal>
     </Stack>
   );
 }
@@ -3616,6 +5018,8 @@ function AdminProfileEditor({
                 ['address', copy.showAddress],
                 ['birthday', copy.showBirthday],
                 ['household', copy.showHousehold],
+                ['relationships', copy.showRelationships],
+                ['anniversary', copy.showAnniversary],
                 ['ministryInterests', copy.showInterests],
                 ['photo', copy.showPhoto],
                 ['churchStatus', copy.showChurchStatus],
